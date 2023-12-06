@@ -134,7 +134,7 @@ export const Drawer = MUI.styled(MuiDrawer, {
       },
       color: '#032539',
       border: '2px solid #032539',
-      borderRadius: '6px',
+      borderRadius: '8px',
     },
     }));
   

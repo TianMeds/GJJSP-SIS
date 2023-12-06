@@ -65,12 +65,12 @@ export default function User() {
 
         </MUI.Dialog>
 
-        <Search>
+        <Search sx={{mt: 4}}>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />
             </SearchIconWrapperV2>
             <StyledInputBaseV2
-              placeholder="Search…"
+              placeholder="Search for names, groups, or email addresses"
               inputProps={{ 'aria-label': 'search' }}
             />
           </Search>
