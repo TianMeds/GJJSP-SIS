@@ -1,7 +1,7 @@
 import React from 'react'
 import * as MUI from '../../import';
 import Layout from '../Components/Layout';
-import { Search, SearchIconWrapper,StyledInputBase } from '../Components/Styles';
+import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
 
 export default function User() {
   return (
@@ -66,10 +66,10 @@ export default function User() {
         </MUI.Dialog>
 
         <Search>
-            <SearchIconWrapper>
+            <SearchIconWrapperV2>
               <MUI.SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
+            </SearchIconWrapperV2>
+            <StyledInputBaseV2
               placeholder="Search…"
               inputProps={{ 'aria-label': 'search' }}
             />

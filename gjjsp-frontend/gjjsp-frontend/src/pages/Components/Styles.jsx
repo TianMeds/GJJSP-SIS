@@ -110,4 +110,32 @@ export const Drawer = MUI.styled(MuiDrawer, {
       borderRadius: '12px',
     },
     }));
+
+    export const SearchIconWrapperV2 = styled('div')(({ theme }) => ({
+      padding: theme.spacing(0, 2),
+      height: '100%',
+      position: 'absolute',
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      right: 0,
+    }));
+    export const StyledInputBaseV2 = styled(InputBase)(({ theme }) => ({
+      color: 'inherit',
+    '& .MuiInputBase-input': {
+      padding: theme.spacing(1, 1, 1, 0),
+      // vertical padding + font size from searchIcon
+      paddingLeft: `calc(1em + ${theme.spacing(0)})`,
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('md')]: {
+        width: '20ch',
+      },
+      color: '#032539',
+      border: '2px solid #032539',
+      borderRadius: '6px',
+    },
+    }));
+  
   
