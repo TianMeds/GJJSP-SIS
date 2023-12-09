@@ -1,7 +1,6 @@
 import React from 'react';
 import * as MUI from '../../import';
 import Layout from '../Components/Layout';
-import { TableCell } from '../Components/Styles';
 import useDialogStore from '../Components/store';
 import { useState } from 'react';
 
@@ -9,8 +8,25 @@ const defaultTheme = MUI.createTheme();
 
 export default function Notification({state}) {
 
-  {/* Function to handle every component */ }
-  const [anchorEl, setAnchorEl] = useState(null);
+  {/* --------------------- Use Dialog Store  ----------------------*/}
+  const { 
+    openDialog,
+    editedEmail,
+    email,
+    handleOpenDialog,
+    handleCloseDialog,
+    setEditedEmail,
+    handleSaveChanges,
+    notification,
+    handleOpenNotif,
+    handleCloseNotif, 
+    event,
+    recipients,
+    setEvent,
+    setRecipients,
+    anchorEl,
+    setAnchorEl,
+  } = useDialogStore();
 
   {/* Function to handle when onclick*/ }
   const handleClick = (event) => {
@@ -28,34 +44,7 @@ export default function Notification({state}) {
       handleClose();
     };
 
-  {/* --------------------- Use state  ----------------------*/}
-
-  const [event, setEvent] = useState('');
-  const [recipients, setRecipients] = useState('');
-
-  
-  const { openDialog,
-    editedEmail,
-    email,
-    handleOpenDialog,
-    handleCloseDialog,
-    setEditedEmail,
-    handleSaveChanges,
-    notification,
-    handleOpenNotif,
-    handleCloseNotif,
-    handleSaveNotif,
-    selectedEvent,
-    selectedRecipient,
-    handleSelectedEvent,
-    handleSelectedRecipient,
-    handleAddRow,
-  } = useDialogStore();
-  
-  const isSmallScreen = MUI.useMediaQuery('(max-width:600px)');
-  const rows = useDialogStore((store) => store.rows.filter((row) => row.state === state)
-  );
-
+  const rows = useDialogStore((store) => store.rows.filter((row) => row.state === state));
   const addRow = useDialogStore((store) => store.addRow);
   const deleteRow = useDialogStore((store) => store.deleteRow);
   const updateRow = useDialogStore((store) => store.updateRow);
@@ -109,7 +98,6 @@ export default function Notification({state}) {
                       Cancel
                     </MUI.Button>
                     <MUI.Button onClick={() => { 
-                      // Call the addRows function with the dynamic event and recipients
                       addRow(event, recipients);
                       setEvent('')
                       setRecipients('')

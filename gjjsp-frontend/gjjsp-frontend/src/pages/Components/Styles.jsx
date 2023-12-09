@@ -61,11 +61,7 @@ export const Drawer = MUI.styled(MuiDrawer, {
     },  
   }));
 
-  export const TableCell = styled('td')(({ theme }) => ({
-    border: 'none',
-    padding: theme.spacing(1),
-    fontSize: '14px',
-  }));
+ 
 
   export const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -128,14 +124,15 @@ export const Drawer = MUI.styled(MuiDrawer, {
       // vertical padding + font size from searchIcon
       paddingLeft: `calc(1em + ${theme.spacing(0)})`,
       transition: theme.transitions.create('width'),
-      width: '100%',
       [theme.breakpoints.up('md')]: {
-        width: '20ch',
+        width: '50ch',
       },
       color: '#032539',
       border: '2px solid #032539',
       borderRadius: '8px',
+      
     },
     }));
+
   
   

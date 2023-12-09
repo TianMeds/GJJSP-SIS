@@ -22,7 +22,7 @@ const getRoleFromListItems = (listItems) => {
 
 const Layout = ({children}) => {
 
-    const [selectedListItems, setSelectedListItems] = useState(SMP_ListItems);
+    const [selectedListItems, setSelectedListItems] = useState(SAP_ListItems);
     const isSmallScreen = MUI.useMediaQuery('(max-width:600px)');
     const [open, setOpen] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
