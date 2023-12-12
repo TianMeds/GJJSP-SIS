@@ -3,6 +3,37 @@ import * as MUI from '../../import';
 import Layout from '../Components/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
 import useDialogStore from '../Components/store';
+import { useEffect } from 'react';
+import useScholarshipStore from '../Store/ScholarshipStore';
+
+const projectPartners = [
+  "BACPAT Youth Development Foundation Inc.",
+  "Welcome Home Foundation Inc. (BACPAT Scholars)",
+  "Education for Former OSY",
+  "Bahay Maria Children Center Formal",
+  "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
+  "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
+  "Canossian Sisters – Endorsed Scholars",
+  "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
+  "WHFI Formal Education for Former Out of School Youth",
+  "WHFI Formal Education for former OSY",
+  "WHFI Bacpat Youth Development Foundation, Inc.",
+  "WHFI- Literacy Program, Bacolod",
+  "WHFI- Literacy Program, Malaybalay",
+  "WHFI – Literacy Program",
+  "Benefactors Endorsed Applicant",
+  "Benefactors & Secretariat Endorsed",
+  "Benefactors Endorsed Scholars & GJJS Secretariat",
+  "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
+  "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
+  "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
+  "Jeri Jalandoni – Education for the Youth Diocese",
+  "Jeri Jalandoni – Education for the Island of Samar",
+  "A & A Catechetical Project",
+  "Volunteer Program B37 – 5th Year for College Graduates",
+  "Formal Education for Former Out of School Youth",
+  "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
+];
 
 export default function Scholarship({state}) {
 
@@ -20,7 +51,6 @@ export default function Scholarship({state}) {
     setBenefactor,
     setProjectStatus,
     setProjectPartner,
-    selectedIcon,
     filteredStatus,
     setFilteredStatus,
     setSelectedProject,
@@ -29,10 +59,10 @@ export default function Scholarship({state}) {
     setEditMode,
     addProject = ((store) => store.addProject), 
     updateProject,
-  } = useDialogStore();
-  const projects = useDialogStore((store) => store.projects.filter((project) => project.state === state))
-
-
+    searchQuery,
+    handleSearch,
+    projects = ((store) => store.projects.filter((project) => project.state === state)),
+  } = useScholarshipStore();
 
   const handleAddClick = () => {
     if (editMode) {
@@ -72,7 +102,14 @@ export default function Scholarship({state}) {
     setBenefactor('');
     setProjectStatus('');
     setProjectPartner('');
+    setEditMode(false);
   };
+
+  useEffect(() => {
+    console.log(selectedProject)
+    console.log(projectName)
+  }, [selectedProject, projectName])
+  
   return (
     <Layout>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -90,8 +127,87 @@ export default function Scholarship({state}) {
           </MUI.Box>
         </MUI.Grid>
 
-        {/* Add User Dialog */}
-        <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="sm">
+
+        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+          <Search>
+            <SearchIconWrapperV2>
+              <MUI.SearchIcon />
+            </SearchIconWrapperV2>
+            <StyledInputBaseV2
+              placeholder="Search for Scholarship Project or Benefactor"
+              inputProps={{ 'aria-label': 'search' }}
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </Search>
+                        
+
+        <MUI.IconButton aria-label="filter">
+          <MUI.FilterListIcon />
+        </MUI.IconButton>
+
+        <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
+                  <MUI.Select
+                    value={filteredStatus}
+                    onChange={(e) => setFilteredStatus(e.target.value)}
+                    native
+                  >
+                    <option value="All">All</option>
+                    <option value="Closed for Application">Closed Application</option>
+                    <option value="Open for Application">Open Application</option>
+                  </MUI.Select>
+               
+              </MUI.FormControl>
+        </MUI.Container>
+
+       
+        <MUI.Grid container spacing={3} sx={{ margin: 5 }}>
+          {projects
+           .filter((project) => filteredStatus === "All" || project.projectStatus === filteredStatus)
+           .filter((project) => project.projectName && project.projectName.toLowerCase().includes(searchQuery?.toLowerCase() || ''))
+            .map((project, index) => (
+            (project.projectName || project.benefactor || project.projectStatus) && (
+            <MUI.Grid key={index} item xs={12} sm={6} md={4}>
+              <MUI.Card sx={{ maxWidth: 345, flex: '1 1 30%' }}>
+                <MUI.CardContent sx={{textAlign: 'center', alignItems: 'center' }}>
+                  
+                  <MUI.SchoolOutlinedIcon sx={{fontSize: 100, color: '#1e88e5'}}/>
+                  <MUI.Typography gutterBottom variant="h4" component="div" sx={{fontWeight: 'bold'}}>
+                    {project.projectName}
+                  </MUI.Typography>
+
+                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontStyle: 'italic', fontSize: '16px', margin: 2}}>
+                    {project.benefactor}
+                  </MUI.Typography>
+
+                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontSize: '18px'}}>
+                    {project.projectStatus}
+                  </MUI.Typography>
+
+                  <MUI.Button
+                  variant="contained"
+                  sx={{
+                    borderRadius: '10px', 
+                    borderColor: 'primary.main',
+                    textTransform: 'capitalize',  
+                    m: 3,
+                  }}
+                  onClick={() => handleEditClick(index)}
+                >
+                  <MUI.Typography>
+                  See for Information
+                  </MUI.Typography>
+                </MUI.Button>
+
+                </MUI.CardContent>
+              </MUI.Card>
+            </MUI.Grid>
+            )
+          ))}
+        </MUI.Grid>
+
+         {/* Add User Dialog */}
+         <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="sm">
           {/* Content of the Dialog */}
           <MUI.DialogTitle>Add Project</MUI.DialogTitle>
             <MUI.DialogContent>
@@ -147,10 +263,12 @@ export default function Scholarship({state}) {
                     onChange={(e) => setProjectPartner(e.target.value)} 
                     native
                   >
-                    <option value="" disabled>Select Project Partner/s</option>
-                    <option value="Administrator">Scholarship Administrator</option>
-                    <option value="Scholar Manager">Scholar Manager</option>
-                    <option value="Scholar">Scholar</option>
+                     <option value="" disabled>Select Project Partner</option>
+                      {projectPartners.map((p, index) => (
+                        <option key={index} value={p}>
+                          {p}
+                        </option>
+                      ))}
                   </MUI.Select>
 
               </MUI.FormControl>
@@ -173,82 +291,7 @@ export default function Scholarship({state}) {
               </MUI.DialogActions>
 
         </MUI.Dialog>
-
-
-        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
-          <Search>
-            <SearchIconWrapperV2>
-              <MUI.SearchIcon />
-            </SearchIconWrapperV2>
-            <StyledInputBaseV2
-              placeholder="Search for Scholarship Project or Benefactor"
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
-                        
-
-        <MUI.IconButton aria-label="filter">
-          <MUI.FilterListIcon />
-        </MUI.IconButton>
-
-        <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
-                  <MUI.Select
-                    value={filteredStatus}
-                    onChange={(e) => setFilteredStatus(e.target.value)}
-                    native
-                  >
-                    <option value="All">All</option>
-                    <option value="Closed for Application">Closed Application</option>
-                    <option value="Open for Application">Open Application</option>
-                  </MUI.Select>
-               
-              </MUI.FormControl>
-        </MUI.Container>
-
-       
-        <MUI.Grid container spacing={3} sx={{ margin: 5 }}>
-          {projects
-           .filter((project) => filteredStatus === "All" || project.projectStatus === filteredStatus)
-            .map((project, index) => (
-            (project.projectName || project.benefactor || project.projectStatus) && (
-            <MUI.Grid key={index} item xs={12} sm={6} md={4}>
-              <MUI.Card sx={{ maxWidth: 345, flex: '1 1 30%' }}>
-                <MUI.CardContent sx={{textAlign: 'center', alignItems: 'center' }}>
-                  
-                  <MUI.SchoolOutlinedIcon sx={{fontSize: 100, color: '#1e88e5'}}/>
-                  <MUI.Typography gutterBottom variant="h4" component="div" sx={{fontWeight: 'bold'}}>
-                    {project.projectName}
-                  </MUI.Typography>
-
-                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontStyle: 'italic', fontSize: '16px', margin: 2}}>
-                    {project.benefactor}
-                  </MUI.Typography>
-
-                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontSize: '18px'}}>
-                    {project.projectStatus}
-                  </MUI.Typography>
-
-                  <MUI.Button
-                  variant="contained"
-                  sx={{
-                    borderRadius: '10px', 
-                    borderColor: 'primary.main',
-                    textTransform: 'capitalize',  
-                    m: 3,
-                  }}
-                  onClick={() => handleEditClick(index)}
-                >
-                  <MUI.Typography>
-                  See for Information
-                  </MUI.Typography>
-                </MUI.Button>
-
-                </MUI.CardContent>
-              </MUI.Card>
-            </MUI.Grid>
-            )
-          ))}
-        </MUI.Grid>
+        
       </MUI.Grid>
       </MUI.Container>
   </Layout>
