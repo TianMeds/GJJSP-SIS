@@ -32,7 +32,7 @@ export default function User({state}) {
     selectedUser,
     setSelectedUser,
     addUser = ((store) => store.addUser),
-    deleteRow = ((store) => store.deleteRow),
+    deleteUser = ((store) => store.deleteRow),
     users = ((store) => store.users.filter((user) => user.state === state)),
   } = useUserStore();
   
@@ -61,15 +61,24 @@ export default function User({state}) {
     handleCloseUser();
   };
 
-  const handleEditUser = (index) => {
-    const selectedUser = users[index];
-    setSelectedUser(selectedUser);
-    setName(selectedUser.userName);
-    setEmailAddress(selectedUser.emailAddress);
-    setRole(selectedUser.role);
-    setEditUser(true);
-    handleOpenUser();
+  const handleEditUser = (userId) => {
+    const selectedUser = users.find((user) => user.id === userId);
+    if (selectedUser) {
+      setSelectedUser(selectedUser);
+      setName(selectedUser.userName);
+      setEmailAddress(selectedUser.emailAddress);
+      setRole(selectedUser.role);
+      setEditUser(true);
+      handleOpenUser();
+    }
   };
+
+  const handleDeleteUser = (userId) => {
+    const selectedUser = users.find((user) => user.id === userId);
+    if (selectedUser) {
+      deleteUser(selectedUser.id);
+    }
+  }
 
   const handleCancelUser = () => {
     handleCloseUser();
@@ -81,7 +90,7 @@ export default function User({state}) {
 
   useEffect(() => {
     console.log(selectedUser)
-  }, [userName, emailAddress, role]
+  }, [selectedUser]
   )
   return (
   <Layout>
@@ -141,57 +150,42 @@ export default function User({state}) {
                     <MUI.TableCell>Name</MUI.TableCell>
                     <MUI.TableCell>Email</MUI.TableCell>
                     <MUI.TableCell>Role</MUI.TableCell>
-                    <MUI.TableCell>Action</MUI.TableCell>
-                      </MUI.TableRow>
-                      </MUI.TableHead>
+                    <MUI.TableCell sx={{marginLeft: 100}}>Action</MUI.TableCell>
+                  </MUI.TableRow>
+                </MUI.TableHead>
                       <MUI.TableBody>
                         {users
                           .filter((user) => filteredRole === "All" || user.role === filteredRole)
-                          .map((user, index) => (
+                          .filter((user) => 
+                          (user.userName && user.userName.toLowerCase().includes(searchQuery?.toLowerCase())) ||
+                          (user.emailAddress && user.emailAddress.toLowerCase().includes(searchQuery?.toLowerCase()))
+                        )
+                          
+                          .map((user) => (
                           (user.userName || user.emailAddress || user.role) && (
-                          <MUI.TableRow key={index} className='user' >
+                          <MUI.TableRow key={user.id} className='user' >
                             <MUI.TableCell sx={{border: 'none'}}  className='name'>{user.userName}</MUI.TableCell>
                             <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.emailAddress}</MUI.TableCell>
                             <MUI.TableCell sx={{border: 'none'}}  className='role'>{user.role}</MUI.TableCell>
-                            <MUI.TableCell sx={{border: 'none'}}>
+                            <MUI.TableCell sx={{border: 'none', }}>
                               <MUI.IconButton
                                 color="inherit"
-                                onClick={handleClick}
-                                sx={{ textTransform: 'capitalize' }}
+                                onClick={() => handleEditUser(user.id)}
+                                sx={{ marginLeft: -2 }}
                               >
-                                <MUI.MoreHorizIcon />
+                                <MUI.BorderColorOutlinedIcon />
 
                               </MUI.IconButton>
 
+                              <MUI.IconButton
+                                color="inherit"
+                                onClick={() => handleDeleteUser(user.id)}
+                                sx={{ textTransform: 'capitalize' }}
+                              >
+                                <MUI.DeleteOutlineOutlinedIcon />
 
-                                <MUI.Menu
-                                  anchorEl={anchorEl}
-                                  open={Boolean(anchorEl)}
-                                  onClose={handleClose}
-                                  anchorOrigin={{
-                                      vertical: 'bottom',
-                                      horizontal: 'right',
-                                  }}
-                                  transformOrigin={{
-                                      vertical: 'top',
-                                      horizontal: 'right',
-                                  }}
-                                 
-                                >
+                              </MUI.IconButton>
 
-                                  <MUI.MenuItem onClick={() => handleEditUser(index)}>
-                                    Update
-                                  </MUI.MenuItem>
-
-                                  <MUI.MenuItem onClick={() => {
-                                    deleteRow(users.length - 1);
-                                  }}
-                                  >
-                                    Delete
-                                  </MUI.MenuItem>
-
-                                </MUI.Menu>
-                                
                             </MUI.TableCell>
                           </MUI.TableRow>
                         )))}

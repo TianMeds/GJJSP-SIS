@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const useUserStore = create((set) => ({
     usersWithIndex: [], 
-
     users: [],
     editUser:  false,
     setEditUser: (newEditUser) => set({editUser: newEditUser}),
@@ -24,22 +23,16 @@ const useUserStore = create((set) => ({
     handleCloseUser: () => set({user: false}),
     
     addUser: (userName, emailAddress, role) =>
-  set((store) => ({
-    users: [
-      ...store.users,
-      { id: uuidv4(), userName, emailAddress, role },
-    ],
-    usersWithIndex: [
-      ...store.usersWithIndex,
-      { userName, emailAddress, role, originalIndex: store.usersWithIndex.length },
-    ],
-  })),
-
-  deleteRow: (originalIndex) =>
-  set((store) => ({
-    users: store.users.filter((_, i) => i !== originalIndex),
-    usersWithIndex: store.usersWithIndex.filter((_, i) => i !== originalIndex),
-  })),
+      set((store) => ({
+        users: [
+          ...store.users,
+          { id: uuidv4(), userName, emailAddress, role },
+        ],
+        usersWithIndex: [
+          ...store.usersWithIndex,
+          { userName, emailAddress, role, originalIndex: store.users.length }, // Use the length as the originalIndex
+        ],
+    })),
 
     updateUser: (userId, userName, emailAddress, role) => 
     set((store) => ({
@@ -50,11 +43,16 @@ const useUserStore = create((set) => ({
       ),
     })),
 
-    anchorEl: null,
-    setAnchorEl: (newAnchorEl) => set({ anchorEl: newAnchorEl }),
-    handleClose: () => set({ anchorEl: null }),
-    handleClick: (event) => set({ anchorEl: event.currentTarget }),
+    deleteUser: (userId) => 
+      set((store) => ({
+        users: store.users.filter((user) => user.id !== userId),
+        usersWithIndex: store.usersWithIndex.filter((user) => user.id !== userId),
+    })),
 
+  /* --------------------------------------SEARCH BAR ------------------------------------- */
+  searchQuery: '',
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  handleSearch: (e) => set({ searchQuery: e.target.value }),
     
 }))
 

@@ -78,6 +78,8 @@
   import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
   import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
   import FoundationOutlinedIcon from '@mui/icons-material/FoundationOutlined';
+  import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
+  import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -166,4 +168,6 @@
     SchoolOutlinedIcon,
     SettingsOutlinedIcon,
     FoundationOutlinedIcon,
+    BorderColorOutlinedIcon,
+    DeleteOutlineOutlinedIcon
   };
