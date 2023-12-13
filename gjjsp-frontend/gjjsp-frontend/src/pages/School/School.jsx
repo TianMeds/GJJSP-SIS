@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import * as MUI from '../../import';
 import Layout from '../Components/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
@@ -18,10 +18,70 @@ export default function School({state}) {
     setSchoolPeriod,
     handleOpenSchool,
     handleCloseSchool,
+    editSchool,
+    setEditSchool,
+    selectedSchool,
+    setSelectedSchool,
+    updateSchool,
+    filteredType,
+    setFilteredType,
+    searchQuery,
+    handleSearch,
     addSchool = ((store) => store.addSchool), 
     deleteSchool = ((store) => store.deleteRow),
     schools = ((store) => store.schools.filter((school) => school.state === state)),
   } = useSchoolStore();
+
+  const handleAddSchool = () => {
+    if(editSchool) {
+      updateSchool(selectedSchool.id, schoolName, schoolAddress, schoolType, schoolPeriod);
+      setEditSchool(false);
+    }
+    else{
+      addSchool(schoolName, schoolAddress, schoolType, schoolPeriod);
+    }
+    setSchoolName('');
+    setSchoolAddress('');
+    setSchoolType('');
+    setSchoolPeriod('');
+    handleCloseSchool();
+  }
+
+  const handleEditSchool = (schoolId) => {
+    const selectedSchool = schools.find((school) => school.id === schoolId);
+    if (selectedSchool) {
+      setSelectedSchool(selectedSchool);
+      setSchoolName(selectedSchool.schoolName);
+      setSchoolAddress(selectedSchool.schoolAddress);
+      setSchoolType(selectedSchool.schoolType);
+      setSchoolPeriod(selectedSchool.schoolPeriod);
+      setEditSchool(true);
+      handleOpenSchool();
+    }
+  }
+
+  const handleDeleteSchool = (schoolId) => {
+    const selectedSchool = schools.find((school) => school.id === schoolId);
+    if (selectedSchool) {
+      deleteSchool(selectedSchool.id);
+    }
+  }
+
+  const handleCancelSchool = () => {
+    handleCloseSchool();
+    setSchoolName('');
+    setSchoolAddress('');
+    setSchoolType('');
+    setSchoolPeriod('');
+    setEditSchool(false);
+  }
+
+  const YearOption = () => {
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: currentYear - 2007 }, (_, index) => 2008 + index).reverse();
+    return years.map((year) => <option key={year} value={`SY. ${year}-${year + 1}`}>{`SY. ${year}-${year + 1}`}</option>);
+  }
+
 
   return (
     <Layout>
@@ -46,8 +106,10 @@ export default function School({state}) {
               <MUI.SearchIcon />
             </SearchIconWrapperV2>
             <StyledInputBaseV2
-              placeholder="Search for Scholarship Project or Benefactor"
+              placeholder="Search for School Name or Address"
               inputProps={{ 'aria-label': 'search' }}
+              value={searchQuery}
+              onChange={handleSearch}
             />
           </Search>
                         
@@ -58,13 +120,14 @@ export default function School({state}) {
 
         <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
                   <MUI.Select
-                    value=""
+                    value={filteredType}
+                    onChange={(e) => setFilteredType(e.target.value)}
 
                     native
                   >
-                    <option value="All">All</option>
-                    <option value="Closed for Application">Closed Application</option>
-                    <option value="Open for Application">Open Application</option>
+                    <option value="All">All University</option>
+                    <option value="State University">State University</option>
+                    <option value="Private University">Private University</option>
                   </MUI.Select>
                
               </MUI.FormControl>
@@ -84,9 +147,13 @@ export default function School({state}) {
                       </MUI.TableHead>
                       <MUI.TableBody>
                       {schools
-                        .map((school, index) => (
+                        .filter((school) => filteredType === "All" || school.schoolType === filteredType)
+                        .filter((school) => 
+                        (school.schoolName && school.schoolName.toLowerCase().includes(searchQuery?.toLowerCase())) || 
+                        (school.schoolAddress && school.schoolAddress.toLowerCase().includes(searchQuery?.toLowerCase())))
+                        .map((school) => (
                           (school.schoolName || school.schoolAddress || school.schoolType || school.schoolPeriod) && (
-                      <MUI.TableRow key={index}  className='user' >
+                      <MUI.TableRow key={school.id}  className='user' >
                       <MUI.TableCell sx={{border: 'none'}}  className='schoolName'>{school.schoolName}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='Address'>{school.schoolAddress}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='Type'>{school.schoolType}</MUI.TableCell>
@@ -94,7 +161,7 @@ export default function School({state}) {
                       <MUI.TableCell sx={{border: 'none'}}>
                       <MUI.IconButton
                                 color="inherit"
-                                onClick={() => handleEditUser(user.id)}
+                                onClick={() => handleEditSchool(school.id)}
                                 sx={{ marginLeft: -2 }}
                               >
                                 <MUI.BorderColorOutlinedIcon />
@@ -103,7 +170,7 @@ export default function School({state}) {
 
                               <MUI.IconButton
                                 color="inherit"
-                                onClick={() => handleDeleteUser(user.id)}
+                                onClick={() => handleDeleteSchool(school.id)}
                                 sx={{ textTransform: 'capitalize' }}
                               >
                                 <MUI.DeleteOutlineOutlinedIcon />
@@ -152,10 +219,9 @@ export default function School({state}) {
                         native
                         sx={{mb: 2}}
                       >
-                        <option value="" disabled>Select Role</option>
-                        <option value="Administrator">Scholarship Administrator</option>
-                        <option value="Scholar Manager">Scholar Manager</option>
-                        <option value="Scholar">Scholar</option>
+                        <option value="" disabled>Select School Type</option>
+                        <option value="State University">State University</option>
+                        <option value="Private University">Private University</option>
                       </MUI.Select>
                     
                     </MUI.FormControl>
@@ -168,10 +234,8 @@ export default function School({state}) {
                         onChange={(e) => setSchoolPeriod(e.target.value)} 
                         native
                       >
-                        <option value="" disabled>Select Role</option>
-                        <option value="Administrator">Scholarship Administrator</option>
-                        <option value="Scholar Manager">Scholar Manager</option>
-                        <option value="Scholar">Scholar</option>
+                        <option value="" disabled>Select School Year</option>
+                        {YearOption()}
                       </MUI.Select>
                     
                     </MUI.FormControl>
@@ -180,19 +244,12 @@ export default function School({state}) {
 
                 <MUI.DialogActions>
                   {/* Add action buttons, e.g., Save Changes and Cancel */}
-                  <MUI.Button onClick={handleCloseSchool} color="primary">
+                  <MUI.Button onClick={handleCancelSchool} color="primary">
                     Cancel
                   </MUI.Button>
-                    <MUI.Button onClick={() => { 
-                        addSchool(schoolName, schoolAddress, schoolType, schoolPeriod);
-                        setSchoolName(''),
-                        setSchoolAddress(''),
-                        setSchoolType(''),
-                        setSchoolPeriod(''),
-                        handleCloseSchool();
-                      }}
+                    <MUI.Button onClick={handleAddSchool}
                       color="primary">
-                      Add
+                      {editSchool ? 'Save Changes' : 'Add'}
                     </MUI.Button>
                 </MUI.DialogActions>
 

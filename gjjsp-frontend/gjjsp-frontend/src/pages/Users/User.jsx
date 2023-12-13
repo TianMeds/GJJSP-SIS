@@ -55,7 +55,7 @@ export default function User({state}) {
     else{
       addUser(userName, emailAddress, role);
     }
-     setName('');
+    setName('');
     setEmailAddress('');
     setRole('');
     handleCloseUser();
