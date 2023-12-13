@@ -30,7 +30,7 @@ const useUserStore = create((set) => ({
         ],
         usersWithIndex: [
           ...store.usersWithIndex,
-          { userName, emailAddress, role, originalIndex: store.users.length }, // Use the length as the originalIndex
+          { userName, emailAddress, role, originalIndex: store.users.length },
         ],
     })),
 
