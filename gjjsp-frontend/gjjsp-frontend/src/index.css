@@ -10,5 +10,26 @@
     margin: 0;
 }
 
+.submissionStatus{
+    background: rgba(38, 132, 255, 0.4);
+    color: #1a1a1a;
+    padding: 3px;
+    border-radius: 4px;
+    font-size: small;
+}
 
-
+.SAVED{
+    background: rgba(243, 240, 255, 1);
+    color: #403294;
+    font-weight: bold;  
+}
+.SUBMITTED{
+    color: #216e4e;
+    background: rgba(223, 252, 240, 1);
+    font-weight: bold;  
+}
+.RESUBMISSION{
+    color: #216e4e;
+    background: rgba(223, 252, 240, 1);
+    font-weight: bold;  
+}

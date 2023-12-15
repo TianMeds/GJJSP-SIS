@@ -80,6 +80,12 @@
   import FoundationOutlinedIcon from '@mui/icons-material/FoundationOutlined';
   import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
   import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+  import TablePagination from '@mui/material/TablePagination';
+  import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
+  import StarRoundedIcon from '@mui/icons-material/StarRounded';
+  import InsertCommentOutlinedIcon from '@mui/icons-material/InsertCommentOutlined';
+  import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
+  import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -169,5 +175,11 @@
     SettingsOutlinedIcon,
     FoundationOutlinedIcon,
     BorderColorOutlinedIcon,
-    DeleteOutlineOutlinedIcon
+    DeleteOutlineOutlinedIcon,
+    TablePagination,
+    StarOutlineRoundedIcon,
+    StarRoundedIcon,
+    InsertCommentOutlinedIcon,
+    KeyboardBackspaceIcon,
+    DescriptionOutlinedIcon,
   };

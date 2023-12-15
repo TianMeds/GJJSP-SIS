@@ -13,6 +13,7 @@ import Ask from './pages/AskAI/Ask';
 import School from './pages/School/School';
 import RequireAuth from './pages/RequireAuth';
 import {Routes, Route} from 'react-router-dom'; 
+import ViewSubmission from './pages/Submission/ViewSubmission';
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
       <Route path="profile" element={<Profile/>}/>
       <Route path="ask" element={<Ask/>}/>
       <Route path="school" element={<School/>}/>
+      <Route path="view" element={<ViewSubmission/>}/>
 
 
       {/* Protected Route */}

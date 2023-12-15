@@ -2,9 +2,71 @@ import React from 'react'
 import * as MUI from '../../import';
 import Layout from '../Components/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
-import useDialogStore from '../Components/store';
+import useSubmissionStore from '../Store/SubmissionStore';
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import classNames from 'classnames';
+import faker from 'faker';
 
-export default function Submission() {
+export default function Submission({state}) {
+
+  const {
+    submission,
+    filteredSubmission,
+    setFilteredSubmission,
+    submissions = ((store) => store.submissions.filter((submission) => submission.state === state)),
+    searchQuery,
+    handleSearch,
+  } = useSubmissionStore();
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [pressedRows, setPressedRows] = useState([]);
+  const handleBookmarkClick = (rowId) => {
+    setPressedRows((prevPressedRows) => {
+      if (prevPressedRows.includes(rowId)) {
+        return prevPressedRows.filter((id) => id !== rowId);
+      } else {
+        return [...prevPressedRows, rowId];
+      }
+    });
+  };
+
+  {/* FAKE DATA FOR RENDERING */}
+
+  const scholarshipType = [
+    'Gado - FORMAL Education',
+    'Gado - TechVoc',
+    'Jess - Window of Oppurtunites'
+  ]
+
+  const submissionType = [
+    'New Application',
+    'Renewal of Application',
+    'Graduating Form', 
+  ]
+
+  const submissionStatus= ['SAVED', 'SUBMITTED', 'RESUBMISSION'];
+
+  const generateFakeData = () => {
+    const data = [];
+    for (let i = 1; i <= 50; i++) {
+      data.push({
+        id: i,
+        column1: `Data ${i}`,
+        column2: faker.name.findName(),
+        column3: scholarshipType[i % scholarshipType.length],
+        column4: submissionType[i % submissionType.length],
+        column5: submissionStatus[i % submissionStatus.length],
+        column6: `Data ${i + 250}`,
+      });
+    }
+    return data;
+  };
+
+  const rows = generateFakeData();
+
+  const lastIndex = (page + 1) * rowsPerPage;
   return (
     <Layout>
     <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -16,7 +78,7 @@ export default function Submission() {
           <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Submission</MUI.Typography>
           
           </MUI.Box>
-        </MUI.Grid> 
+      </MUI.Grid> 
 
         <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
           <Search>
@@ -26,6 +88,8 @@ export default function Submission() {
             <StyledInputBaseV2
               placeholder="Search for Scholarship Project or Benefactor"
               inputProps={{ 'aria-label': 'search' }}
+              value={searchQuery}
+              onChange={handleSearch}
             />
           </Search>
                         
@@ -36,18 +100,102 @@ export default function Submission() {
 
         <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
                   <MUI.Select
+                    value={filteredSubmission}
+                    onChange={(e) => setFilteredSubmission(e.target.value)}
                     native
                   >
                     <option value="All">All</option>
-                    <option value="Closed for Application">Closed Application</option>
-                    <option value="Open for Application">Open Application</option>
+                    <option value="SAVED">Saved</option>
+                    <option value="SUBMITTED">Submitted</option>
+                    <option value="RESUBMISSION">Resubmission</option>
                   </MUI.Select>
                
               </MUI.FormControl>
         </MUI.Container>
 
+        <MUI.TableContainer>
+            <MUI.Table>
+              <MUI.TableHead>
+                <MUI.TableRow>
+                  <MUI.TableCell><MUI.StarRoundedIcon></MUI.StarRoundedIcon></MUI.TableCell>
+                  <MUI.TableCell>Scholar's Name</MUI.TableCell>
+                  <MUI.TableCell>Scholarship type</MUI.TableCell>
+                  <MUI.TableCell>Submission</MUI.TableCell>
+                  <MUI.TableCell>Status</MUI.TableCell>
+                  <MUI.TableCell>Action</MUI.TableCell>
+                </MUI.TableRow>
+              </MUI.TableHead>
+              <MUI.TableBody>
+                {rows
+                .slice(page * rowsPerPage, lastIndex)
+                .filter((row) => filteredSubmission === 'All' || row.column5 === filteredSubmission)
+                .filter((row) => row.column2 && row.column2.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((row) => (
+                  <MUI.TableRow key={row.id}>
+                    <MUI.TableCell>
+                      <MUI.IconButton
+                        onClick={() => handleBookmarkClick(row.id)}
+                        aria-label="filter"
+                      >
+                        {pressedRows.includes(row.id) ? (
+                        <MUI.StarRoundedIcon sx={{ color: '#00000' }} />
+                      ) : (
+                        <MUI.StarOutlineRoundedIcon />
+                      )}
+                      </MUI.IconButton>
+                    </MUI.TableCell>
+                    <MUI.TableCell>{row.column2}</MUI.TableCell>
+                    <MUI.TableCell>{row.column3}</MUI.TableCell>
+                    <MUI.TableCell>{row.column4}</MUI.TableCell>
+                    <MUI.TableCell>
+                     <MUI.Typography>
+                     <span className={classNames('submissionStatus', row.column5)}>
+                        {row.column5}
+                      </span>
+                     </MUI.Typography>
+                    </MUI.TableCell>
+                    <MUI.TableCell>
+
+                      <MUI.Button component={Link} to="/view" sx={{ marginLeft: -5, marginRight: 1  }}>
+                        <MUI.Typography sx={{fontSize: 'small'}}>
+                          View
+                        </MUI.Typography>
+                      </MUI.Button>
+
+                    <MUI.IconButton
+                                color="inherit"
+                                onClick={() => handleEditSchool(school.id)}
+                                sx={{ marginLeft: -2 }}
+                              >
+                                <MUI.InsertCommentOutlinedIcon/>
+
+                              </MUI.IconButton>
+
+                            
+                    </MUI.TableCell>
+                  </MUI.TableRow>
+                ))}
+                
+              </MUI.TableBody>
+            </MUI.Table>
+          </MUI.TableContainer>
+
+         <MUI.TablePagination 
+          style={{ margin: 'auto', display: 'flex', justifyContent: 'center' }}
+          rowsPerPageOptions={[5, 10, 25]} // You can customize the options
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(event, newPage) => setPage(newPage === 0 ? 1 : newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+        />
+
     </MUI.Grid>
     </MUI.Container>
   </Layout>
   )
-}
+} 

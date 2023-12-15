@@ -101,7 +101,7 @@ export const SAP_ListItems = (
     <CustomListItem to="/user" icon={<MUI.PeopleIcon />} secondary="Users" />
     <CustomListItem to="/scholarship" icon={<MUI.SchoolIcon />} secondary="Scholarships" />
     <CustomListItem to="/school" icon={<MUI.LocationCityIcon />} secondary="Schools" />
-    <CustomListItem to="/submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
+    <CustomListItem to="/submission" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Submissions" />
     <CustomListItem to="/notification" icon={<MUI.NotificationsIcon />} secondary="Notifications" />
     <CustomListItem to="/report" icon={<MUI.BarChartIcon />} secondary="Reports" />
 
