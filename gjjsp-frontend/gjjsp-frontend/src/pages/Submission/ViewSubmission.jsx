@@ -15,8 +15,20 @@ export default function ViewSubmission() {
         submissionType,
         submissionSent,
         submissionStatus,
+        attachmentOpen,
+        setAttachmentOpen,
+        submissionFormOpen,
+        setSubmissionFormOpen,
     } = useSubmissionStore();
     
+    const handleAttachmentOpen = () => {
+      setAttachmentOpen(!attachmentOpen);
+    }
+
+    const handleSubmissionFormOpen = () => {
+      setSubmissionFormOpen(!submissionFormOpen);
+    }
+
 
   return (
     <Layout>
@@ -95,27 +107,96 @@ export default function ViewSubmission() {
           margin: 5,
         }}
         >
-        <MUI.Box sx={{ flex: 1 }} >
-          <MUI.Typography variant="body1" fontWeight="bold">
-            Scholarship Type:
-          </MUI.Typography>
-          <MUI.Typography>{scholarshipType}</MUI.Typography>
-        </MUI.Box>
-        <MUI.Box sx={{ flex: 1 }}>
-          <MUI.Typography variant="body1" fontWeight="bold">
-            Submission:
-          </MUI.Typography>
-          <MUI.Typography>{submissionType}</MUI.Typography>
-        </MUI.Box>
-        <MUI.Box sx={{ flex: 1 }}>
-          <MUI.Typography variant="body1" fontWeight="bold">
-            Submitted:
-          </MUI.Typography>
-          <MUI.Typography>{submissionSent}</MUI.Typography>
-        </MUI.Box>
+          <MUI.Box sx={{ flex: 1 }} >
+            <MUI.Typography variant="body1" fontWeight="bold">
+              Scholarship Type:
+            </MUI.Typography>
+            <MUI.Typography>{scholarshipType}</MUI.Typography>
+          </MUI.Box>
+          <MUI.Box sx={{ flex: 1 }}>
+            <MUI.Typography variant="body1" fontWeight="bold">
+              Submission:
+            </MUI.Typography>
+            <MUI.Typography>{submissionType}</MUI.Typography>
+          </MUI.Box>
+          <MUI.Box sx={{ flex: 1 }}>
+            <MUI.Typography variant="body1" fontWeight="bold">
+              Submitted:
+            </MUI.Typography>
+            <MUI.Typography>{submissionSent}</MUI.Typography>
+          </MUI.Box>
         </MUI.Box>
 
+      </MUI.Grid>
+
+      <MUI.Grid item xs={12} md={4}>
+        <MUI.Grid style={{ display: 'flex', alignItems: 'center' }}>
+          <MUI.IconButton onClick={handleAttachmentOpen}>
+            <MUI.ExpandMoreIcon />
+          </MUI.IconButton>
+          <MUI.Typography style={{ marginLeft: '5px' }}>Attachment</MUI.Typography>
         </MUI.Grid>
+
+        <MUI.Collapse in={attachmentOpen} timeout="auto" unmountOnExit>
+          <MUI.List disablePadding>
+            <MUI.ListItemButton sx={{ pl: 4 }}>
+              <MUI.ListItemIcon>
+                <MUI.DescriptionOutlinedIcon />
+              </MUI.ListItemIcon>
+              <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
+            </MUI.ListItemButton>
+            <MUI.ListItemButton sx={{ pl: 4 }}>
+              <MUI.ListItemIcon>
+                <MUI.DescriptionOutlinedIcon />
+              </MUI.ListItemIcon>
+              <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
+            </MUI.ListItemButton>
+            <MUI.ListItemButton sx={{ pl: 4 }}>
+              <MUI.ListItemIcon>
+                <MUI.DescriptionOutlinedIcon />
+              </MUI.ListItemIcon>
+              <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
+            </MUI.ListItemButton>
+          </MUI.List>
+        </MUI.Collapse>
+
+      </MUI.Grid>
+
+      <MUI.Grid item xs={12} md={4}>
+        <MUI.Grid style={{ display: 'flex', alignItems: 'center' }}>
+          <MUI.IconButton onClick={handleSubmissionFormOpen}>
+            <MUI.ExpandMoreIcon />
+          </MUI.IconButton>
+          <MUI.Typography style={{ marginLeft: '5px' }}>Form: Renewal of Application</MUI.Typography>
+        </MUI.Grid>
+
+
+        <MUI.Collapse in={submissionFormOpen} timeout="auto" unmountOnExit>
+        <MUI.Grid container spacing={2} style={{ marginTop: '10px', paddingLeft: '30px' }}>
+          <MUI.Grid item xs={12}>
+            <MUI.InputLabel>1. General Weighted Average</MUI.InputLabel> 
+            <br/>
+            <MUI.Paper elevation={3} style={{ background: '#f0f0f0', padding: '10px', marginLeft: '20px',  pointerEvents: 'none', userSelect: 'none', color: '#616161' }}>
+              <MUI.Typography>
+                4.0
+              </MUI.Typography>
+            </MUI.Paper>
+          </MUI.Grid>
+
+          <MUI.Grid item xs={12}>
+            <MUI.InputLabel>2. Add remarks about GWA</MUI.InputLabel>
+            <br/>
+            <MUI.Paper elevation={3} style={{ background: '#f0f0f0', padding: '10px', marginLeft: '20px',  pointerEvents: 'none', userSelect: 'none', color: '#616161' }}>
+              <MUI.Typography>Lorem ipsum dolor sit amet consectetur adipiscing elit Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien    fringilla, mattis ligula consectetur, ultrices mauris. Maecenas vitae mattis tellus. Nullam quis imperdiet augue. Vestibulum auctor ornare leo, non suscipit.
+              </MUI.Typography>
+            </MUI.Paper>
+          </MUI.Grid>
+        </MUI.Grid>
+
+        </MUI.Collapse>
+
+      </MUI.Grid>
+
     </MUI.Container>
     </Layout>
   )

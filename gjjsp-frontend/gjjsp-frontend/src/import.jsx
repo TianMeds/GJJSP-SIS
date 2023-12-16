@@ -86,6 +86,8 @@
   import InsertCommentOutlinedIcon from '@mui/icons-material/InsertCommentOutlined';
   import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
   import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+  import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+  import Collapse from '@mui/material/Collapse';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -182,4 +184,6 @@
     InsertCommentOutlinedIcon,
     KeyboardBackspaceIcon,
     DescriptionOutlinedIcon,
+    ExpandMoreIcon,
+    Collapse
   };
