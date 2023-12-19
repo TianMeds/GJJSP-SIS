@@ -68,19 +68,9 @@ const Layout = ({children}) => {
             >
               <MUI.MenuIcon/>
           </MUI.IconButton>
-          <MUI.Typography variant='h6' sx={{fontWeight: 'bold'}}>{getRoleFromListItems(selectedListItems)}</MUI.Typography>
+          <MUI.Typography variant='body1' sx={{fontWeight: 'bold'}}>{getRoleFromListItems(selectedListItems)}</MUI.Typography>
           <MUI.Box sx={{ flexGrow: 1 }} />
           <MUI.Box sx={{ display:'flex', alignItems: 'center' }}>
-          {/* ------------------------ Search Bar  ----------------------*/}
-          <Search>
-            <SearchIconWrapper>
-              <MUI.SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
           {/* ------------------------ Notification Icon ----------------------*/}
             <MUI.IconButton color="inherit">
               <MUI.Badge badgeContent={4} color="secondary">

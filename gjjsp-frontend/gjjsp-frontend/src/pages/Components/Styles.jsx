@@ -78,6 +78,9 @@ export const Drawer = MUI.styled(MuiDrawer, {
       width: 'auto',
       color: '#032539'
     },
+    [theme.breakpoints.up('xs')]: {
+      marginLeft: '10px'
+    },
     }));
     
     export const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -104,6 +107,12 @@ export const Drawer = MUI.styled(MuiDrawer, {
       color: '#032539',
       border: '2px solid #032539',
       borderRadius: '12px',
+      '&::placeholder': {
+        /* Styles for placeholder text */
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      },
     },
     }));
 

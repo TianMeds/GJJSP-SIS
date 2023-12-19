@@ -98,11 +98,11 @@ export default function User({state}) {
       <MUI.Grid container spacing={3}>
       
         <MUI.Grid item xs={12}>
-          <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-            <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Users</MUI.Typography>
+          <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
+            <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mb: 2 }}>Users</MUI.Typography>
                       
               {/* Add User Button */}
-              <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none' }} onClick={handleOpenUser}>
+              <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none', width: {xs: '100px', md: '200px'}, whiteSpace: 'nowrap' }} onClick={handleOpenUser}>
                 Add Users 
               </MUI.Button>
 

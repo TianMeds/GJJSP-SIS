@@ -89,11 +89,11 @@ export default function School({state}) {
       <MUI.Grid container spacing={3}>
 
       <MUI.Grid item xs={12}>
-        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Schools</MUI.Typography>
+        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
+          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mb: 2 }}>Schools</MUI.Typography>
                     
             {/* Add User Button */}
-            <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none' }} onClick={handleOpenSchool}>
+            <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none', width: {xs: '100px', md: '200px'}, whiteSpace: 'nowrap' }} onClick={handleOpenSchool}>
               Add Schools
             </MUI.Button>
 
@@ -162,18 +162,18 @@ export default function School({state}) {
                       <MUI.IconButton
                                 color="inherit"
                                 onClick={() => handleEditSchool(school.id)}
-                                sx={{ marginLeft: -2 }}
+                                sx={{ marginLeft: -1}}
                               >
-                                <MUI.BorderColorOutlinedIcon />
+                                <MUI.BorderColorOutlinedIcon  />
 
                               </MUI.IconButton>
 
                               <MUI.IconButton
                                 color="inherit"
                                 onClick={() => handleDeleteSchool(school.id)}
-                                sx={{ textTransform: 'capitalize' }}
+                                sx={{ textTransform: 'capitalize', marginLeft: -1 }}
                               >
-                                <MUI.DeleteOutlineOutlinedIcon />
+                                <MUI.DeleteOutlineOutlinedIcon  />
 
                               </MUI.IconButton>
                           {/* Add more options as needed */}

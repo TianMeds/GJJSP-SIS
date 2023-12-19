@@ -104,11 +104,6 @@ export default function Scholarship({state}) {
     setProjectPartner('');
     setEditMode(false);
   };
-
-  useEffect(() => {
-    console.log(selectedProject)
-    console.log(projectName)
-  }, [selectedProject, projectName])
   
   return (
     <Layout>
@@ -116,11 +111,11 @@ export default function Scholarship({state}) {
       <MUI.Grid container spacing={3}>
 
       <MUI.Grid item xs={12}>
-        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Scholarships</MUI.Typography>
+        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}}  margin={2} justifyContent="space-between">
+          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mb: 2 }}>Scholarships</MUI.Typography>
                     
             {/* Add User Button */}
-            <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none' }} onClick={handleOpenScholarship}>
+            <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none', width: {xs: '100px', md: '200px'}, whiteSpace: 'nowrap' }} onClick={handleOpenScholarship}>
               Add Projects 
             </MUI.Button>
 

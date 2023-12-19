@@ -59,6 +59,7 @@ export default function Submission({state}) {
         column4: submissionType[i % submissionType.length],
         column5: submissionStatus[i % submissionStatus.length],
         column6: `Data ${i + 250}`,
+        column7: faker.name.findName(),
       });
     }
     return data;
@@ -123,6 +124,7 @@ export default function Submission({state}) {
                   <MUI.TableCell>Submission</MUI.TableCell>
                   <MUI.TableCell>Status</MUI.TableCell>
                   <MUI.TableCell>Action</MUI.TableCell>
+                  <MUI.TableCell>Responder</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
               <MUI.TableBody>
@@ -156,7 +158,7 @@ export default function Submission({state}) {
                     </MUI.TableCell>
                     <MUI.TableCell>
 
-                      <MUI.Button component={Link} to="/view" sx={{ marginLeft: -5, marginRight: 1  }}>
+                      <MUI.Button component={Link} to="/view" sx={{ marginLeft: -1}}>
                         <MUI.Typography sx={{fontSize: 'small'}}>
                           View
                         </MUI.Typography>
@@ -165,7 +167,7 @@ export default function Submission({state}) {
                     <MUI.IconButton
                                 color="inherit"
                                 onClick={() => handleEditSchool(school.id)}
-                                sx={{ marginLeft: -2 }}
+                                sx={{ marginLeft: 1}}
                               >
                                 <MUI.InsertCommentOutlinedIcon/>
 
@@ -173,6 +175,7 @@ export default function Submission({state}) {
 
                             
                     </MUI.TableCell>
+                    <MUI.TableCell>{row.column7}</MUI.TableCell>
                   </MUI.TableRow>
                 ))}
                 

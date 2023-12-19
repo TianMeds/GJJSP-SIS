@@ -170,9 +170,8 @@ export default function Notification({state}) {
                         <MUI.IconButton
                           color="inherit"
                           onClick={() => handleEditNotif(notification.id)}
-                          sx={{ marginLeft: -2 }}
                         >
-                          <MUI.BorderColorOutlinedIcon />
+                          <MUI.BorderColorOutlinedIcon sx={{marginLeft:  -2}} />
                         </MUI.IconButton>
 
                         <MUI.IconButton
@@ -180,7 +179,7 @@ export default function Notification({state}) {
                           onClick={() => handleDeleteNotif(notification.id)}
                           sx={{ textTransform: 'capitalize' }}
                         >
-                          <MUI.DeleteOutlineOutlinedIcon />
+                          <MUI.DeleteOutlineOutlinedIco />
 
                         </MUI.IconButton>
                       </MUI.TableCell>
@@ -222,7 +221,7 @@ export default function Notification({state}) {
                         <MUI.IconButton
                           color="inherit"
                           onClick={() => handleEditNotif(notification.id)}
-                          sx={{ marginLeft: -2 }}
+                          sx={{ marginLeft: {xs: 1, md: -2}}}
                         >
                           <MUI.BorderColorOutlinedIcon />
                         </MUI.IconButton>
@@ -230,7 +229,7 @@ export default function Notification({state}) {
                         <MUI.IconButton
                           color="inherit"
                           onClick={() => handleDeleteNotif(notification.id)}
-                          sx={{ textTransform: 'capitalize' }}
+                          sx={{ textTransform: 'capitalize', marginLeft: 1  }}
                         >
                           <MUI.DeleteOutlineOutlinedIcon />
 
