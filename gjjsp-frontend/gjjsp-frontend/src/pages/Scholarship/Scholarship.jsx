@@ -3,6 +3,9 @@ import * as MUI from '../../import';
 import Layout from '../Components/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
 import useScholarshipStore from '../Store/ScholarshipStore';
+import {useForm, Controller } from 'react-hook-form';
+import { DevTool } from "@hookform/devtools";
+import { Form } from 'react-router-dom';
 
 const projectPartners = [
   "BACPAT Youth Development Foundation Inc.",
@@ -33,74 +36,72 @@ const projectPartners = [
   "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
 ];
 
+const FormValues ={
+  projectName: '',
+  alias: '',
+  benefactor: '',
+  projectStatus: '',
+  projectPartner: '',
+}
+
 export default function Scholarship({state}) {
+
+  const form = useForm();
+  const { register, control, handleSubmit, formState, reset, validate} = form
+  const { errors } = formState;
+
+  const onSubmit = (data) => {
+    console.log("Form submitted", data);
+
+    if (editMode) {
+      // Handle update logic
+      updateProject(selectedProject.id, data.projectName, data.alias, data.benefactor, data.projectStatus, data.projectPartner);
+      setEditMode(false);
+    } else {
+      // Handle add logic
+      addProject(data.projectName, data.alias, data.benefactor, data.projectStatus, data.projectPartner);
+    }
+    form.reset(FormValues);
+    handleCloseScholarship();
+  }
 
   const {
     handleOpenScholarship,
     handleCloseScholarship,
     project,
-    projectName,
-    alias,
-    benefactor,
-    projectStatus,
-    projectPartner,
-    setProjectName,
-    setAlias,
-    setBenefactor,
-    setProjectStatus,
-    setProjectPartner,
     filteredStatus,
     setFilteredStatus,
     setSelectedProject,
     selectedProject,
     editMode,
     setEditMode,
-    addProject = ((store) => store.addProject), 
     updateProject,
     searchQuery,
     handleSearch,
+    addProject = ((store) => store.addProject), 
     projects = ((store) => store.projects.filter((project) => project.state === state)),
   } = useScholarshipStore();
 
-  const handleAddClick = () => {
-    if (editMode) {
-      // Handle update logic
-      updateProject(selectedProject.id, projectName, alias, benefactor, projectStatus, projectPartner);
-      setEditMode(false);
-    } else {
-      // Handle add logic
-      addProject(projectName, alias, benefactor, projectStatus, projectPartner);
-    }
-  
-    // Reset form fields and close the dialog
-    setProjectName('');
-    setAlias('');
-    setBenefactor('');
-    setProjectStatus('');
-    setProjectPartner('');
-    handleCloseScholarship();
-  };
-
   const handleEditClick = (index) => {
     const selectedProject = projects[index];
+    if(selectedProject) {
     setSelectedProject(selectedProject);
-    setProjectName(selectedProject.projectName);
-    setAlias(selectedProject.alias);
-    setBenefactor(selectedProject.benefactor);
-    setProjectStatus(selectedProject.projectStatus);
-    setProjectPartner(selectedProject.projectPartner);
+    reset({
+      projectName: selectedProject.projectName,
+      alias: selectedProject.alias,
+      benefactor: selectedProject.benefactor,
+      projectStatus: selectedProject.projectStatus,
+      projectPartner: selectedProject.projectPartner,
+    })
     setEditMode(true);
-    handleOpenScholarship(); // Open the dialog
+    handleOpenScholarship(); 
+    }
   };
 
   const handleCancelEdit = () => {
-    handleCloseScholarship();
-    setProjectName('');
-    setAlias('');
-    setBenefactor('');
-    setProjectStatus('');
-    setProjectPartner('');
+    form.reset(FormValues);
     setEditMode(false);
+    handleCloseScholarship();
   };
   
   return (
@@ -108,15 +109,14 @@ export default function Scholarship({state}) {
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <MUI.Grid container spacing={3}>
 
-      <MUI.Grid item xs={12}>
-        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}}  margin={2} justifyContent="space-between">
-          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mb: 2 }}>Scholarships</MUI.Typography>
-                    
-            {/* Add User Button */}
-            <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none', width: {xs: '100px', md: '200px'}, whiteSpace: 'nowrap' }} onClick={handleOpenScholarship}>
-              Add Projects 
-            </MUI.Button>
-
+        <MUI.Grid item xs={12}>
+          <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}}  margin={2} justifyContent="space-between">
+            <MUI.Typography variant="h1" id="tabsTitle">Scholarships</MUI.Typography>
+                      
+              {/* Add User Button */}
+              <MUI.Button variant="contained" color="primary" id="addButton" sx={{width: {xs: '100px'} }} onClick={handleOpenScholarship}>
+                Add Projects 
+              </MUI.Button>
           </MUI.Box>
         </MUI.Grid>
 
@@ -135,22 +135,21 @@ export default function Scholarship({state}) {
           </Search>
                         
 
-        <MUI.IconButton aria-label="filter">
-          <MUI.FilterListIcon />
-        </MUI.IconButton>
+          <MUI.IconButton aria-label="filter">
+            <MUI.FilterListIcon />
+          </MUI.IconButton>
 
-        <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
-                  <MUI.Select
-                    value={filteredStatus}
-                    onChange={(e) => setFilteredStatus(e.target.value)}
-                    native
-                  >
-                    <option value="All">All</option>
-                    <option value="Closed for Application">Closed Application</option>
-                    <option value="Open for Application">Open Application</option>
-                  </MUI.Select>
-               
-              </MUI.FormControl>
+          <MUI.FormControl id="filterControl">
+            <MUI.Select
+              value={filteredStatus}
+              onChange={(e) => setFilteredStatus(e.target.value)}
+              native
+            >
+              <option value="All">All</option>
+              <option value="Closed for Application">Closed Application</option>
+              <option value="Open for Application">Open Application</option>
+            </MUI.Select>
+          </MUI.FormControl>
         </MUI.Container>
 
        
@@ -158,8 +157,8 @@ export default function Scholarship({state}) {
           {projects
            .filter((project) => filteredStatus === "All" || project.projectStatus === filteredStatus)
            .filter((project) => project.projectName && project.projectName.toLowerCase().includes(searchQuery?.toLowerCase() || ''))
-            .map((project, index) => (
-            (project.projectName || project.benefactor || project.projectStatus) && (
+           .map((project, index) => (
+           (project.projectName || project.benefactor || project.projectStatus) && (
             <MUI.Grid key={index} item xs={12} sm={6} md={4}>
               <MUI.Card sx={{ maxWidth: 345, flex: '1 1 30%' }}>
                 <MUI.CardContent sx={{textAlign: 'center', alignItems: 'center' }}>
@@ -200,91 +199,176 @@ export default function Scholarship({state}) {
         </MUI.Grid>
 
          {/* Add User Dialog */}
-         <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="sm">
+         <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* Content of the Dialog */}
-          <MUI.DialogTitle>Add Project</MUI.DialogTitle>
+          <MUI.DialogTitle id="dialogTitle">{editMode ?  'Edit ' + selectedProject.projectName: 'New Project'}</MUI.DialogTitle>
+          <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
             <MUI.DialogContent>
               {/* Form Fields of New User*/}
-              
-                <MUI.InputLabel htmlFor="projectName">Name</MUI.InputLabel>
+              <MUI.Grid id="projectNameGrid">
+                <MUI.InputLabel htmlFor="projectName" id="projectNameLabel">Name</MUI.InputLabel>
                   <MUI.TextField 
-                    value={projectName}
+                    type='text'
+                    id="projectName"
                     placeholder='Project Name'
-                    onChange={(e) => setProjectName(e.target.value)}  
                     fullWidth 
+
+                    {...register('projectName', {
+                      required: 'Project Name is required',
+                      maxLength: {
+                        value: 100,
+                        message: 'Project Name should not exceed 50 characters'
+                      }
+                    })}
                   />
+                  {errors.projectName && (
+                    <p id='errMsg'> 
+                      <MUI.InfoIcon className='infoErr'/> 
+                      {errors.projectName.message}
+                    </p>
+                  )}
+              </MUI.Grid>
+              <MUI.Grid id="aliasGrid">
+                <MUI.InputLabel htmlFor="alias" id="aliasLabel">Alias</MUI.InputLabel>
+                <MUI.TextField 
+                  type='text'
+                  id="alias"
+                  placeholder='Project Alias (e.g., Formal Educ)' 
+                  fullWidth 
+                  {...register('alias', {
+                    required: 'Project Alias is required',
+                    maxLength: {
+                      value: 100,
+                      message: 'Project Alias should not exceed 50 characters'
+                    }
+                  })}
+                />
+                {errors.alias && (
+                  <p id='errMsg'> 
+                    <MUI.InfoIcon className='infoErr'/> 
+                    {errors.alias.message}
+                  </p>
+                )}
+              </MUI.Grid>
 
-                  <MUI.InputLabel htmlFor="alias">Alias</MUI.InputLabel>
-                  <MUI.TextField 
-                    value={alias}
-                    onChange={(e) => setAlias(e.target.value)}
-                    placeholder='Project Alias (e.g., Formal Educ)' 
-                    fullWidth 
-                  />
+              <MUI.Grid id="benefactorGrid">
+                <MUI.InputLabel htmlFor="benefactor" id="benefactorLabel">Benefactor</MUI.InputLabel>
+                <Controller
+                  name="benefactor"
+                  control={control}
+                  defaultValue=''
+                  rules={{
+                    required: 'Benefactor is required',
+                    validate: (value) => value !== '' || "Please select a benefactor"
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
+                      <MUI.Select
+                        {...field}
+                        native
+                      >
+                        <option value="" disabled>Select Benefactor</option>
+                        <option value="Gado (Ganet Management Corporation)">Gado (Ganet Management Corporation)</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.benefactor && (
+                  <p id='errMsg'> 
+                    <MUI.InfoIcon className='infoErr'/> 
+                    {errors.benefactor.message}
+                  </p>
+                )}
+              </MUI.Grid>
 
-                  <MUI.InputLabel htmlFor="benefactor">Benefactor</MUI.InputLabel>
-                  <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
-                    <MUI.Select
-                      value={benefactor}
-                      onChange={(e) => setBenefactor(e.target.value)}
-                      native
-                    >
-                      <option value="" disabled>Select Benefactor</option>
-                      <option value="Gado (Ganet Management Corporation)">Gado (Ganet Management Corporation)</option>
-                    </MUI.Select>
-
-                  </MUI.FormControl>
-
-              <MUI.InputLabel htmlFor="projectStatus">Status</MUI.InputLabel>
-                  <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
-                  <MUI.Select
-                    value={projectStatus}
-                    onChange={(e) => setProjectStatus(e.target.value)}
-                    native
-                  >
-                    <option value="" disabled>Set Project Status</option>
-                    <option value="Closed for Application">Closed for Application</option>
-                    <option value="Open for Application">Open for Application</option>
-                  </MUI.Select>
-
-              </MUI.FormControl>
-
-              <MUI.InputLabel htmlFor="projectPartner">Project Partner/s</MUI.InputLabel>
-                  <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
-                  <MUI.Select
-                    value={projectPartner}
-                    onChange={(e) => setProjectPartner(e.target.value)} 
-                    native
-                  >
-                     <option value="" disabled>Select Project Partner</option>
-                      {projectPartners.map((p, index) => (
-                        <option key={index} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                  </MUI.Select>
-
-              </MUI.FormControl>
+              <MUI.Grid id="projectStatusGrid">
+                <MUI.InputLabel htmlFor="projectStatus" id="projectStatusLabel">Status</MUI.InputLabel>
+                <Controller
+                  name="projectStatus"
+                  control={control}
+                  defaultValue=''
+                  rules={{
+                    required: 'Project Status is required',
+                    validate: (value) => value !== '' || "Please select a project status"
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
+                      <MUI.Select
+                        {...field}
+                        native
+                      >
+                        <option value="" disabled>Select Project Status</option>
+                        <option value="Closed for Application">Closed for Application</option>
+                        <option value="Open for Application">Open for Application</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.projectStatus && (
+                  <p id='errMsg'> 
+                    <MUI.InfoIcon className='infoErr'/> 
+                    {errors.projectStatus.message}
+                  </p>
+                )}
+              </MUI.Grid>
+                
+              <MUI.Grid id="projectPartnerGrid">
+              <MUI.InputLabel htmlFor="projectPartner" id="projectPartnerLabel">Project Partner/s</MUI.InputLabel>
+                <Controller
+                  name="projectPartner"
+                  control={control}
+                  defaultValue=''
+                  rules={{
+                    required: 'Project Partner is required',
+                    validate: (value) => value !== '' || "Please select a project partner"
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
+                      <MUI.Select
+                        {...field}
+                        native
+                      >
+                        <option value="" disabled>Select Project Partner</option>
+                        {projectPartners.map((p, index) => (
+                          <option key={index} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.projectPartner && (
+                  <p id='errMsg'> 
+                    <MUI.InfoIcon className='infoErr'/> 
+                    {errors.projectPartner.message}
+                  </p>
+                )}
+              </MUI.Grid>
                     
                     {/* Add more form fields as needed */}
             </MUI.DialogContent>
 
               <MUI.DialogActions>
                 {/* Add action buttons, e.g., Save Changes and Cancel */}
-                <MUI.Button onClick={
-                handleCancelEdit
-                } color="primary">
+                <MUI.Button onClick={handleCancelEdit} 
+                color="primary"
+                id='Button'
+                >
                   Cancel
                 </MUI.Button>
                   <MUI.Button 
                     color="primary"
-                    onClick={handleAddClick}>
+                    variant='contained'
+                    type='submit'
+                    id='Button'
+                  >
                     {editMode ? 'Save Changes' : 'Add'}
                   </MUI.Button>
               </MUI.DialogActions>
 
         </MUI.Dialog>
-        
+        <DevTool control={control} />
       </MUI.Grid>
       </MUI.Container>
   </Layout>

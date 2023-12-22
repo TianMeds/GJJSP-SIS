@@ -88,7 +88,7 @@ export default function User({state}) {
       
         <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
-            <MUI.Typography variant="h1" id="userTitle">Users</MUI.Typography>
+            <MUI.Typography variant="h1" id="tabsTitle">Users</MUI.Typography>
                       
               {/* Add User Button */}
               <MUI.Button variant="contained" color="primary" id='addButton' sx={{width: {xs: '100px'}}} onClick={handleOpenUser}>
@@ -210,7 +210,10 @@ export default function User({state}) {
                       })}
                     />
                     {errors.userName && (
-                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.userName?.message}</p>
+                     <p id='errMsg'> 
+                      <MUI.InfoIcon className='infoErr'/> 
+                      {errors.userName?.message}  
+                     </p>
                     )}
                 </MUI.Grid>
 
