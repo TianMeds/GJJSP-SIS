@@ -2,8 +2,6 @@ import React from 'react'
 import * as MUI from '../../import';
 import Layout from '../Components/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../Components/Styles';
-import useDialogStore from '../Components/store';
-import { useEffect } from 'react';
 import useScholarshipStore from '../Store/ScholarshipStore';
 
 const projectPartners = [

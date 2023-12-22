@@ -21,26 +21,28 @@ function App() {
     <Routes>
       {/* Public Route */}
       <Route path="login" element={<Login/>}/>
-      <Route path="user" element={<User/>}/>
-      <Route path="scholar" element={<Scholar/>}/>
-      <Route path="scholarship" element={<Scholarship/>}/>
-      <Route path="submission" element={<Submission/>}/>
-      <Route path="report" element={<Report/>}/>
-      <Route path="export" element={<Export/>}/>
-      <Route path="create" element={<Create/>}/>
-      <Route path="profile" element={<Profile/>}/>
-      <Route path="ask" element={<Ask/>}/>
-      <Route path="school" element={<School/>}/>
-      <Route path="view" element={<ViewSubmission/>}/>
 
 
       {/* Protected Route */}
-
-      {/* <Route element={<RequireAuth/>}> */}
-      <Route path="/" element={<Dashboard/>}/>
-      <Route  path="notification" element={<Notification/>}/>
-      {/* </Route> */}
-      
+        {/*   
+       <Route element={<RequireAuth/>}> 
+       */}
+        <Route path="/" element={<Dashboard/>}/>
+        <Route  path="notification" element={<Notification/>}/>
+        <Route path="user" element={<User/>}/>
+        <Route path="scholar" element={<Scholar/>}/>
+        <Route path="scholarship" element={<Scholarship/>}/>
+        <Route path="submission" element={<Submission/>}/>
+        <Route path="report" element={<Report/>}/>
+        <Route path="export" element={<Export/>}/>
+        <Route path="create" element={<Create/>}/>
+        <Route path="profile" element={<Profile/>}/>
+        <Route path="ask" element={<Ask/>}/>
+        <Route path="school" element={<School/>}/>
+        <Route path="view" element={<ViewSubmission/>}/>
+        {/*
+       </Route> 
+        */}
     </Routes>
   )
 }

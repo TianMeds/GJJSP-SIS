@@ -92,6 +92,8 @@
   import Stack from '@mui/system/Stack';
   import Snackbar from '@mui/material/Snackbar';
   import MuiAlert from '@mui/material/Alert';
+  import Slide from '@mui/material/Slide';
+  import Fade from '@mui/material/Fade';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -193,5 +195,7 @@
     Collapse,
     Stack,
     Snackbar,
-    MuiAlert
+    MuiAlert,
+    Slide,
+    Fade,
   };

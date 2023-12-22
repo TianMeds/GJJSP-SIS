@@ -20,8 +20,15 @@ export default function Login() {
   const location = useLocation();
   const from  = location.state?.from?.pathname || '/';
   const [errMsg, setErrMsg] = useState('');
-  const { register, control, handleSubmit, formState: { errors }, getValues } = useForm();
-
+  
+  const { 
+    register, 
+    control, 
+    handleSubmit, 
+    formState: { errors }, 
+    getValues 
+  } = useForm();
+  
   const onSubmit = async (data, event) => {
     try {
       const data = getValues();
@@ -63,19 +70,20 @@ export default function Login() {
       console.log(error.response.data)
 
       if(!error?.response) {
-        setErrMsg('No Server Response');
+        console.log('No Server Response');
       }
       else if (error.response?.status === 400) {
-        setErrMsg('Missing Email or Password');
+        console.log('Missing Email or Password');
       }
       else if (error.response?.status === 401) {
-        setErrMsg('Unauthorized');
+        console.log('Unauthorized');
       }
       else{
-        setErrMsg('Login Failed')
+        console.log('Login Failed')
       }
     }
   }
+
   // const onSubmit = async (data) => {
     //const { email_address, password } = data;
 
@@ -207,29 +215,30 @@ export default function Login() {
               Welcome back! Please enter your details.
             </MUI.Typography>
           <br/>
-          {/* Email Textfield  */}
-              <MUI.Box component="form" sx={{ mt: 1,  width: '100%', }} onSubmit={onSubmit}>
+          {/* Email Textfield  */} 
+              <MUI.Box component="form" sx={{ mt: 1,  width: '100%', }} onSubmit={handleSubmit(onSubmit)} method='post' >
                 <MUI.Grid item>
                   <Controller
+                    margin="dense"
                     name="email_address"
                     control={control}
+                    defaultValue=""
                     rules={{ required: true, pattern: EMAIL_REGEX  }}
                     render={({ field }) => (
-                    <MUI.TextField
-                      margin="dense"
-                      fullWidth
-                      id="email_address"
-                      name='email_address'
-                      placeholder='Email'
-                      autoFocus
-                      variant="standard"
-                      {...field}
-                    />
+                      <MUI.TextField
+                        required
+                        fullWidth
+                        id="email_address"
+                        name='email_address'
+                        placeholder='Email'
+                        autoComplete='off'
+                        variant="standard"
+                        {...field}
+                      />
                     )}
                   />
                     {errors?.email_address?.type === 'required' && (
                       <p id="errMsg">
-                        {' '}
                         <MUI.InfoIcon className="infoErr" /> Email address is required
                       </p>
                     )}
@@ -246,35 +255,36 @@ export default function Login() {
                   <Controller
                     name="password"
                     control={control}
+                    defaultValue=""
                     rules={{ required: true, pattern: PWD_REGEX  }}
                     render={({ field }) => (
-                  <MUI.TextField
-                    variant='standard'
-                    margin="dense"
-                    fullWidth
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    placeholder='Password'
-                    {...field}
-                    InputProps={{
-                      endAdornment: (
-                        <MUI.InputAdornment position="end">
-                          <MUI.IconButton onClick={handleTogglePassword} edge="end">
-                            {showPassword ? 
-                            <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
-                            }
-                          </MUI.IconButton>
-                        </MUI.InputAdornment>
-                      ),
-                    }} 
+                      <MUI.TextField
+                        variant='standard'
+                        margin="dense"
+                        fullWidth
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        placeholder='Password'
+                        {...field}
+                        InputProps={{
+                          endAdornment: (
+                            <MUI.InputAdornment position="end">
+                              <MUI.IconButton onClick={handleTogglePassword} edge="end">
+                                {showPassword ? 
+                                <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                                }
+                              </MUI.IconButton>
+                            </MUI.InputAdornment>
+                          ),
+                        }} 
+                      />
+                    )}
                   />
-                )}
-                />
                         {errors?.password?.type === 'required' && (
-                      <p id="errMsg">
+                      <p id="errMsg" sx={{fontSize: 5}}>
                         {' '}
-                        <MUI.InfoIcon className="infoErr" /> This field is required
+                        <MUI.InfoIcon className="infoErr" /> Password field is required
                       </p>
                     )}
                     {errors?.password?.type === 'pattern' && (
