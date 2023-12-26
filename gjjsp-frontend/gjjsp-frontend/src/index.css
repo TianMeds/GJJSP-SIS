@@ -32,7 +32,11 @@
 #aliasGrid,
 #benefactorGrid,
 #projectStatusGrid,
-#projectPartnerGrid{
+#projectPartnerGrid,
+#schoolNameGrid,
+#schoolAddressGrid,
+#schoolTypeGrid,
+#schoolPeriodGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -42,7 +46,11 @@
 #aliasLabel,
 #benefactorLabel,
 #projectStatusLabel,
-#projectPartnerLabel{
+#projectPartnerLabel,
+#schoolNameLabel,
+#schoolAddressLabel,
+#schoolTypeLabel,
+#schoolPeriodLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -54,7 +62,11 @@
 #aliasLabel::after,
 #benefactorLabel::after,
 #projectStatusLabel::after,
-#projectPartnerLabel::after {
+#projectPartnerLabel::after,
+#schoolNameLabel::after,
+#schoolAddressLabel::after,
+#schoolTypeLabel::after,
+#schoolPeriodLabel::after {
     content: " *";
     color: red; 
 }   

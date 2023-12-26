@@ -1,8 +1,8 @@
 import React from 'react'
-import * as MUI from '../../import';
-import Layout from '../Components/Layout';
+import * as MUI from '../../../import';
+import Layout from '../../Components/Layout';
 
-export default function Report() {
+export default function ScholarDashboard() {
   return (
     <Layout>
     <MUI.Grid item xs={12} md={8} lg={9}>
@@ -15,7 +15,7 @@ export default function Report() {
           }}
         >
           <MUI.Typography>
-            Report
+            Scholar Dashboard
           </MUI.Typography>
         </MUI.Paper>
     </MUI.Grid>

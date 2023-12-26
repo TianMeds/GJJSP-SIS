@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Scholar;
+use App\Models\Role;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
@@ -60,16 +61,17 @@ class AuthController extends Controller
             'scholar_status_id' => $fields['scholar_status_id'],
         ]);
 
-        $token = $user->createToken('mytoken')->plainTextToken;
+        $remmeber_token = $user->createToken('mytoken')->plainTextToken;
 
         $response = [
             'user' => $user,
-            'token' => $token
+            'remember_token' => $remember_token
         ];
         return response($response, 201);
     }
 
     public function login(Request $request){
+
         $fields = $request->validate([
             'email_address' => 'required|string',
             'password' => 'required|string'
@@ -81,20 +83,38 @@ class AuthController extends Controller
         // Check password
         if(!$user || !Hash::check($fields['password'], $user->password)){
             return response([
-                'message' => 'Invalid credentials'
+                'status' => false,
+                'message' => 'Incorrect Password',
+                'method' => 'POST',
             ], 401);
         }
-        $token = $user->createToken('mytoken')->plainTextToken;
+
+        $role = $user->role_id;
+
+        $roles_name = [
+            1 => 'Scholar Administrator',
+            2 => 'Scholar Manager',
+            3 => 'Scholar'
+        ];
+
+        $roleName = $roles_name[$role] ?? 'unknown';
+        
+        $remember_token = $user->createToken('remember_token', ['*'])->plainTextToken;
         $response = [
             'user' => $user,
-            'token' => $token
+            'roles_name' => $roleName,
+            'remember_token' => $remember_token
         ];
         return response($response, 201);
     }
     public function logout(Request $request){
-        auth()->user()->tokens()->delete();
-        return [
-            'message' => 'Logged out'
-        ];
+        $user = auth()->user();
+        $user->currentAccessToken()->delete();
+
+        return response([
+            'status' => true,
+            'message' => 'Successfully your logged Out',
+            'method' => 'DELETE',
+        ], 200);
     }
 }

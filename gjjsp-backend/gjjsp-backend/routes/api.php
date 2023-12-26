@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScholarController; 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 //Public Route
 Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
 Route::apiResource('/users', UserController::class)->only(['index', 'show']);
+Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);
 Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
 Route::get('/users/search/{firstname}', [UserController::class, 'search']);
 Route::post('/register', [AuthController::class, 'register']);

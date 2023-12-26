@@ -1,15 +1,22 @@
-import { useLocation, Navigate, Outlet } from 'react-router-dom';
+import { useLocation,Navigate, Outlet} from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
-const RequireAuth = () => {
-    const { auth } = useAuth();
-    const location = useLocation();
 
-    return ( 
-        auth?.user 
-        ? <Outlet />
-        : <Navigate to={{pathname: '/login', state: {from: location}}} replace />
-    );
-}
+    const RequireAuth = ({ allowedRoles }) => {
+      const { auth } = useAuth();
+      const location = useLocation();
 
-export default RequireAuth;
+
+      return (
+        auth?.role_id
+        ? (
+        allowedRoles.some(role => role === auth.role_id)
+          ? <Outlet />
+          : auth.user
+            ? <Navigate to="/unauthorized" state={{from: location }} replace />
+            : <Navigate to="/login" state={{ from: location }} replace />
+          )
+        : <Navigate to="/login" state={{from: location }} replace />
+      );
+    }
+    export default RequireAuth;

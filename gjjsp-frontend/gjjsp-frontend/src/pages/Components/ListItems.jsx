@@ -103,7 +103,6 @@ export const SAP_ListItems = (
     <CustomListItem to="/school" icon={<MUI.LocationCityIcon />} secondary="Schools" />
     <CustomListItem to="/submission" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Submissions" />
     <CustomListItem to="/notification" icon={<MUI.NotificationsIcon />} secondary="Notifications" />
-    <CustomListItem to="/report" icon={<MUI.BarChartIcon />} secondary="Reports" />
 
   {/* -------------------- Quick Actions Drawer Option --------------------*/}
   <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
@@ -133,9 +132,9 @@ export const SP_ListItems = (
     Main
   </MUI.ListSubheader>
 
-    <CustomListItem to="/" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
-    <CustomListItem to="/profile" icon={<MUI.PersonIcon />} secondary="Profile" />
-    <CustomListItem to="/submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
+    <CustomListItem to="/scholar-dashboard" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
+    <CustomListItem to="/scholar-profile" icon={<MUI.PersonIcon />} secondary="Profile" />
+    <CustomListItem to="/scholar-submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
   
   {/* -------------------- Quick Actions Drawer Option --------------------*/}
   <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>

@@ -1,146 +1,114 @@
 import React from 'react';
 import * as MUI from '../../import';
-import BGIMG from '../../assets/SchoolBG1.jpg';
 import axios from '../../api/axios';
+import BGIMG from '../../assets/SchoolBG1.jpg';
 import useAuth from '../../hooks/useAuth';
+import useLoginStore from '../Store/LoginStore'
 import { useForm, Controller } from 'react-hook-form';
-import { useState } from "react";
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation} from 'react-router-dom';
+import { DevTool } from '@hookform/devtools';
 
 
 const defaultTheme = MUI.createTheme();
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-const LOGIN_URL = '/auth';
+const LOGIN_URL = '/api/login'
 
 export default function Login() {
   const { setAuth } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
-  const from  = location.state?.from?.pathname || '/';
-  const [errMsg, setErrMsg] = useState('');
+  const from = location.state?.from?.pathname || "/";
+
+  const {
+    errMsg,
+    setErrMsg,
+    loading,
+    setLoading,
+    showPassword,
+    setShowPassword,
+    authenticated,
+    setAuthenticated,
+    handleTogglePassword,
+  } = useLoginStore();
   
-  const { 
-    register, 
-    control, 
-    handleSubmit, 
-    formState: { errors }, 
-    getValues 
-  } = useForm();
+  const form = useForm();
+  const { register, handleSubmit, control, formState } = form;
+  const { errors } = formState;
+ 
+  //Accepted Domains for the email
+  const isSupportedDomain = (email) => {
+    const supportedDomains = ['yahoo.com', 'gmail.com', 'outlook.com'];
+    const educationalDomainRegex = /@[a-zA-Z0-9.-]+\.(edu(\.[a-zA-Z]{2})?|[a-zA-Z]{2}\.[a-zA-Z]{2})$/;
+    const domain = email.split('@')[1];
+    return supportedDomains.includes(domain) || educationalDomainRegex.test(email);
+  };
   
+  const csrf = () => axios.get("/sanctum/csrf-cookie")
+
   const onSubmit = async (data, event) => {
+    event.preventDefault(); // Prevent default form submission behavior
+    setLoading(true);
+    await csrf()
     try {
-      const data = getValues();
-      const config  = {
+      const config = {
         headers: {
-          'Content-Type': 'application/json',
-        },
+          "Content-type": "application/json",
+        }
       };
       const postData = {
         email_address: data.email_address,
         password: data.password,
       };
-      console.log(postData);
-      const response  = await axios.post(
-        "http://gjjsp-backend/api/login",
+      const response = await axios.post(
+        LOGIN_URL,
         JSON.stringify(postData),
         config
-      );
-      console.log(response.data);
-        const responseData = response.data.data;
-        set(() => ({
-          userData: {
-            first_name: responseData.user.first_name,
-            middle_name: responseData.user.middle_name,
-            last_name: responseData.user.last_name,
-            user_mobile_num: responseData.user.user_mobile_num,
-            role: responseData.user.role_id,
-            user_status: responseData.user.user_status,
-          },
-          isAuthenticated: true,
-        }));
-        console.log(response.data);
-        const accessToken = response?.data?.accessToken;
-        const roles = response?.data?.roles;
-        setAuth({postData, accessToken, roles});
-        navigate(from, {replace: true});
-    }
-    catch(error) {
-      console.log(error.response.data)
+      ); 
 
-      if(!error?.response) {
-        console.log('No Server Response');
+      const { remember_token, user, roles_name } = response.data;
+      console.log(JSON.stringify(response?.data));
+      
+      const role_id = response?.data?.user?.role_id;
+
+      // Store the token in localStorage for subsequent API requests
+      localStorage.setItem('token', remember_token);
+
+      setLoading(false);
+
+      // Set the authenticated user state using setAuth from your useAuth hook
+      setAuth({ user, remember_token, roles_name, role_id});
+
+      const rolePath = role_id === 1  ? '/'  : role_id === 2 ? '/' : role_id === 3 ? '/scholar-dashboard' : '/login';
+  
+      // Navigate the user to the intended route (from variable contains the intended route)
+      navigate(rolePath);
+      
+    } catch (err) {
+      setLoading(false);
+      if(err.response?.status === 422){
+        setErrMsg('Email address and password are required');
       }
-      else if (error.response?.status === 400) {
-        console.log('Missing Email or Password');
+      else if(err.response?.status === 409){
+        setErrMsg('Email Address already been taken');
       }
-      else if (error.response?.status === 401) {
-        console.log('Unauthorized');
+      else if(err.response?.status === 500){
+        setErrMsg('Server Error');
+      }
+      else if (err.response?.status === 401) {
+        setErrMsg('Login failed. Please check your credentials and try again.');
       }
       else{
-        console.log('Login Failed')
+        setErrMsg('Network error occurred. Please try again.');
       }
     }
   }
 
-  // const onSubmit = async (data) => {
-    //const { email_address, password } = data;
-
-    //if (!EMAIL_REGEX.test(email_address) || !PWD_REGEX.test(password)) {
-    //  setErrMsg('Invalid Entry');
-   //   return;
-  //  }
-   // setErrMsg('');
-
-    //try {
-   //   const response = await axios.post(
-    //    LOGIN_URL,
-    //    JSON.stringify({
-    //      email_address,
-    //      password,
-    //    }),
-     //   {
-    //      headers: {
-   //         'Content-Type': 'application/json',
-    //      },
-   //       withCredentials: true, // Include this line if needed
-  //      }
-  //    );
-
-      // Handle the login response as needed
- //     console.log(response.data);
- //     console.log(response.accessToken);
- //     console.log(JSON.stringify(response))
- //   }
- //   catch (err) {
-     // Handle errors specific to the login logic
- //     if(!err?.response) {
-  //      setErrMsg('No Server Response');
-  //    }
-  //    else if(err.response?.status === 409) {
- //     setErrMsg('Email Address already been taken');
- //     }
- //     else if(err.response?.status === 500) {
- //       setErrMsg('Server Error');
- //     }
-//      else {
-//        setErrMsg('Login failed. Please check your credentials and try again.');
- //     }
- //   }
-//  };
 
 
-  {/* Show Password using Use State this is for the Icon  */}
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleTogglePassword = () => {
-    setShowPassword(!showPassword);
-  };
 
   {/* When its size to a Tablet mode the Left Grid display none  */}
   const isMobile = MUI.useMediaQuery('(max-width:768px)');
-
 
   return (
     <MUI.ThemeProvider theme={defaultTheme}>
@@ -149,37 +117,37 @@ export default function Login() {
     <MUI.Grid container component="main" sx={{ height: '100vh' }}>
       <MUI.CssBaseline />
       {!isMobile && (
-      <MUI.Grid
-        container 
-        alignItems='center' 
-        justifyContent='center'
-        item
-        xs={false}
-        sm={12}
-        md={7}
-        sx={{
-            display: 'flex', // Use flex container
-            flexDirection: 'column', // Stack items vertically
-            alignItems: 'center', // Center items horizontally
-            justifyContent: 'center', // Center items vertically
-            backgroundImage: `url(${BGIMG})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: (t) =>
-              t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            textAlign: 'center',
-            padding: '2rem', // Add padding to the content
-          }}
-      >
-      <br />
-      <MUI.Typography variant="h2" color="background.paper" paragraph>
-        Welcome to Gado and Jess <br/> Jalandoni Scholarship Program
-      </MUI.Typography>
-      <MUI.Typography variant="h5" color="background.paper" paragraph>
-        Empowering dreams through education.
-      </MUI.Typography>
-      </MUI.Grid>
+        <MUI.Grid
+          container 
+          alignItems='center' 
+          justifyContent='center'
+          item
+          xs={false}
+          sm={12}
+          md={7}
+          sx={{
+              display: 'flex', // Use flex container
+              flexDirection: 'column', // Stack items vertically
+              alignItems: 'center', // Center items horizontally
+              justifyContent: 'center', // Center items vertically
+              backgroundImage: `url(${BGIMG})`,
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: (t) =>
+                t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              textAlign: 'center',
+              padding: '2rem', // Add padding to the content
+            }}
+        >
+          <br />
+          <MUI.Typography variant="h2" color="background.paper" paragraph>
+            Welcome to Gado and Jess <br/> Jalandoni Scholarship Program
+          </MUI.Typography>
+          <MUI.Typography variant="h5" color="background.paper" paragraph>
+            Empowering dreams through education.
+          </MUI.Typography>
+        </MUI.Grid>
       )}
 
       {/* Left Grid is the Login Form  */}
@@ -189,6 +157,25 @@ export default function Login() {
         sx={{
           p: 3,
         }}>
+
+        {loading && (
+            <MUI.Backdrop
+            open={loading}
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            >
+              <MUI.Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: (theme) => theme.zIndex.drawer + 2,
+                }}
+              >
+                <MUI.CircularProgress />
+              </MUI.Box>
+            </MUI.Backdrop>
+          )}
         
         {errMsg && (
         <p id="errMsg" style={{ color: 'red' }}>
@@ -216,115 +203,104 @@ export default function Login() {
             </MUI.Typography>
           <br/>
           {/* Email Textfield  */} 
-              <MUI.Box component="form" sx={{ mt: 1,  width: '100%', }} onSubmit={handleSubmit(onSubmit)} method='post' >
+              <MUI.Box component="form" sx={{ mt: 1,  width: '100%', }}  onSubmit={(event) => handleSubmit((data) => onSubmit(data, event))(event)} method='post' >
                 <MUI.Grid item>
-                  <Controller
+                  <MUI.TextField
+                    variant='standard'
                     margin="dense"
-                    name="email_address"
-                    control={control}
-                    defaultValue=""
-                    rules={{ required: true, pattern: EMAIL_REGEX  }}
-                    render={({ field }) => (
-                      <MUI.TextField
-                        required
-                        fullWidth
-                        id="email_address"
-                        name='email_address'
-                        placeholder='Email'
-                        autoComplete='off'
-                        variant="standard"
-                        {...field}
-                      />
-                    )}
+                    fullWidth
+                    type='email'
+                    id="email_address"
+                    autoComplete='off'
+                    placeholder='Email Address'
+                    {...register('email_address', { 
+                      pattern: {
+                        value: EMAIL_REGEX,
+                        message: 'Invalid email address'
+                      },
+                      validate: 
+                        value => isSupportedDomain(value) || 'Email domain not supported',
+                      required: {
+                        value: true,
+                        message: 'Email address is required'
+                      },
+                    })}
                   />
-                    {errors?.email_address?.type === 'required' && (
-                      <p id="errMsg">
-                        <MUI.InfoIcon className="infoErr" /> Email address is required
-                      </p>
-                    )}
-                    {errors?.email_address?.type === 'pattern' && (
-                      <p id="errMsg">
-                        {' '}
-                        <MUI.InfoIcon className="infoErr" /> Email Address is not valid
-                      </p>
-                    )}
+                  {errors.email_address &&(
+                    <p id="errMsg">
+                      <MUI.InfoIcon className="infoErr" /> 
+                      {errors.email_address.message}
+                    </p>
+                  )}
                 </MUI.Grid>
                 <br/> <br/>
                 {/* Password Textfield  */}
                 <MUI.Grid item>
-                  <Controller
-                    name="password"
-                    control={control}
-                    defaultValue=""
-                    rules={{ required: true, pattern: PWD_REGEX  }}
-                    render={({ field }) => (
-                      <MUI.TextField
-                        variant='standard'
-                        margin="dense"
-                        fullWidth
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        id="password"
-                        placeholder='Password'
-                        {...field}
-                        InputProps={{
-                          endAdornment: (
-                            <MUI.InputAdornment position="end">
-                              <MUI.IconButton onClick={handleTogglePassword} edge="end">
-                                {showPassword ? 
-                                <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
-                                }
-                              </MUI.IconButton>
-                            </MUI.InputAdornment>
-                          ),
-                        }} 
-                      />
-                    )}
+                  <MUI.TextField
+                    variant='standard'
+                    margin="dense"
+                    fullWidth
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    placeholder='Password'
+                    InputProps={{
+                      endAdornment: (
+                        <MUI.InputAdornment position="end">
+                          <MUI.IconButton onClick={handleTogglePassword} edge="end">
+                            {showPassword ? 
+                            <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                            }
+                          </MUI.IconButton>
+                        </MUI.InputAdornment>
+                      ),
+                    }} 
+                    {...register('password', { 
+                      required: {
+                        value: true,
+                        message: 'Password is required'
+                      },
+                    })}
                   />
-                        {errors?.password?.type === 'required' && (
-                      <p id="errMsg" sx={{fontSize: 5}}>
-                        {' '}
-                        <MUI.InfoIcon className="infoErr" /> Password field is required
-                      </p>
-                    )}
-                    {errors?.password?.type === 'pattern' && (
-                      <p id="errMsg">
-                        {' '}
-                        <MUI.InfoIcon className="infoErr" /> Must include uppercase and lowercase letters, a
-                        number.
-                      </p>
-                    )}
+                  {errors.password &&(
+                    <p id="errMsg">
+                      <MUI.InfoIcon className="infoErr" /> 
+                      {errors.password.message}
+                    </p>
+                  )}
                 </MUI.Grid>
 
             <br/>
 
-            {/* Remember Me Checkbox  */}
-            <MUI.FormControlLabel
-              control={<MUI.Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
+              {/* Remember Me Checkbox  */}
+              <MUI.FormControlLabel
+                control={<MUI.Checkbox value="remember" color="primary" />}
+                label="Remember me"
+              />
 
-            {/* Login Button  */}
-            <MUI.Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2, color: 'white', backgroundColor: '#311b92', borderRadius: '10px' }}
-            >
-              Sign In
-            </MUI.Button>
+              {/* Login Button  */}
+              <MUI.Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2, color: 'white', backgroundColor: '#311b92', borderRadius: '10px' }}
+              >
+                Sign In
+              </MUI.Button>
 
             {/* Forgot Password Link  */}
-            <MUI.Grid container>
-              <MUI.Grid item xs>
-                <MUI.Link href="#" variant="body2" style={{ textDecoration: 'none' }}>
-                  Forgot password?
-                </MUI.Link>
+              <MUI.Grid container>
+                <MUI.Grid item xs>
+                  <MUI.Link href="#" variant="body2" style={{ textDecoration: 'none' }}>
+                    Forgot password?
+                  </MUI.Link>
+                </MUI.Grid>
               </MUI.Grid>
-            </MUI.Grid>
+
+              
           </MUI.Box>
         </MUI.Box>
       </MUI.Grid>
+      <DevTool control={control} />
     </MUI.Grid>
   </MUI.ThemeProvider>
   )

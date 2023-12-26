@@ -19,10 +19,12 @@ return new class extends Migration
             $table->string('user_mobile_num');
             $table->string('email_address')->unique();
             $table->string('password');
-            $table->integer('role_id');
+            $table->unsignedBigInteger('role_id');
             $table->enum('user_status',['Active','Inactive','Suspended','Deleted']);
             $table->rememberToken();
             $table->timestamps();
+
+            $table->foreign('role_id')->references('id')->on('roles');
         });
     }
 

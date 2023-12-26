@@ -3,30 +3,49 @@ import * as MUI from '../../import';
 import { useState } from "react";
 import { SMP_ListItems, SAP_ListItems, SP_ListItems } from '../Components/ListItems';
 import { AppBar, Drawer, drawerWidth, customColor, Search, SearchIconWrapper, StyledInputBase } from '../Components/Styles';
+import useAuth from '../../hooks/useAuth';
+import axios from '../../api/axios';
+import useLoginStore from '../Store/LoginStore';
 
 const defaultTheme = MUI.createTheme();
+const LOGOUT_URL = "/api/logout"
 
-
-const getRoleFromListItems = (listItems) => {
-    if (listItems === SMP_ListItems) {
-      return "Scholar Manager Portal";
-    } else if (listItems === SAP_ListItems) {
-      return "Scholarship Administrator Portal";
-    } else if (listItems === SP_ListItems) {
-      return "Scholar Portal";
-    }
-    // Default case, in case the role is not recognized
-    return "Default Role";
-  };
 
 
 const Layout = ({children}) => {
-
-    const [selectedListItems, setSelectedListItems] = useState(SAP_ListItems);
+    const {auth, setAuth } = useAuth();
     const isSmallScreen = MUI.useMediaQuery('(max-width:600px)');
     const [open, setOpen] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
-  
+
+    const {
+      loading,
+      setLoading,
+    } = useLoginStore();
+
+    const last_name = auth?.user?.last_name || '';
+    const role_id = auth?.user?.role_id || '';
+    const roles_name = auth.roles_name || '';
+    let selectedListItems;
+    let portalRole;
+
+    if(role_id === 1){
+      selectedListItems = SAP_ListItems;
+      portalRole = "Scholar Administrator Portal"
+    }
+    else if(role_id === 2){
+      selectedListItems = SMP_ListItems;
+      portalRole = "Scholar Manager Portal"
+    }
+    else if(role_id === 3){
+      selectedListItems = SP_ListItems;
+      portalRole = "Scholar Portal"
+    }
+    else{
+      selectedListItems = null;
+      portalRole = "Portal"
+    }
+
     const toggleDrawer = () => {
       setOpen(!open);
     };
@@ -39,14 +58,33 @@ const Layout = ({children}) => {
       setAnchorEl(null);
     };
   
-    const handleLogout = () => {
-      // Your logout logic here
-      handleClose();
-    };
+    const onLogout = async() => {
+      setLoading(true);
+      try{
+        const remember_token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${remember_token}` // Attach the token to the Authorization header
+          }
+        };
 
-    const handleListItemsChange = (newListItems) => {
-        setSelectedListItems(newListItems);
-      };
+        const response = await axios.post(
+            LOGOUT_URL,
+            null,
+            config
+        )
+      
+        localStorage.removeItem('token');
+
+        setLoading(false);
+
+        setAuth(null); // Update authentication state
+      }
+      catch(err){
+        setLoading(false);
+        console.log(err);
+      }
+    }
 
 
   return (
@@ -54,60 +92,63 @@ const Layout = ({children}) => {
       <MUI.Box sx={{ display: 'flex'}}>
         <MUI.CssBaseline/>
         <AppBar position='absolute' open={open}>
-        <MUI.Toolbar sx={{pr: '24px',}}>
-          {/* ------------------------ Hamburger Button ----------------------*/}
-          <MUI.IconButton 
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: '36px',
-                ...(open && { display: 'none' }),
-              }}
-            >
-              <MUI.MenuIcon/>
-          </MUI.IconButton>
-          <MUI.Typography variant='body1' sx={{fontWeight: 'bold'}}>{getRoleFromListItems(selectedListItems)}</MUI.Typography>
-          <MUI.Box sx={{ flexGrow: 1 }} />
-          <MUI.Box sx={{ display:'flex', alignItems: 'center' }}>
-          {/* ------------------------ Notification Icon ----------------------*/}
-            <MUI.IconButton color="inherit">
-              <MUI.Badge badgeContent={4} color="secondary">
-                <MUI.NotificationsIcon />
-              </MUI.Badge>
-            </MUI.IconButton>
-          {/* ------------------------ Help Icon ----------------------*/}
-            <MUI.IconButton color="inherit">
-                <MUI.HelpOutlineIcon />
-            </MUI.IconButton>
-          {/* ------------------------ Settings Icon ----------------------*/}
-            <MUI.IconButton color="inherit" onClick={handleClick} sx={{ textTransform: 'capitalize' }}>
-              <MUI.SettingsIcon />
-            </MUI.IconButton>
-            <MUI.Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              getContentAnchorEl={null}
+          <MUI.Toolbar sx={{pr: '24px',}}>
+            {/* ------------------------ Hamburger Button ----------------------*/}
+            <MUI.IconButton 
+                edge="start"
+                color="inherit"
+                aria-label="open drawer"
+                onClick={toggleDrawer}
+                sx={{
+                  marginRight: '36px',
+                  ...(open && { display: 'none' }),
+                }}
               >
-          {/* ------------------------ Logout ----------------------*/}    
-              <MUI.MenuItem onClick={handleLogout}>
-              Logout 
-                <MUI.LogoutIcon fontSize="small" sx={{ marginLeft: 1 }} />
-              </MUI.MenuItem>
-            </MUI.Menu>
-
+                <MUI.MenuIcon/>
+            </MUI.IconButton>
+            <MUI.Typography variant='body1' sx={{fontWeight: 'bold'}}>{portalRole}</MUI.Typography>
+            <MUI.Box sx={{ flexGrow: 1 }} />
+            <MUI.Box sx={{ display:'flex', alignItems: 'center' }}>
+              {/* ------------------------ Notification Icon ----------------------*/}
+              <MUI.IconButton color="inherit">
+                <MUI.Badge badgeContent={4} color="secondary">
+                  <MUI.NotificationsIcon />
+                </MUI.Badge>
+              </MUI.IconButton>
+              {/* ------------------------ Help Icon ----------------------*/}
+              <MUI.IconButton color="inherit">
+                  <MUI.HelpOutlineIcon />
+              </MUI.IconButton>
+              {/* ------------------------ Settings Icon ----------------------*/}
+              <MUI.IconButton color="inherit" onClick={handleClick} sx={{ textTransform: 'capitalize' }}>
+                <MUI.SettingsIcon />
+              </MUI.IconButton>
+              <MUI.Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                >
+                {/* ------------------------ Logout ----------------------*/}  
+                
+                <MUI.Link to="/login" onClick={onLogout}>
+                  <MUI.MenuItem>
+                    Logout 
+                    <MUI.LogoutIcon fontSize="small" sx={{ marginLeft: 1 }} />
+                  </MUI.MenuItem>
+                </MUI.Link>
+              </MUI.Menu>
             </MUI.Box>
-        </MUI.Toolbar>
+          </MUI.Toolbar>
+
+          
         </AppBar> 
 
         {/* ------------------------ Drawer or the Sidebar  ----------------------*/}
@@ -141,9 +182,9 @@ const Layout = ({children}) => {
               <MUI.AccountCircleIcon sx={{fontSize: isSmallScreen ? '2rem' : '2.5rem',}}/>
             </MUI.ListItemIcon>
             <MUI.Box sx={{ml: 1}}>
-              <MUI.Typography variant="h6">Medallada</MUI.Typography>
-              <MUI.Typography variant="body1" color="textSecondary">
-                Scholar
+              <MUI.Typography variant="h6">{last_name}</MUI.Typography>
+              <MUI.Typography variant="body2" color="textSecondary">
+                {roles_name}
               </MUI.Typography>
             </MUI.Box>
           </MUI.ListItem>
@@ -167,13 +208,31 @@ const Layout = ({children}) => {
         >
           <MUI.Toolbar />
 
+          {loading && (
+              <MUI.Backdrop
+              open={loading}
+              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              >
+                <MUI.Box
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: (theme) => theme.zIndex.drawer + 2,
+                  }}
+                >
+                  <MUI.CircularProgress />
+                </MUI.Box>
+              </MUI.Backdrop>
+          )}
           {/* ------------------------ Main Content ----------------------*/}
           <MUI.Container maxWidth="lg" height="100%" sx={{ mt: 4, mb: 4 }}>
             <MUI.Grid container spacing={3}>
               {children}
             </MUI.Grid>
           </MUI.Container>
-
+                
         </MUI.Box>
       </MUI.Box>
     </MUI.ThemeProvider>

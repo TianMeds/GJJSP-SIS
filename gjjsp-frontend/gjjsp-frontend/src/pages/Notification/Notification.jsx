@@ -179,7 +179,7 @@ export default function Notification({state}) {
                           onClick={() => handleDeleteNotif(notification.id)}
                           sx={{ textTransform: 'capitalize' }}
                         >
-                          <MUI.DeleteOutlineOutlinedIco />
+                          <MUI.DeleteOutlineOutlinedIcon />
 
                         </MUI.IconButton>
                       </MUI.TableCell>
