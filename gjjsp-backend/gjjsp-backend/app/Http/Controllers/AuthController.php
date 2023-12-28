@@ -99,7 +99,7 @@ class AuthController extends Controller
 
         $roleName = $roles_name[$role] ?? 'unknown';
         
-        $remember_token = $user->createToken('remember_token', ['*'])->plainTextToken;
+        $remember_token = $user->createToken('remember_token',expiresAt:now()->addMinute())->plainTextToken;
         $response = [
             'user' => $user,
             'roles_name' => $roleName,

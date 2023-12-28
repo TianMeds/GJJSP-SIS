@@ -137,11 +137,11 @@ const Layout = ({children}) => {
                 }}
                 >
                 {/* ------------------------ Logout ----------------------*/}  
-                
-                <MUI.Link to="/login" onClick={onLogout}>
+              
+                <MUI.Link to="/login" onClick={onLogout} sx={{ textDecoration:'none', fontSize: '12px', color: 'black' }}>
                   <MUI.MenuItem>
-                    Logout 
-                    <MUI.LogoutIcon fontSize="small" sx={{ marginLeft: 1 }} />
+                  <MUI.LogoutIcon fontSize="small" sx={{ mr: 1}} />
+                    Logout  
                   </MUI.MenuItem>
                 </MUI.Link>
               </MUI.Menu>
@@ -211,7 +211,7 @@ const Layout = ({children}) => {
           {loading && (
               <MUI.Backdrop
               open={loading}
-              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 999 }}
               >
                 <MUI.Box
                   sx={{

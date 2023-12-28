@@ -71,9 +71,6 @@ export default function Login() {
       
       const role_id = response?.data?.user?.role_id;
 
-      // Store the token in localStorage for subsequent API requests
-      localStorage.setItem('token', remember_token);
-
       setLoading(false);
 
       // Set the authenticated user state using setAuth from your useAuth hook
@@ -103,8 +100,6 @@ export default function Login() {
       }
     }
   }
-
-
 
 
   {/* When its size to a Tablet mode the Left Grid display none  */}

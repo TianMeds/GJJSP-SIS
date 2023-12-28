@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const BASE_URL = 'http://gjjsp-backend/'
+
 export default axios.create({
-    baseURL: 'http://gjjsp-backend/',
+    baseURL: BASE_URL
 })
