@@ -8,6 +8,7 @@ use App\Models\Scholar;
 use App\Models\Role;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 class AuthController extends Controller
 {
     public function register(Request $request){
@@ -99,11 +100,13 @@ class AuthController extends Controller
 
         $roleName = $roles_name[$role] ?? 'unknown';
         
-        $remember_token = $user->createToken('remember_token',expiresAt:now()->addMinute())->plainTextToken;
+        $remember_token = $user->createToken('remember_token', expiresAt: now()->addMinute(30))->plainTextToken;
+        $expires_at = now()->addMinute(30)->format('Y-m-d H:i:s');
         $response = [
             'user' => $user,
             'roles_name' => $roleName,
-            'remember_token' => $remember_token
+            'remember_token' => $remember_token,
+            'expires_at' => $expires_at
         ];
         return response($response, 201);
     }
@@ -117,4 +120,23 @@ class AuthController extends Controller
             'method' => 'DELETE',
         ], 200);
     }
+
+ 
+    /* public function refreshToken(Request $request)
+    {
+        if (!$request->user()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+    
+        $request->user()->tokens()->delete(); // Revoke all user's tokens
+    
+        $remember_token = $request->user()->createToken('remember_token')->plainTextToken;
+        $expiresAt = now()->addMinute(30)->format('Y-m-d H:i:s');
+    
+        return response()->json([
+            'remember_token' => $remember_token,
+            'expires_at' => $expiresAt
+        ]);
+    }
+    */
 }

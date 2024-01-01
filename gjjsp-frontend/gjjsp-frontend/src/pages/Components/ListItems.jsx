@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as MUI from '../../import'
 import { Link } from 'react-router-dom';
+import { DropdownMenu } from '../../component/Layout/DropdownMenu/DropdownMenu';
 
 const listItemStyles = {
   paddingLeft: '16px',
@@ -17,11 +18,6 @@ const hiddenOnMobile = {
   },
 };
 
-const centerTextOnMobile = {
-  '@media (max-width: 600px)': {
-    textAlign: 'center',
-  },
-};
 
 const CustomListItem = ({ to, icon, secondary, imageSrc, alt }) => (
   <MUI.ListItemButton component={Link} to={to} sx={{ ...listItemStyles }}>
@@ -48,38 +44,33 @@ const CustomListItem = ({ to, icon, secondary, imageSrc, alt }) => (
 export const SMP_ListItems = (
   <React.Fragment>
 
-  {/* -------------------- Main Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Main
-  </MUI.ListSubheader>
-    <CustomListItem to="/" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Main
+    </MUI.ListSubheader>
+      <CustomListItem to="/" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
   
-  {/* -------------------- Management Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Management
-  </MUI.ListSubheader>
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Management
+    </MUI.ListSubheader>
   
-    <CustomListItem to="/scholar" icon={<MUI.PeopleIcon />} secondary="Scholar" />
-    <CustomListItem to="/submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
-    <CustomListItem to="/notification" icon={<MUI.NotificationsIcon />} secondary="Notifications" />
-    <CustomListItem to="/report" icon={<MUI.BarChartIcon />} secondary="Reports" />
+      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholar" />
+      <DropdownMenu/>
+      <CustomListItem to="/submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
 
-  {/* -------------------- Quick Actions Drawer Option --------------------*/}  
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Quick Actions
-  </MUI.ListSubheader>
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Quick Actions
+    </MUI.ListSubheader>
 
-    <CustomListItem to="/export" icon={<MUI.FileDownloadOutlinedIcon />} secondary="Export Data" />
-    <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
-    <CustomListItem to='/ask' 
-      icon={<MUI.Box component='img' 
-      sx={{height: 40, width: 60, marginLeft: '-20px'}} 
-      alt="The house from the offer."
-      src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-      secondary="Ask AI" 
-    />
+      <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
+      <CustomListItem to='/ask' 
+        icon={<MUI.Box component='img' 
+        sx={{height: 40, width: 60, marginLeft: '-20px'}} 
+        alt="The house from the offer."
+        src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
+        secondary="Ask AI" 
+      />
 
-</React.Fragment>
+  </React.Fragment>
 );
 
 {/* -------------------- SCHOLAR ADMINISTRATOR PORTAL OPTION -------------------- */}
@@ -87,38 +78,33 @@ export const SMP_ListItems = (
 export const SAP_ListItems = (
   <React.Fragment>
 
-  {/* -------------------- Main Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Main
-  </MUI.ListSubheader>
-    <CustomListItem to="/" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Main
+    </MUI.ListSubheader>
+      <CustomListItem to="/" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
 
-  {/* -------------------- Management Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Management
-  </MUI.ListSubheader>
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Management
+    </MUI.ListSubheader>
 
-    <CustomListItem to="/user" icon={<MUI.PeopleIcon />} secondary="Users" />
-    <CustomListItem to="/scholarship" icon={<MUI.SchoolIcon />} secondary="Scholarships" />
-    <CustomListItem to="/school" icon={<MUI.LocationCityIcon />} secondary="Schools" />
-    <CustomListItem to="/submission" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Submissions" />
-    <CustomListItem to="/notification" icon={<MUI.NotificationsIcon />} secondary="Notifications" />
+      <CustomListItem to="/user" icon={<MUI.GroupsOutlinedIcon />} secondary="Users" />
+      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholar" />
+      <DropdownMenu/>
+      <CustomListItem to="/submission" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Submissions" />
 
-  {/* -------------------- Quick Actions Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Quick Actions
-  </MUI.ListSubheader>
+    <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
+      Quick Actions
+    </MUI.ListSubheader>
 
-    <CustomListItem to="/export" icon={<MUI.FileDownloadOutlinedIcon />} secondary="Export Data" />
-    <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
-    <CustomListItem to='/ask' 
-      icon={<MUI.Box component='img' 
-      sx={{height: 40, width: 60, marginLeft: '-20px'}} 
-      alt="The house from the offer."
-      src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-      secondary="Ask AI" 
-    />
-</React.Fragment>
+      <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
+      <CustomListItem to='/ask' 
+        icon={<MUI.Box component='img' 
+        sx={{height: 40, width: 60, marginLeft: '-20px'}} 
+        alt="The house from the offer."
+        src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
+        secondary="Ask AI" 
+      />
+  </React.Fragment>
   
 );
 
@@ -140,7 +126,6 @@ export const SP_ListItems = (
   <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
     Quick Action
   </MUI.ListSubheader>
-      <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
       <CustomListItem to='/ask' 
         icon={<MUI.Box component='img' 
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 

@@ -1,6 +1,6 @@
 import React from 'react'
 import * as MUI from '../../import';
-import useSubmissionStore from '../Store/SubmissionStore';
+import useSubmissionStore from '../../store/SubmissionStore';
 import classNames from 'classnames';
 
 

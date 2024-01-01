@@ -36,7 +36,7 @@
   import ListSubheader from '@mui/material/ListSubheader';
   import DashboardIcon from '@mui/icons-material/Dashboard';
   import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-  import PeopleIcon from '@mui/icons-material/People';
+  import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
   import BarChartIcon from '@mui/icons-material/BarChart';
   import LayersIcon from '@mui/icons-material/Layers';
   import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -96,6 +96,12 @@
   import Fade from '@mui/material/Fade';
   import CircularProgress from '@mui/material/CircularProgress';
   import Backdrop from '@mui/material/Backdrop';
+  import Accordion from '@mui/material/Accordion';
+  import AccordionSummary from '@mui/material/AccordionSummary';
+  import AccordionDetails from '@mui/material/AccordionDetails';
+  import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+  import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+  import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -142,7 +148,7 @@
     ListSubheader,
     DashboardIcon,
     ShoppingCartIcon,
-    PeopleIcon,
+    PeopleAltOutlinedIcon,
     BarChartIcon,
     LayersIcon,
     AssignmentIcon,
@@ -202,4 +208,10 @@
     Fade,
     CircularProgress,
     Backdrop,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    FormatListBulletedIcon,
+    GroupsOutlinedIcon,
+    HandshakeOutlinedIcon,
   };

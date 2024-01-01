@@ -1,23 +1,24 @@
-import Login from './pages/Login/Login'
-import Dashboard from './pages/Dashboard/Dashboard';
-import Notification from './pages/Notification/Notification';
-import User from './pages/Users/User';
-import Scholar from './pages/Scholars/Scholar';
-import Scholarship from './pages/Scholarship/Scholarship'
-import Submission from './pages/Submission/Submission';
-import Export from './pages/Export/Export';
-import Create from './pages/Create/Create';
-import Ask from './pages/AskAI/Ask';
-import School from './pages/School/School';
-import RequireAuth from './pages/RequireAuth';
+import Login from './pages/LoginPage/Login'
+import Dashboard from './pages/ClientPages/Dashboard/Dashboard';
+import Notification from './pages/ClientPages/Notification/Notification';
+import User from './pages/ClientPages/Users/User';
+import Scholar from './pages/ClientPages/Scholars/Scholar';
+import Categories from './pages/ClientPages/Categories';
+import Submission from './pages/ClientPages/Submission/Submission';
+import Export from './pages/ClientPages/Export/Export';
+import Create from './pages/ClientPages/Create/Create';
+import Ask from './pages/GeneralPages/AskAI/Ask';
+import RequireAuth from './pages/ClientPages/RequireAuth';
 import {Routes, Route} from 'react-router-dom'; 
-import ViewSubmission from './pages/Submission/ViewSubmission';
-import NotFound from './pages/NotFound/NotFound';
-import Unauthorized from './pages/Unauthorized/Unauthorized';
-import ScholarDashboard from './pages/ScholarRole/ScholarDashboard/ScholarDashboard';
-import ScholarSubmission from './pages/ScholarRole/ScholarSubmission/ScholarSubmission';
-import ScholarProfile from './pages/ScholarRole/ScholarProfile/ScholarProfile';
-
+import ViewSubmission from './pages/ClientPages/Submission/ViewSubmission';
+import NotFound from './pages/GeneralPages/NotFound/NotFound';
+import Unauthorized from './pages/GeneralPages/Unauthorized/Unauthorized';
+import Partner from './pages/ClientPages/Partner';
+import ScholarDashboard from './pages/ScholarPages/ScholarDashboard/ScholarDashboard';
+import ScholarSubmission from './pages/ScholarPages/ScholarSubmission/ScholarSubmission';
+import ScholarProfile from './pages/ScholarPages/ScholarProfile/ScholarProfile';
+import { useEffect } from 'react';
+import { checkAutoLogin } from './hooks/useAuthService';
 
 const ROLES = {
   'Admin': 1,
@@ -26,33 +27,22 @@ const ROLES = {
 }
 
 function App() {
-
   return (
     <Routes>
       {/* Public Route */}
       <Route path="login" element={<Login/>}/>
       <Route path='*' element={<NotFound/>}/>
       <Route path='unauthorized' element={<Unauthorized/>}/>
-      <Route path="create" element={<Create/>}/>
-      <Route path="ask" element={<Ask/>}/>
 
 
-      {/* Protected Route */}
-      
+    {/* Protected Route */}
+    
       <Route element={<RequireAuth allowedRoles={[ROLES.Admin]}/>}> 
-        <Route  path="notification" element={<Notification/>}/>
+        <Route path="notification" element={<Notification/>}/>
         <Route path="user" element={<User/>}/>
-        <Route path="scholar" element={<Scholar/>}/>
-        <Route path="scholarship" element={<Scholarship/>}/>
         <Route path="submission" element={<Submission/>}/>
         <Route path="export" element={<Export/>}/>
-        <Route path="school" element={<School/>}/>
         <Route path="view" element={<ViewSubmission/>}/>
-      </Route> 
-
-      {/* Manager Route */}
-      <Route element={<RequireAuth allowedRoles={[ROLES.Manager]}/>}>
-        <Route path="scholar" element={<Scholar/>}/>
       </Route>
 
       {/* Scholar Route */}
@@ -63,8 +53,17 @@ function App() {
       </Route>
 
       {/* Admin and Manager Route */}
-      <Route element={<RequireAuth allowedRoles={[ROLES.Admin, ROLES.Manager]}/>}> 
+      <Route element={ <RequireAuth allowedRoles={[ROLES.Admin, ROLES.Manager]}/>}> 
         <Route path="/" element={<Dashboard/>}/>
+        <Route path="scholar" element={<Scholar/>}/>
+        <Route path="categories" element={<Categories/>}/>
+        <Route path='partner' element={<Partner/>}/>
+      </Route>
+
+      {/* All Routes */}
+      <Route element={<RequireAuth allowedRoles={[ROLES.Admin, ROLES.Manager, ROLES.Scholar]}/>}> 
+        <Route path="create" element={<Create/>}/>
+        <Route path="ask" element={<Ask/>}/>
       </Route>
     </Routes>
 

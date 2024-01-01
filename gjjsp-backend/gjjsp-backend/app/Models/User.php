@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'user_status',
+        'remember_token'
     ];
 
     /**
@@ -42,7 +43,6 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class, 'role_id');
     }   
-
     /**
      * The attributes that should be cast.
      *
