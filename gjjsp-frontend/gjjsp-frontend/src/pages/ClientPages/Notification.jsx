@@ -1,10 +1,9 @@
 import React from 'react';
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
-import { useState } from 'react';
-import useNotificationStore from '../../../store/NotificationStore';
-
-const defaultTheme = MUI.createTheme();
+import * as MUI from '../../import';
+import useNotificationStore from '../../store/NotificationStore';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
+import theme from '../../context/theme';
+import { Link } from 'react-router-dom';
 
 export default function Notification({state}) {
 
@@ -73,24 +72,33 @@ export default function Notification({state}) {
   }
   return (
     <Layout>
+      <MUI.ThemeProvider theme={theme}>
       {/* -------- Main Content  ----------*/}
         <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <MUI.Grid container spacing={3}>
             <MUI.Grid item xs={12}>
+              <MUI.Box display="flex" flexDirection='row' alignItems="center" sx={{mb: 3}}>
+              
+                  <MUI.IconButton component={Link} to="/scholar">
+                      <MUI.KeyboardBackspaceIcon/>  
+                  </MUI.IconButton>
+                  <MUI.Typography >Back to Scholars</MUI.Typography>
+              
+              </MUI.Box>
 
               <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-                <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>Notifications</MUI.Typography>
+                <MUI.Typography variant="h5" sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>Reminders</MUI.Typography>
                     
                 {/* Add Notification Button */}
                 <MUI.Button variant="contained" color="primary" sx={{ textTransform: 'none' }} onClick={handleOpenNotif}>
-                  Add Notification
+                  Add Reminder
                 </MUI.Button>
 
               </MUI.Box>
             </MUI.Grid>
 
-                {/* -------- Email Section  ----------*/}
-                <MUI.Grid item xs={12}>
+            {/* -------- Email Section  ----------*/}
+            <MUI.Grid item xs={12}>
                   <MUI.Typography variant="h5" sx={{fontSize: '1rem'}}>Email</MUI.Typography>
                     <MUI.Box 
                       display="flex"
@@ -149,68 +157,65 @@ export default function Notification({state}) {
                     </MUI.Box>
                 </MUI.Grid>
 
-                {/* -------- Table Section  ----------*/}
                 <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2', margin: '2rem 0 0 1rem' }}>
                   <MUI.Table> 
-                      <MUI.TableHead>
+                    <MUI.TableHead>
                       <MUI.TableRow>
-                          <MUI.TableCell>Event</MUI.TableCell>
-                          <MUI.TableCell>Recipient</MUI.TableCell>
-                          <MUI.TableCell>Actions</MUI.TableCell>
+                        <MUI.TableCell>Event</MUI.TableCell>
+                        <MUI.TableCell>Recipient</MUI.TableCell>
+                        <MUI.TableCell>Actions</MUI.TableCell>
                       </MUI.TableRow>
-                      </MUI.TableHead>
-                      <MUI.TableBody>
-                      {notifs.reverse().map((notification, index) => (
-                        (notification.event || notification.recipient) && (
-                      <MUI.TableRow key={index} className='row' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='event'>{notification.event}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='recipient'>{notification.recipient}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}>
-                        <MUI.IconButton
-                          color="inherit"
-                          onClick={() => handleEditNotif(notification.id)}
-                        >
-                          <MUI.BorderColorOutlinedIcon sx={{marginLeft:  -2}} />
-                        </MUI.IconButton>
+                    </MUI.TableHead>
+                    <MUI.TableBody>
+                        {notifs.reverse().map((notification, index) => (
+                          (notification.event || notification.recipient) && (
+                        <MUI.TableRow key={index} className='row' >
+                        <MUI.TableCell sx={{border: 'none'}}  className='event'>{notification.event}</MUI.TableCell>
+                        <MUI.TableCell sx={{border: 'none'}}  className='recipient'>{notification.recipient}</MUI.TableCell>
+                        <MUI.TableCell sx={{border: 'none'}}>
+                          <MUI.IconButton
+                            color="inherit"
+                            onClick={() => handleEditNotif(notification.id)}
+                          >
+                            <MUI.BorderColorIcon sx={{marginLeft:  -2}} />
+                          </MUI.IconButton>
 
-                        <MUI.IconButton
-                          color="inherit"
-                          onClick={() => handleDeleteNotif(notification.id)}
-                          sx={{ textTransform: 'capitalize' }}
-                        >
-                          <MUI.DeleteOutlineOutlinedIcon />
+                          <MUI.IconButton
+                            color="inherit"
+                            onClick={() => handleDeleteNotif(notification.id)}
+                            sx={{ textTransform: 'capitalize' }}
+                          >
+                            <MUI.DeleteIcon />
 
-                        </MUI.IconButton>
-                      </MUI.TableCell>
-                      </MUI.TableRow>
-                      )
-                      ))}
-                    </MUI.TableBody>
+                          </MUI.IconButton>
+                        </MUI.TableCell>
+                        </MUI.TableRow>
+                        )
+                        ))}
+                      </MUI.TableBody>
                   </MUI.Table>
                   <MUI.Divider sx={{width:'100%'}}/>
-                </MUI.TableContainer>   
+                </MUI.TableContainer>
 
-                {/* -------- Sent Notifications Section  ----------*/}
-                <MUI.Grid item xs={12}>
-
+                 {/* -------- Sent Notifications Section  ----------*/}
+                 <MUI.Grid item xs={12}>
                   <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-                    <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '2.5rem', mt: 3 }}> Sent Notifications</MUI.Typography>
+                    <MUI.Typography variant="h2" sx={{ fontWeight: 'bold', fontSize: '2.5rem', mt: 3 }}> Sent Reminders</MUI.Typography>
                   </MUI.Box>
                 </MUI.Grid>
 
-                {/* -------- Table Section  ----------*/}
                 <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2', margin: '2rem 0 0 1rem' }}>
-                  <MUI.Table> 
-                      <MUI.TableHead>
-                      <MUI.TableRow>
-                          <MUI.TableCell>Subject</MUI.TableCell>
-                          <MUI.TableCell>Recipient</MUI.TableCell>
-                          <MUI.TableCell>Responds</MUI.TableCell>
-                          <MUI.TableCell>Date Sent</MUI.TableCell>
-                          <MUI.TableCell>Actions</MUI.TableCell>
-                      </MUI.TableRow>
-                      </MUI.TableHead>
-                      <MUI.TableBody>
+                  <MUI.Table>
+                  <MUI.TableHead>
+                    <MUI.TableRow>
+                        <MUI.TableCell>Subject</MUI.TableCell>
+                        <MUI.TableCell>Recipient</MUI.TableCell>
+                        <MUI.TableCell>Responds</MUI.TableCell>
+                        <MUI.TableCell>Date Sent</MUI.TableCell>
+                        <MUI.TableCell>Actions</MUI.TableCell>
+                    </MUI.TableRow>
+                    </MUI.TableHead>
+                    <MUI.TableBody>
                       <MUI.TableRow  className='row' >
                       <MUI.TableCell sx={{border: 'none'}}>Renewal of Application</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  >Renewing Scholar</MUI.TableCell>
@@ -222,7 +227,7 @@ export default function Notification({state}) {
                           onClick={() => handleEditNotif(notification.id)}
                           sx={{ marginLeft: {xs: 1, md: -2}}}
                         >
-                          <MUI.BorderColorOutlinedIcon />
+                          <MUI.BorderColorIcon />
                         </MUI.IconButton>
 
                         <MUI.IconButton
@@ -230,7 +235,7 @@ export default function Notification({state}) {
                           onClick={() => handleDeleteNotif(notification.id)}
                           sx={{ textTransform: 'capitalize', marginLeft: 1  }}
                         >
-                          <MUI.DeleteOutlineOutlinedIcon />
+                          <MUI.DeleteIcon />
 
                         </MUI.IconButton>
                       </MUI.TableCell>
@@ -238,13 +243,12 @@ export default function Notification({state}) {
                     </MUI.TableBody>
                   </MUI.Table>
                   <MUI.Divider sx={{width:'100%'}}/>
-                </MUI.TableContainer>   
-              
-              
-              {/* Add Notification Dialog */}
+                </MUI.TableContainer>
+
+                {/* Add Notification Dialog */}
               <MUI.Dialog open={notification} onClose={handleCloseNotif} fullWidth maxWidth="sm">
                 {/* Content of the Dialog */}
-                <MUI.DialogTitle>Add Notification</MUI.DialogTitle>
+                <MUI.DialogTitle variant='h3' sx={{fontWeight: 'bold'}}>Add Notification</MUI.DialogTitle>
                 <MUI.DialogContent>
                   {/* Form Fields of New Notification */}
                   <MUI.InputLabel htmlFor="event">Event</MUI.InputLabel>
@@ -282,15 +286,18 @@ export default function Notification({state}) {
                     <MUI.Button onClick={handleCloseNotif} color="primary">
                       Cancel
                     </MUI.Button>
-                    <MUI.Button onClick={handleAddNotif}
+                    <MUI.Button 
+                    variant='contained'
+                    onClick={handleAddNotif}
                     color="primary">
-                    {editNotif ? 'Save Changes' : 'Add'}
+                    {editNotif ? 'Save Changes' : 'Add Notification'}
                     </MUI.Button>
                   </MUI.DialogActions>
 
               </MUI.Dialog>
           </MUI.Grid>
         </MUI.Container>
-      </Layout>
+      </MUI.ThemeProvider>
+    </Layout>
   )
 }

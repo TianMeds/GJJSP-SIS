@@ -1,5 +1,6 @@
 import * as MUI from '../../../import'
 import useAuth from '../../../hooks/useAuth'
+import {Link} from 'react-router-dom';
 import { SAP_ListItems, SMP_ListItems, SP_ListItems } from '../../../pages/Components/ListItems';
 import theme from '../../../context/theme';
 
@@ -37,9 +38,9 @@ export const Account = () => {
               <MUI.Typography variant="body2" color="textSecondary">
                 {roles_name}
               </MUI.Typography>
-              <MUI.Button variant='text' sx={{mt: -3, ml: -1}}>
-            See Profile
-          </MUI.Button>
+              <MUI.Button variant='text' sx={{mt: -3, ml: -1}} component={Link} to="/profile">
+              See Profile
+            </MUI.Button>
             </MUI.Box>
             
         </MUI.ListItem>

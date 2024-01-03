@@ -1,10 +1,12 @@
 import React from 'react'
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
-import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../../component/Layout/SidebarNavbar/Styles';
-import useUserStore from '../../../store/UserStore';
+import * as MUI from '../../import';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
+import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
+import theme from '../../context/theme';
+import useUserStore from '../../store/UserStore';
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
+import { Form, Link } from 'react-router-dom';
 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -13,6 +15,7 @@ const FormValues = {
   userName: "",
   emailAddress: "",
   role: "",
+  userStatus: "",
 }
 
 export default function User({state}) {
@@ -25,11 +28,12 @@ export default function User({state}) {
     console.log('Form submitted',data);  
 
     if(editUser) {
-      updateUser(selectedUser.id, data.userName, data.emailAddress, data.role);
+      updateUser(selectedUser.id, data.userName, data.emailAddress, data.role, data.userStatus);
       setEditUser(false);
+      form.reset(FormValues); 
     }
     else{
-      addUser(data.userName, data.emailAddress, data.role);
+      addUser(data.userName, data.emailAddress, data.role, data.userStatus);
     }
     form.reset();
     handleCloseUser();
@@ -58,10 +62,11 @@ export default function User({state}) {
     const selectedUser = users.find((user) => user.id === userId);
     if (selectedUser) {
       setSelectedUser(selectedUser);
-      reset({ // Reset form and pre-fill fields for editing
+      reset({
         userName: selectedUser.userName,
         emailAddress: selectedUser.emailAddress,
         role: selectedUser.role,
+        userStatus: selectedUser.userStatus,
       });
       setEditUser(true);
       handleOpenUser();
@@ -83,17 +88,19 @@ export default function User({state}) {
   
   return (
   <Layout>
+    <MUI.ThemeProvider theme={theme}>
     <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <MUI.Grid container spacing={3}>
       
         <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
-            <MUI.Typography variant="h1" id="tabsTitle">Users</MUI.Typography>
+            <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Users</MUI.Typography>
                       
               {/* Add User Button */}
-              <MUI.Button variant="contained" color="primary" id='addButton' sx={{width: {xs: '100px'}}} onClick={handleOpenUser}>
-                Add Users 
-              </MUI.Button>
+              <MUI.Button variant="contained" id='addButton' onClick={handleOpenUser}>
+                <MUI.PersonAddAltOutlinedIcon sx={{mr: 1}}/>
+                <MUI.Typography variant='body2'>Add Users</MUI.Typography>
+              </MUI.Button> 
 
             </MUI.Box>
         </MUI.Grid>
@@ -115,11 +122,13 @@ export default function User({state}) {
             <MUI.FilterListIcon />
           </MUI.IconButton>
 
-          <MUI.FormControl id="filterControl">
+          <MUI.FormControl>
             <MUI.Select
               value={filteredRole}
               onChange={(e) => setFilteredRole(e.target.value)} 
               native
+              sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
+              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
             >
               <option value="All">All</option>
               <option value="Administrator">Scholarship Administrator</option>
@@ -137,7 +146,8 @@ export default function User({state}) {
                   <MUI.TableCell>Name</MUI.TableCell>
                   <MUI.TableCell>Email</MUI.TableCell>
                   <MUI.TableCell>Role</MUI.TableCell>
-                  <MUI.TableCell sx={{marginLeft: 100}}>Action</MUI.TableCell>
+                  <MUI.TableCell>Status</MUI.TableCell>
+                  <MUI.TableCell>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
@@ -154,22 +164,28 @@ export default function User({state}) {
                       <MUI.TableCell sx={{border: 'none'}}  className='name'>{user.userName}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.emailAddress}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='role'>{user.role}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none', }}>
+                      <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.userStatus}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
+
+                        <MUI.IconButton color="inherit" component={Link} to="/profile">
+                          <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
+                        </MUI.IconButton>
+
                         <MUI.IconButton
                           color="inherit"
                           onClick={() => handleEditUser(user.id)}
-                          sx={{ marginLeft: -2 }}
                         >
-                          <MUI.BorderColorOutlinedIcon />
+                          <MUI.BorderColorIcon />
 
                         </MUI.IconButton>
+
 
                         <MUI.IconButton
                           color="inherit"
                           onClick={() => handleDeleteUser(user.id)}
                           sx={{ textTransform: 'capitalize' }}
                         >
-                          <MUI.DeleteOutlineOutlinedIcon />
+                          <MUI.DeleteIcon />
 
                         </MUI.IconButton>
 
@@ -271,6 +287,37 @@ export default function User({state}) {
                   )} 
                 </MUI.Grid>
 
+                <MUI.Grid id="userStatusGrid">
+                  <MUI.InputLabel htmlFor="userStatus" id='userStatusLabel'>Status</MUI.InputLabel>
+                  <Controller
+                    name="userStatus"
+                    control={control}
+                    defaultValue=''
+                    rules={{ 
+                      required: 'Status is required', 
+                      validate: (value) => value !== '' || 'Please select a status' 
+                    }}
+                    render={({ field }) => (
+                      
+                      <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                        <MUI.Select
+                          id='userStatus'
+                          native
+                          {...field}
+                        >
+                          <option value="" disabled>Select Status</option>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                          <option value="Revoked">Revoked</option>
+                        </MUI.Select>
+                      </MUI.FormControl>
+                    )}
+                  />
+                  {errors.userStatus && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.userStatus?.message}</p>
+                  )} 
+                </MUI.Grid>
+
               </MUI.DialogContent>
 
               <MUI.DialogActions>
@@ -292,6 +339,7 @@ export default function User({state}) {
           <DevTool control={control} />
       </MUI.Grid>
     </MUI.Container>
+  </MUI.ThemeProvider>
   </Layout>
   )
 }

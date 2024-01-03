@@ -73,15 +73,22 @@ export default function Submission({state}) {
     <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <MUI.Grid container spacing={3}>
 
-      <MUI.Grid item xs={12}>
-        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
-          
-          <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Submission</MUI.Typography>
-          
-          </MUI.Box>
-      </MUI.Grid> 
+        <MUI.Grid item xs={12}>
+        <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} justifyContent="space-between">
+              <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Partner</MUI.Typography>
+                        
+              <MUI.Box>     
+                {/* Add User Button */}
+                <MUI.Button variant="contained" component={Link} to='/notification' id='addButton' sx={{mr:4}} >
+                  <MUI.NotificationsIcon  sx={{transform: 'rotate(45deg)', mr: 1}}/>
+                  <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
+                </MUI.Button>
+              </MUI.Box>  
 
-        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+            </MUI.Box>
+        </MUI.Grid> 
+
+        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center', mb: 6 }}>
           <Search>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />
@@ -95,33 +102,34 @@ export default function Submission({state}) {
           </Search>
                         
 
-        <MUI.IconButton aria-label="filter">
-          <MUI.FilterListIcon />
-        </MUI.IconButton>
+          <MUI.IconButton aria-label="filter">
+            <MUI.FilterListIcon />
+          </MUI.IconButton>
 
-        <MUI.FormControl sx={{  width: '180px', border: '2px solid #032539', borderRadius: '8px'}}>
-                  <MUI.Select
-                    value={filteredSubmission}
-                    onChange={(e) => setFilteredSubmission(e.target.value)}
-                    native
-                  >
-                    <option value="All">All</option>
-                    <option value="SAVED">Saved</option>
-                    <option value="SUBMITTED">Submitted</option>
-                    <option value="RESUBMISSION">Resubmission</option>
-                  </MUI.Select>
-               
-              </MUI.FormControl>
+          <MUI.FormControl>
+            <MUI.Select
+              value={filteredSubmission}
+              onChange={(e) => setFilteredSubmission(e.target.value)}
+              native
+              sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
+              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+            >
+              <option value="All">All</option>
+              <option value="SAVED">Saved</option>
+              <option value="SUBMITTED">Submitted</option>
+              <option value="RESUBMISSION">Resubmission</option>
+            </MUI.Select>
+          </MUI.FormControl>
         </MUI.Container>
 
         <MUI.TableContainer>
             <MUI.Table>
               <MUI.TableHead>
                 <MUI.TableRow>
-                  <MUI.TableCell><MUI.StarRoundedIcon></MUI.StarRoundedIcon></MUI.TableCell>
                   <MUI.TableCell>Scholar's Name</MUI.TableCell>
                   <MUI.TableCell>Scholarship type</MUI.TableCell>
                   <MUI.TableCell>Submission</MUI.TableCell>
+                  <MUI.TableCell>Submitted</MUI.TableCell>
                   <MUI.TableCell>Status</MUI.TableCell>
                   <MUI.TableCell>Action</MUI.TableCell>
                   <MUI.TableCell>Responder</MUI.TableCell>
@@ -134,21 +142,10 @@ export default function Submission({state}) {
                 .filter((row) => row.column2 && row.column2.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((row) => (
                   <MUI.TableRow key={row.id}>
-                    <MUI.TableCell>
-                      <MUI.IconButton
-                        onClick={() => handleBookmarkClick(row.id)}
-                        aria-label="filter"
-                      >
-                        {pressedRows.includes(row.id) ? (
-                        <MUI.StarRoundedIcon sx={{ color: '#00000' }} />
-                      ) : (
-                        <MUI.StarOutlineRoundedIcon />
-                      )}
-                      </MUI.IconButton>
-                    </MUI.TableCell>
                     <MUI.TableCell>{row.column2}</MUI.TableCell>
                     <MUI.TableCell>{row.column3}</MUI.TableCell>
                     <MUI.TableCell>{row.column4}</MUI.TableCell>
+                    <MUI.TableCell>{row.column6}</MUI.TableCell>
                     <MUI.TableCell>
                      <MUI.Typography>
                      <span className={classNames('submissionStatus', row.column5)}>
@@ -183,19 +180,19 @@ export default function Submission({state}) {
             </MUI.Table>
           </MUI.TableContainer>
 
-         <MUI.TablePagination 
-          style={{ margin: 'auto', display: 'flex', justifyContent: 'center' }}
-          rowsPerPageOptions={[5, 10, 25]} // You can customize the options
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={(event, newPage) => setPage(newPage === 0 ? 1 : newPage)}
-          onRowsPerPageChange={(event) => {
-            setRowsPerPage(parseInt(event.target.value, 10));
-            setPage(0);
-          }}
-        />
+            <MUI.TablePagination 
+              style={{ margin: 'auto', display: 'flex', justifyContent: 'center' }}
+              rowsPerPageOptions={[5, 10, 25]} // You can customize the options
+              component="div"
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage === 0 ? 1 : newPage)}
+              onRowsPerPageChange={(event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+              }}
+            />
 
     </MUI.Grid>
     </MUI.Container>

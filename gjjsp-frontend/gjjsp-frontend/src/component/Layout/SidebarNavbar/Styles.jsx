@@ -137,7 +137,8 @@ export const Drawer = MUI.styled(MuiDrawer, {
         width: '50ch',
       },
       color: '#032539',
-      border: '2px solid #032539',
+      border: '2px solid rgba(0,0,0,0.2)',
+      boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
       borderRadius: '8px',
       
     },

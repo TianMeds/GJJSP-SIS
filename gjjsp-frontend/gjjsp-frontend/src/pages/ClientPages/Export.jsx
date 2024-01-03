@@ -1,8 +1,9 @@
 import React from 'react'
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
+import * as MUI from '../../import';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { useState } from 'react';
-import useExportStore from '../../../store/ExportStore';
+import { Link } from 'react-router-dom';
+import useExportStore from '../../store/ExportStore';
 
 
 export default function Export() {
@@ -55,6 +56,17 @@ export default function Export() {
       <MUI.Grid container spacing={3}>
 
         <MUI.Grid item xs={12}>
+            <MUI.Box display="flex" flexDirection='row' alignItems="center" mb={-3}>
+            
+                <MUI.IconButton component={Link} to="/scholar">
+                    <MUI.KeyboardBackspaceIcon/>  
+                </MUI.IconButton>
+                <MUI.Typography >Back to Scholars</MUI.Typography>
+            
+            </MUI.Box>
+        </MUI.Grid> 
+
+        <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
             <MUI.Typography variant="h1" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mb: 2 }}>Export</MUI.Typography>
                       
@@ -105,18 +117,24 @@ export default function Export() {
         <MUI.Container sx={{ display: 'flex', alignItems: 'center' }}>
           <MUI.Typography sx={{m: 3}}>Schedule</MUI.Typography>
 
-          <MUI.FormControl sx={{ width: '180px', border: '2px solid #032539', borderRadius: '8px' }}>
+          <MUI.FormControl>
           <MUI.Select displayEmpty 
             value={exportSchedule}
             onChange={(e) => setExportSchedule(e.target.value)}
+            sx={{boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', 
+            borderRadius: '15px', 
+            height: '50px', 
+            color: 'black',
+            backgroundColor: 'rgba(0,0,0,0.1)',}}
+            native
           >
-              <MUI.MenuItem value="" disabled> Choose a Schedule </MUI.MenuItem>
-              <MUI.MenuItem value="None">None</MUI.MenuItem>
-              <MUI.MenuItem value="Daily">Daily</MUI.MenuItem>
-              <MUI.MenuItem value="Weekly">Weekly</MUI.MenuItem>
-              <MUI.MenuItem value="Monthly">Monthly</MUI.MenuItem>
-              <MUI.MenuItem value="Quarterly">Quarterly</MUI.MenuItem>
-              <MUI.MenuItem value="Yearly">Yearly</MUI.MenuItem>
+              <option value="" disabled> Choose a Schedule </option>
+              <option value="None">None</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Yearly">Yearly</option>
             </MUI.Select>
           </MUI.FormControl>
         

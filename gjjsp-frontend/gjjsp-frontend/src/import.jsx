@@ -52,7 +52,7 @@
   import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
   import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
   import SchoolIcon from '@mui/icons-material/School';
-  import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+  import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
   import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
   import PersonIcon from '@mui/icons-material/Person';
   import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -78,8 +78,8 @@
   import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
   import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
   import FoundationOutlinedIcon from '@mui/icons-material/FoundationOutlined';
-  import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
-  import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+  import BorderColorIcon from '@mui/icons-material/BorderColor';
+  import DeleteIcon from '@mui/icons-material/Delete';
   import TablePagination from '@mui/material/TablePagination';
   import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
   import StarRoundedIcon from '@mui/icons-material/StarRounded';
@@ -96,12 +96,14 @@
   import Fade from '@mui/material/Fade';
   import CircularProgress from '@mui/material/CircularProgress';
   import Backdrop from '@mui/material/Backdrop';
-  import Accordion from '@mui/material/Accordion';
-  import AccordionSummary from '@mui/material/AccordionSummary';
-  import AccordionDetails from '@mui/material/AccordionDetails';
   import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
   import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
   import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
+  import TableChartIcon from '@mui/icons-material/TableChart';
+  import PublicIcon from '@mui/icons-material/Public';
+  import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
+  import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+  import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -164,7 +166,7 @@
     AppRegistrationIcon,
     HelpOutlineIcon,
     SchoolIcon,
-    FileDownloadOutlinedIcon,
+    FileUploadOutlinedIcon,
     AddBoxOutlinedIcon,
     PersonIcon,
     AccountCircleIcon,
@@ -190,8 +192,8 @@
     SchoolOutlinedIcon,
     SettingsOutlinedIcon,
     FoundationOutlinedIcon,
-    BorderColorOutlinedIcon,
-    DeleteOutlineOutlinedIcon,
+    BorderColorIcon,
+    DeleteIcon,
     TablePagination,
     StarOutlineRoundedIcon,
     StarRoundedIcon,
@@ -208,10 +210,12 @@
     Fade,
     CircularProgress,
     Backdrop,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
     FormatListBulletedIcon,
     GroupsOutlinedIcon,
+    TableChartIcon,
     HandshakeOutlinedIcon,
+    PublicIcon,
+    CameraAltOutlinedIcon,
+    PersonAddAltOutlinedIcon,
+    AddCircleOutlineIcon
   };

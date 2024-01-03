@@ -41,7 +41,7 @@ const theme = MUI.createTheme({
     body2: {
         fontSize: '0.8rem',
         fontWeight: 400,
-        color: '#311b92',
+        textTransform: 'none'
     },
     error: {
         fontSize: '0.9rem',
@@ -58,7 +58,6 @@ const theme = MUI.createTheme({
         },
         contained: {
           color: 'white',
-          backgroundColor: '#311b92',
         },
         text: {
             color: '#311b92',

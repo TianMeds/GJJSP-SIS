@@ -3,6 +3,7 @@ import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import useScholarshipStore from '../../store/ScholarshipStore';
+import theme from '../../context/theme';
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 import { Form } from 'react-router-dom';
@@ -106,16 +107,18 @@ export default function Scholarship({state}) {
   
   return (
     <Layout>
+    <MUI.ThemeProvider theme={theme}>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <MUI.Grid container spacing={3}>
 
         <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}}  margin={2} justifyContent="space-between">
-            <MUI.Typography variant="h1" id="tabsTitle">Scholarships</MUI.Typography>
+            <MUI.Typography variant="h1" id="tabsTitle">Categories</MUI.Typography>
                       
               {/* Add User Button */}
-              <MUI.Button variant="contained" color="primary" id="addButton" sx={{width: {xs: '100px'} }} onClick={handleOpenScholarship}>
-                Add Projects 
+              <MUI.Button variant="contained" color="primary" id="addButton" onClick={handleOpenScholarship}>
+                <MUI.AddCircleOutlineIcon sx={{mr: 1}}/>
+                <MUI.Typography variant='body2'>Add Categories</MUI.Typography>
               </MUI.Button>
           </MUI.Box>
         </MUI.Grid>
@@ -139,11 +142,13 @@ export default function Scholarship({state}) {
             <MUI.FilterListIcon />
           </MUI.IconButton>
 
-          <MUI.FormControl id="filterControl">
+          <MUI.FormControl>
             <MUI.Select
               value={filteredStatus}
               onChange={(e) => setFilteredStatus(e.target.value)}
               native
+              sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
+              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
             >
               <option value="All">All</option>
               <option value="Closed for Application">Closed Application</option>
@@ -186,7 +191,7 @@ export default function Scholarship({state}) {
                   }}
                   onClick={() => handleEditClick(index)}
                 >
-                  <MUI.Typography>
+                  <MUI.Typography variant='h5'>
                   See for Information
                   </MUI.Typography>
                 </MUI.Button>
@@ -201,7 +206,7 @@ export default function Scholarship({state}) {
          {/* Add User Dialog */}
          <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* Content of the Dialog */}
-          <MUI.DialogTitle id="dialogTitle">{editMode ?  'Edit ' + selectedProject.projectName: 'New Project'}</MUI.DialogTitle>
+          <MUI.DialogTitle id="dialogTitle">{editMode ?  'Edit ' + selectedProject.projectName: 'New Categories'}</MUI.DialogTitle>
           <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
             <MUI.DialogContent>
               {/* Form Fields of New User*/}
@@ -371,6 +376,7 @@ export default function Scholarship({state}) {
         <DevTool control={control} />
       </MUI.Grid>
       </MUI.Container>
+    </MUI.ThemeProvider>
   </Layout>
   )
 }

@@ -9,6 +9,7 @@ const useUserStore = create((set) => ({
     userName: '',
     emailAddress: '',
     role: '',
+    userStatus: '',
     filteredRole: 'All',
     selectedUser: null,
     setEditUser: (newEditUser) => set({editUser: newEditUser}),
@@ -16,29 +17,30 @@ const useUserStore = create((set) => ({
     setName: (newName) => set({userName: newName}),
     setEmailAddress: (newEmailAddress) => set({emailAddress: newEmailAddress}),
     setRole: (newRole) => set({role: newRole}),
+    setUserStatus: (newUserStatus) => set({userStatus: newUserStatus}),
     setFilteredRole: (newFilteredRole) => set({filteredRole: newFilteredRole}),
  
      /* Function for Opening Add User Dialog */
     handleOpenUser: () => set({user: true}),
     handleCloseUser: () => set({user: false}),
     
-    addUser: (userName, emailAddress, role) =>
+    addUser: (userName, emailAddress, role, userStatus) =>
       set((store) => ({
         users: [
           ...store.users,
-          { id: uuidv4(), userName, emailAddress, role },
+          { id: uuidv4(), userName, emailAddress, role, userStatus },
         ],
         usersWithIndex: [
           ...store.usersWithIndex,
-          { userName, emailAddress, role, originalIndex: store.users.length },
+          { userName, emailAddress, role, userStatus, originalIndex: store.users.length },
         ],
     })),
 
-    updateUser: (userId, userName, emailAddress, role) => 
+    updateUser: (userId, userName, emailAddress, role, userStatus) => 
     set((store) => ({
       users: store.users.map((user) => 
         user.id === userId
-        ? { ...user, userName, emailAddress, role }
+        ? { ...user, userName, emailAddress, role, userStatus }
         : user
       ),
     })),

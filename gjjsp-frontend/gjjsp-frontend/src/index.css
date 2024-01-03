@@ -30,7 +30,12 @@
 #schoolNameGrid,
 #schoolAddressGrid,
 #schoolTypeGrid,
-#schoolPeriodGrid{
+#schoolPeriodGrid,
+#userStatusLabel,
+#scholarNameGrid,
+#scholarEmailGrid,
+#scholarCategoryGrid,
+#scholarStatusGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -44,7 +49,12 @@
 #schoolNameLabel,
 #schoolAddressLabel,
 #schoolTypeLabel,
-#schoolPeriodLabel{
+#schoolPeriodLabel,
+#userStatusLabel,
+#scholarNameLabel,
+#scholarEmailLabel,
+#scholarCategoryLabel,
+#scholarStatusLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -60,7 +70,12 @@
 #schoolNameLabel::after,
 #schoolAddressLabel::after,
 #schoolTypeLabel::after,
-#schoolPeriodLabel::after {
+#schoolPeriodLabel::after,
+#userStatusLabel::after,
+#scholarNameLabel::after,
+#scholarEmailLabel::after,
+#scholarCategoryLabel::after,
+#scholarStatusLabel::after {
     content: " *";
     color: red; 
 }   
