@@ -35,7 +35,10 @@
 #scholarNameGrid,
 #scholarEmailGrid,
 #scholarCategoryGrid,
-#scholarStatusGrid{
+#scholarStatusGrid
+#partnerNameGrid,
+#partnerMobileNumGrid,
+#partnerSchoolGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -54,7 +57,10 @@
 #scholarNameLabel,
 #scholarEmailLabel,
 #scholarCategoryLabel,
-#scholarStatusLabel{
+#scholarStatusLabel,
+#partnerNameLabel,
+#partnerMobileNumLabel,
+#partnerSchoolLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -75,7 +81,10 @@
 #scholarNameLabel::after,
 #scholarEmailLabel::after,
 #scholarCategoryLabel::after,
-#scholarStatusLabel::after {
+#scholarStatusLabel::after,
+#partnerNameLabel::after,
+#partnerMobileNumLabel::after,
+#partnerSchoolLabel::after {
     content: " *";
     color: red; 
 }   

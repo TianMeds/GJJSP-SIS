@@ -205,6 +205,7 @@ export default function User({state}) {
             <MUI.DialogTitle id="dialogTitle">New Users</MUI.DialogTitle>
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
               <MUI.DialogContent>
+                
                 {/* Form Fields of New User*/}
                 <MUI.Grid id="userNameGrid">
                   <MUI.InputLabel htmlFor="userName" id="userNameLabel">Name</MUI.InputLabel>
