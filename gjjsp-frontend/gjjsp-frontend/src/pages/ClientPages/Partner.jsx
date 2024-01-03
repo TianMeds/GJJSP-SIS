@@ -178,7 +178,7 @@ export default function Partner({state}) {
 
           {/* -------- Add Partner Dialog ----------*/}
           <MUI.Dialog open={partner} onClose={handleClosePartner} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
-            <MUI.DialogTitle id="dialogTitle">Add Partner</MUI.DialogTitle>
+            <MUI.DialogTitle id="dialogTitle">{editPartner ? 'Edit Partner' : 'Add Partner'}</MUI.DialogTitle>
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
             <MUI.DialogContent>
               
