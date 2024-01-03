@@ -18,6 +18,7 @@ import ScholarDashboard from './pages/ScholarPages/ScholarDashboard/ScholarDashb
 import ScholarSubmission from './pages/ScholarPages/ScholarSubmission/ScholarSubmission';
 import ScholarProfile from './pages/ScholarPages/ScholarProfile/ScholarProfile';
 import Profile from './pages/ClientPages/Profile';
+import ForgotPassword from './pages/GeneralPages/ForgotPassword';
 
 const ROLES = {
   'Admin': 1,
@@ -32,6 +33,8 @@ function App() {
       <Route path="login" element={<Login/>}/>
       <Route path='*' element={<NotFound/>}/>
       <Route path='unauthorized' element={<Unauthorized/>}/>
+      <Route path='forgot-password' element={<ForgotPassword/>}/>
+
 
 
     {/* Protected Route */}

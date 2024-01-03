@@ -231,7 +231,7 @@ export default function Login() {
             {/* Forgot Password Link  */}
               <MUI.Grid container>
                 <MUI.Grid item xs>
-                  <MUI.Link href="#" variant="body1">
+                  <MUI.Link href="/forgot-password" variant="body1">
                     Forgot password?
                   </MUI.Link>
                 </MUI.Grid>

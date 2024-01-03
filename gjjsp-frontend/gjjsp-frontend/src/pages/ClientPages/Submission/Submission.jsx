@@ -75,11 +75,11 @@ export default function Submission({state}) {
 
         <MUI.Grid item xs={12}>
         <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} justifyContent="space-between">
-              <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Partner</MUI.Typography>
+              <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Submission</MUI.Typography>
                         
               <MUI.Box>     
                 {/* Add User Button */}
-                <MUI.Button variant="contained" component={Link} to='/notification' id='addButton' sx={{mr:4}} >
+                <MUI.Button variant="contained" component={Link} to='/notification' state={{ from: 'submission'}} id='addButton' sx={{mr:4}} >
                   <MUI.NotificationsIcon  sx={{transform: 'rotate(45deg)', mr: 1}}/>
                   <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
                 </MUI.Button>
@@ -88,7 +88,7 @@ export default function Submission({state}) {
             </MUI.Box>
         </MUI.Grid> 
 
-        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center', mb: 6 }}>
+        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center', mb: 6, ml: -2 }}>
           <Search>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />

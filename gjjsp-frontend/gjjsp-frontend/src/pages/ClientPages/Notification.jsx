@@ -3,7 +3,7 @@ import * as MUI from '../../import';
 import useNotificationStore from '../../store/NotificationStore';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import theme from '../../context/theme';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Notification({state}) {
 
@@ -70,6 +70,8 @@ export default function Notification({state}) {
     setRecipient('');
     setEditNotif(false);
   }
+
+
   return (
     <Layout>
       <MUI.ThemeProvider theme={theme}>
@@ -79,10 +81,12 @@ export default function Notification({state}) {
             <MUI.Grid item xs={12}>
               <MUI.Box display="flex" flexDirection='row' alignItems="center" sx={{mb: 3}}>
               
-                  <MUI.IconButton component={Link} to="/scholar">
-                      <MUI.KeyboardBackspaceIcon/>  
-                  </MUI.IconButton>
-                  <MUI.Typography >Back to Scholars</MUI.Typography>
+              <MUI.IconButton component={Link} to="/">
+                <MUI.KeyboardBackspaceIcon />
+              </MUI.IconButton>
+              <MUI.Typography variant="body2" component="span">
+                Back to Dashboard
+              </MUI.Typography>
               
               </MUI.Box>
 
