@@ -42,7 +42,7 @@ export const ScholarProfileBox = () => {
        >
        <MUI.Box>
          <MUI.Typography variant='h5'>Name</MUI.Typography>
-         <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
+         <MUI.Typography sx={{ mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
        </MUI.Box>
 
        <MUI.Box>
