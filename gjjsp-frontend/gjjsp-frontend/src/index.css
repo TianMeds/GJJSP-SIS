@@ -2,6 +2,10 @@
     color: red;
     font-size: 13px !important;
 }
+#errMsg{
+    color: red;
+    font-size: 13px !important;
+}
 
 #tabsTitle{
     font-size: 1.5rem;
@@ -21,6 +25,8 @@
 }
 #userNameGrid, 
 #emailAddressGrid,
+#passwordGrid,
+#userMobileNumGrid,
 #roleGrid, 
 #projectNameGrid,
 #aliasGrid,
@@ -31,7 +37,7 @@
 #schoolAddressGrid,
 #schoolTypeGrid,
 #schoolPeriodGrid,
-#userStatusLabel,
+#userStatusGrid,
 #scholarNameGrid,
 #scholarEmailGrid,
 #scholarCategoryGrid,
@@ -43,6 +49,8 @@
 }
 #userNameLabel, 
 #emailAddressLabel, 
+#passwordLabel,
+#userMobileNumLabel,
 #roleLabel,
 #projectNameLabel,
 #aliasLabel,
@@ -67,6 +75,8 @@
 }
 #userNameLabel::after, 
 #emailAddressLabel::after, 
+#passwordLabel::after,
+#userMobileNumLabel::after,
 #roleLabel::after,
 #projectNameLabel::after,
 #aliasLabel::after,
@@ -100,7 +110,7 @@
     color: #44546F;
     font-weight: 600;
 }
-#Button{
+#Button, #addUserBtn{
     text-transform: capitalize;
     margin-right: 20px;
     margin-bottom: 20px;
@@ -129,3 +139,5 @@
     background: rgba(223, 252, 240, 1);
     font-weight: bold;  
 }
+
+

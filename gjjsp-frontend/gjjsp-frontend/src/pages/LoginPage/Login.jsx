@@ -1,4 +1,4 @@
-import React, { useState, useEffect }  from 'react';
+import React, { lazy, Suspense }  from 'react';
 import * as MUI from '../../import';
 import axios from '../../api/axios';
 import useAuth from '../../hooks/useAuth';
@@ -6,10 +6,12 @@ import useLoginStore from '../../store/LoginStore'
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate} from 'react-router-dom';
 import { DevTool } from '@hookform/devtools';
-import { LoaderAnimation } from '../../component/LoadingAnimation/LoaderAnimation';
-import { LeftGrid } from './LeftGrid';
-import { ErrMsg } from '../../component/ErrorMsg/ErrMsg';
+import LoaderAnimation from '../../component/LoadingAnimation/LoaderAnimation';
 import theme from '../../context/theme';
+
+//Component Imports
+const LazyLeftGrid = lazy(() => import('./LeftGrid'));
+const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 const LOGIN_URL = '/api/login'
@@ -108,7 +110,9 @@ export default function Login() {
     <MUI.ThemeProvider theme={theme}>
     {/*  Right Grid is the Picture Grid  */}
     <MUI.Grid container component="main" sx={{ height: '100vh' }}>
-      <LeftGrid/>
+      <Suspense fallback='Scholarlink Loading...'>
+        <LazyLeftGrid/>
+      </Suspense>
 
       {/* Left Grid is the Login Form  */}
       <MUI.Grid item xs={12} sm={12} md={5} component={MUI.Paper} elevation={6} square container 
@@ -209,7 +213,9 @@ export default function Login() {
                     </MUI.Typography>
                   )}
                 </MUI.Grid>
-                <ErrMsg/>
+                <Suspense fallback="Scholarlink Loading...">
+                  <LazyErrMsg/>
+                </Suspense>
             <br/>
 
               {/* Remember Me Checkbox  */}

@@ -2,7 +2,7 @@ import React from 'react'
 import useLoginStore from '../../store/LoginStore'
 import * as MUI from '../../import'
 
-export const  ErrMsg = () => {
+const  ErrMsg = () => {
     const {errMsg} = useLoginStore();
   return (
     <>
@@ -15,3 +15,5 @@ export const  ErrMsg = () => {
     </>
   )
 }
+
+export default ErrMsg

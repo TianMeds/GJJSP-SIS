@@ -1,6 +1,6 @@
 import React from 'react'
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
+import * as MUI from '../../import';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
 
 export default function Create() {
   return (

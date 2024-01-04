@@ -2,7 +2,7 @@ import React from 'react'
 import * as MUI from '../../import'
 import theme from '../../context/theme';
 import { useForm, Controller } from 'react-hook-form';
-import { LoaderAnimation } from '../../component/LoadingAnimation/LoaderAnimation';
+import LoaderAnimation from '../../component/LoadingAnimation/LoaderAnimation';
 
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
@@ -25,7 +25,6 @@ export default function ForgotPassword() {
         padding: '20px',
         border: '1px solid #ccc',
         borderRadius: '8px',
-        maxWidth: '400px',
         margin: 'auto',
         mt: '50px',
         width: '100%',

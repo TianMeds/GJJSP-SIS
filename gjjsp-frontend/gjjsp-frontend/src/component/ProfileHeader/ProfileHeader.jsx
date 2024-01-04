@@ -73,6 +73,7 @@ export const ProfileHeader = () => {
                         >
                             {avatarSrc ? null : 'CM'}
                         </MUI.Avatar>
+
                         {isHovered && (
                             <div
                             style={{

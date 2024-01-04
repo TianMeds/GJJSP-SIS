@@ -20,26 +20,32 @@ use App\Http\Controllers\RoleController;
 
 //Protected Route
 Route::group(['middleware' => ['auth:sanctum']], function() {
+
+    //CRUD USERS 
+    Route::apiResource('/users', UserController::class)->only(['index', 'show']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    
+    //Scholars Route
+    Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
     Route::post('/scholars', [ScholarController::class, 'store']);
     Route::put('/scholars/{user_id}', [ScholarController::class, 'update']);
     Route::delete('/scholars/{user_id}', [ScholarController::class, 'destroy']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{firstname}', [UserController::class, 'destroy']);
+    Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
+
+    //Roles Route
+    Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);
+
+    //Auth Route
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/register', [AuthController::class, 'register']);
-    Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
-    Route::apiResource('/users', UserController::class)->only(['index', 'show']);
-    Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);
-    Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
-    Route::get('/users/search/{firstname}', [UserController::class, 'search']);
    // Route::get('/refresh-token', [AuthController::class,'refreshToken']); 
 });
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;

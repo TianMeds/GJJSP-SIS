@@ -1,9 +1,9 @@
 import React from 'react'
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
+import * as MUI from '../../import';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
-import useSubmissionStore from '../../../store/SubmissionStore'
-import StatusProgress from '../../Components/StatusProgress';
+import useSubmissionStore from '../../store/SubmissionStore'
+import StatusProgress from '../Components/StatusProgress';
 import faker from 'faker';
 import classNames from 'classnames';
 

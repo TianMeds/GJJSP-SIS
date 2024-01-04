@@ -3,24 +3,42 @@ import { v4 as uuidv4 } from 'uuid';
 
 const useUserStore = create((set) => ({
     usersWithIndex: [], 
-    users: [],
     editUser:  false,
-    user: false,
-    userName: '',
-    emailAddress: '',
-    role: '',
-    userStatus: '',
-    filteredRole: 'All',
     selectedUser: null,
     setEditUser: (newEditUser) => set({editUser: newEditUser}),
     setSelectedUser: (selectedUser) => set({ selectedUser}),
-    setName: (newName) => set({userName: newName}),
-    setEmailAddress: (newEmailAddress) => set({emailAddress: newEmailAddress}),
-    setRole: (newRole) => set({role: newRole}),
-    setUserStatus: (newUserStatus) => set({userStatus: newUserStatus}),
+
+    //Hook For the Filter of Table 
+    filteredRole: 'All',
     setFilteredRole: (newFilteredRole) => set({filteredRole: newFilteredRole}),
+    searchQuery: '',
+    setSearchQuery: (query) => set({ searchQuery: query }),
+    handleSearch: (e) => set({ searchQuery: e.target.value }),
+
+    //Hooks for Get User Data
+    users: [],
+    user: false,
+    setUsers: (users) => set({ users }),
+
+    //Hooks for User Form
+    first_name: '',
+    middle_name: '',
+    last_name: '',
+    user_mobile_num: '',
+    email_address: '',
+    password: '',
+    role_id: '',
+    user_status: '',
+    setFirstName: (newFirstName) => set({ first_name: newFirstName }),
+    setMiddleName: (newMiddleName) => set({ middle_name: newMiddleName }),
+    setLastName: (newLastName) => set({ last_name: newLastName }),
+    setUserMobileNum: (newUserMobileNum) => set({ user_mobile_num: newUserMobileNum }),
+    setEmailAddress: (newEmailAddress) => set({ email_address: newEmailAddress }),
+    setPassword: (newPassword) => set({ password: newPassword }),
+    setRoleId: (newRoleId) => set({ role_id: newRoleId }),
+    setUserStatus: (newUserStatus) => set({ user_status: newUserStatus }),
  
-     /* Function for Opening Add User Dialog */
+    //Hooks for opening & closing user form
     handleOpenUser: () => set({user: true}),
     handleCloseUser: () => set({user: false}),
     
@@ -50,11 +68,6 @@ const useUserStore = create((set) => ({
         users: store.users.filter((user) => user.id !== userId),
         usersWithIndex: store.usersWithIndex.filter((user) => user.id !== userId),
     })),
-
-  /* --------------------------------------SEARCH BAR ------------------------------------- */
-  searchQuery: '',
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  handleSearch: (e) => set({ searchQuery: e.target.value }),
     
 }))
 

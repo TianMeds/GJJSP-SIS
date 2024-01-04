@@ -1,18 +1,29 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import theme from '../../context/theme';
 import useUserStore from '../../store/UserStore';
+import useLoginStore from '../../store/LoginStore';
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 import { Form, Link } from 'react-router-dom';
+import axios from '../../api/axios';
 
+
+//Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+const CONTACT_REGEX = /^(09\d{9}|0(2|2[1-8]\d|2[1-8]\d[1-9]|2[1-8]\d[1-9]\d)\d{7})$/
 
+
+//Reseting Form Values 
 const FormValues = {
-  userName: "",
+  first_name: "",
+  middle_name: "",
+  last_name: "",
+
   emailAddress: "",
   role: "",
   userStatus: "",
@@ -24,60 +35,76 @@ export default function User({state}) {
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
 
-  const onSubmit = (data) => {
-    console.log('Form submitted',data);  
+  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch} = useUserStore();
 
-    if(editUser) {
-      updateUser(selectedUser.id, data.userName, data.emailAddress, data.role, data.userStatus);
-      setEditUser(false);
-      form.reset(FormValues); 
-    }
-    else{
-      addUser(data.userName, data.emailAddress, data.role, data.userStatus);
-    }
-    form.reset();
-    handleCloseUser();
-    
-  }
+  const { showPassword, handleTogglePassword} = useLoginStore();
 
-  const {
-    user,
-    handleOpenUser,
-    handleCloseUser,
-    filteredRole,
-    setFilteredRole,
-    editUser,
-    setEditUser,
-    updateUser,
-    searchQuery,
-    handleSearch,
-    selectedUser,
-    setSelectedUser,
-    addUser = ((store) => store.addUser),
-    deleteUser = ((store) => store.deleteRow),
-    users = ((store) => store.users.filter((user) => user.state === state)),
-  } = useUserStore();
+
+  // Post Data to API 
+  const onSubmit = (data, event) => {
+    event.preventDefault();
   
-  const handleEditUser = (userId) => {
-    const selectedUser = users.find((user) => user.id === userId);
-    if (selectedUser) {
-      setSelectedUser(selectedUser);
-      reset({
-        userName: selectedUser.userName,
-        emailAddress: selectedUser.emailAddress,
-        role: selectedUser.role,
-        userStatus: selectedUser.userStatus,
-      });
-      setEditUser(true);
-      handleOpenUser();
-    }
+    const authToken = localStorage.getItem('remember_token');
+  
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+      },
+    };
+  
+    axios.post('/api/users', {
+      first_name: data.first_name,
+      middle_name: data.middle_name,
+      last_name: data.last_name,
+      user_mobile_num: data.user_mobile_num,
+      email_address: data.email_address,
+      password: data.password,
+      role_id: data.role_id,
+      user_status: data.user_status,
+    }, config)
+    .then(res => {
+      console.log('Posting Data', res);
+      handleCloseUser(); // Call the hook after successful submission
+    })
+    .catch(err => console.log(err));
+
   };
 
-  const handleDeleteUser = (userId) => {
-    const selectedUser = users.find((user) => user.id === userId);
-    if (selectedUser) {
-      deleteUser(selectedUser.id);
-    }
+  // Get Function Data
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const authToken = localStorage.getItem('remember_token');
+        const response = await axios.get('/api/users',{
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setUsers(response.data.data); // Assuming the array is under response.data.data
+        } else {
+          console.error('Failed to fetch data');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+
+  // Delete Function Data
+  const deleteUser = (event, id) => {
+    event.preventDefault();
+
+    axios.delete(`/api/users/${id}`)
+    .then(res => {
+      console.log(res);
+    })
+    .catch(err => console.log(err));
   }
 
   const handleCancelUser = () => {
@@ -85,6 +112,12 @@ export default function User({state}) {
     setEditUser(false);
     handleCloseUser(); // Close the dialog
   }
+
+  const roleMapping = { 
+    'Administrator': 1,
+    'Scholar Manager': 2,
+    'Scholar': 3,
+  };
   
   return (
   <Layout>
@@ -137,7 +170,8 @@ export default function User({state}) {
             </MUI.Select>
           </MUI.FormControl>
           </MUI.Container>
-          
+
+
           {/* -------- Table Section  ----------*/}
           <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2', margin: '2rem 0 0 1rem' }}>
             <MUI.Table> 
@@ -152,19 +186,23 @@ export default function User({state}) {
               </MUI.TableHead>
                 <MUI.TableBody>
                   {users
-                    .filter((user) => filteredRole === "All" || user.role === filteredRole)
+                    .filter((user) => {
+                      return filteredRole === 'All' ? true : (
+                        user.role_id === (roleMapping[filteredRole] || null)
+                      );
+                    })
                     .filter((user) => 
-                    (user.userName && user.userName.toLowerCase().includes(searchQuery?.toLowerCase())) ||
-                    (user.emailAddress && user.emailAddress.toLowerCase().includes(searchQuery?.toLowerCase()))
+                      (user.email_address && user.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
+                      ((`${user.first_name} ${user.middle_name} ${user.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
-                    .reverse()
-                    .map((user) => (
-                    (user.userName || user.emailAddress || user.role) && (
-                    <MUI.TableRow key={user.id} className='user' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='name'>{user.userName}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.emailAddress}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='role'>{user.role}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.userStatus}</MUI.TableCell>
+                    .map((user, index) => (
+                    <MUI.TableRow key={index} className='user' >
+                      <MUI.TableCell sx={{border: 'none'}}  className='name'>{`${user.first_name} ${user.middle_name} ${user.last_name}`}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.email_address}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='role'>
+                        {user.role_id === 1 ? 'Scholarship Administrator' : user.role_id === 2 ? 'Scholar Manager' : 'Scholar'}
+                      </MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.user_status}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
                         <MUI.IconButton color="inherit" component={Link} to="/profile">
@@ -173,7 +211,6 @@ export default function User({state}) {
 
                         <MUI.IconButton
                           color="inherit"
-                          onClick={() => handleEditUser(user.id)}
                         >
                           <MUI.BorderColorIcon />
 
@@ -181,8 +218,9 @@ export default function User({state}) {
 
 
                         <MUI.IconButton
+                          type='button'
                           color="inherit"
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={(event) => deleteUser(event, user.id)}
                           sx={{ textTransform: 'capitalize' }}
                         >
                           <MUI.DeleteIcon />
@@ -191,7 +229,7 @@ export default function User({state}) {
 
                       </MUI.TableCell>
                     </MUI.TableRow>
-                  )))}
+                  ))}
                 </MUI.TableBody>
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>
@@ -200,7 +238,7 @@ export default function User({state}) {
           {/* ------------------ Dialog Box of the  Users ---------------*/ }
 
           {/* Add User Dialog */}
-          <MUI.Dialog open={user} onClose={handleCloseUser} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
+          <MUI.Dialog open={user} onClose={handleCloseUser} fullWidth maxWidth="xs" onSubmit={handleSubmit(onSubmit)} component='form' method='post' noValidate>
             {/* Content of the Dialog */}
             <MUI.DialogTitle id="dialogTitle">New Users</MUI.DialogTitle>
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
@@ -208,17 +246,17 @@ export default function User({state}) {
                 
                 {/* Form Fields of New User*/}
                 <MUI.Grid id="userNameGrid">
-                  <MUI.InputLabel htmlFor="userName" id="userNameLabel">Name</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="first_name" id="userNameLabel">First Name</MUI.InputLabel>
                     <MUI.TextField 
                       type='text'
-                      id='userName'
+                      id='first_name'
                       placeholder='Name' 
                       fullWidth 
                       
-                      {...register("userName", {
+                      {...register("first_name", {
                         required: {
                           value: true,
-                          message: 'Full name is required',
+                          message: 'First name is required',
                         },
                         pattern: {
                           value: USER_REGEX,
@@ -226,22 +264,99 @@ export default function User({state}) {
                         }
                       })}
                     />
-                    {errors.userName && (
+                    {errors.first_name && (
                      <p id='errMsg'> 
                       <MUI.InfoIcon className='infoErr'/> 
-                      {errors.userName?.message}  
+                      {errors.first_name?.message}  
                      </p>
                     )}
                 </MUI.Grid>
 
+                <MUI.Grid id="userNameGrid">
+                  <MUI.InputLabel htmlFor="middle_name" id="userNameLabel">Middle Name</MUI.InputLabel>
+                    <MUI.TextField 
+                      type='text'
+                      id='middle_name'
+                      placeholder='Name' 
+                      fullWidth 
+                      
+                      {...register("middle_name", {
+                        required: {
+                          value: true,
+                          message: 'Middle name is required',
+                        },
+                        pattern: {
+                          value: USER_REGEX,
+                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
+                        }
+                      })}
+                    />
+                    {errors.middle_name && (
+                     <p id='errMsg'> 
+                      <MUI.InfoIcon className='infoErr'/> 
+                      {errors.middle_name?.message}  
+                     </p>
+                    )}
+                </MUI.Grid>
+
+                <MUI.Grid id="userNameGrid">
+                  <MUI.InputLabel htmlFor="last_name" id="userNameLabel">Last Name</MUI.InputLabel>
+                    <MUI.TextField 
+                      type='text'
+                      id='last_name'
+                      placeholder='Name' 
+                      fullWidth 
+                      
+                      {...register("last_name", {
+                        required: {
+                          value: true,
+                          message: 'Last name is required',
+                        },
+                        pattern: {
+                          value: USER_REGEX,
+                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
+                        }
+                      })}
+                    />
+                    {errors.last_name && (
+                     <p id='errMsg'> 
+                      <MUI.InfoIcon className='infoErr'/> 
+                      {errors.last_name?.message}  
+                     </p>
+                    )}
+                </MUI.Grid>
+
+                <MUI.Grid id="userMobileNumGrid">
+                  <MUI.InputLabel htmlFor="user_mobile_num" id="userMobileNumLabel">Mobile Number</MUI.InputLabel>
+                  <MUI.TextField 
+                    type='text'
+                    id='user_mobile_num'
+                    placeholder='(09XX)-XXX-XXXX' 
+                    fullWidth 
+                    {...register("user_mobile_num", {
+                      required: {
+                        value: true,
+                        message: 'Mobile Number is required',
+                      },
+                      pattern: {
+                        value: CONTACT_REGEX,
+                        message: 'Please enter a valid mobile number',
+                      }
+                    })}
+                  />
+                  {errors.user_mobile_num && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.user_mobile_num?.message}</p>
+                  )}
+                </MUI.Grid>
+
                 <MUI.Grid id="emailAddressGrid">
-                  <MUI.InputLabel htmlFor="emailAddress" id="emailAddressLabel">Email</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="email_address" id="emailAddressLabel">Email</MUI.InputLabel>
                   <MUI.TextField 
                     type='email'
-                    id='emailAddress'
+                    id='email_address'
                     placeholder='Email Address' 
                     fullWidth 
-                    {...register("emailAddress", {
+                    {...register("email_address", {
                       required: {
                         value: true,
                         message: 'Email Address is required',
@@ -257,10 +372,45 @@ export default function User({state}) {
                   )}
                 </MUI.Grid>
 
+                <MUI.Grid id="passwordGrid">
+                  <MUI.InputLabel htmlFor="password" id="passwordLabel">Password</MUI.InputLabel>
+                  <MUI.TextField
+                    type={showPassword ? 'text' : 'password'}
+                    id='password'
+                    placeholder='Password'
+                    fullWidth
+                    InputProps={{
+                      endAdornment: (
+                        <MUI.InputAdornment position="end">
+                          <MUI.IconButton onClick={handleTogglePassword} edge="end">
+                            {showPassword ? 
+                            <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                            }
+                          </MUI.IconButton>
+                        </MUI.InputAdornment>
+                      ),
+                    }} 
+                    {...register("password", {
+                      required: {
+                        value: true,
+                        message: 'Password is required',
+                      },
+                      pattern: {
+                        value: PWD_REGEX,
+                        message: 'Password should contain atleast 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character',
+                      }
+                    })}
+                  />
+                  {errors.password && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.password?.message}</p>
+                  )}
+                </MUI.Grid>
+
+
                 <MUI.Grid id="roleGrid">
-                  <MUI.InputLabel htmlFor="role" id='roleLabel'>Role</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="role_id" id='roleLabel'>Role</MUI.InputLabel>
                   <Controller
-                    name="role"
+                    name="role_id"
                     control={control}
                     defaultValue=''
                     rules={{ 
@@ -271,14 +421,14 @@ export default function User({state}) {
                       
                       <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
                         <MUI.Select
-                          id='role'
+                          id='role_id'
                           native
                           {...field}
                         >
                           <option value="" disabled>Select Role</option>
-                          <option value="Administrator">Scholarship Administrator</option>
-                          <option value="Scholar Manager">Scholar Manager</option>
-                          <option value="Scholar">Scholar</option>
+                          <option value="1">Scholarship Administrator</option>
+                          <option value="2">Scholar Manager</option>
+                          <option value="3">Scholar</option>
                         </MUI.Select>
                       </MUI.FormControl>
                     )}
@@ -289,9 +439,9 @@ export default function User({state}) {
                 </MUI.Grid>
 
                 <MUI.Grid id="userStatusGrid">
-                  <MUI.InputLabel htmlFor="userStatus" id='userStatusLabel'>Status</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="user_status" id='userStatusLabel'>Status</MUI.InputLabel>
                   <Controller
-                    name="userStatus"
+                    name="user_status"
                     control={control}
                     defaultValue=''
                     rules={{ 
@@ -302,7 +452,7 @@ export default function User({state}) {
                       
                       <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
                         <MUI.Select
-                          id='userStatus'
+                          id='user_status'
                           native
                           {...field}
                         >
@@ -314,8 +464,8 @@ export default function User({state}) {
                       </MUI.FormControl>
                     )}
                   />
-                  {errors.userStatus && (
-                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.userStatus?.message}</p>
+                  {errors.user_status && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.user_status?.message}</p>
                   )} 
                 </MUI.Grid>
 
@@ -330,7 +480,7 @@ export default function User({state}) {
                     color="primary" 
                     type='submit' 
                     variant='contained'
-                    id='Button'
+                    id='addUserBtn'
                     >
                     {editUser ? 'Save Changes' : 'Add user'}
                   </MUI.Button>
