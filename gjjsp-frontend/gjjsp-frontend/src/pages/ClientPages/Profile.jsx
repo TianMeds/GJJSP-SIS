@@ -4,6 +4,7 @@ import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { ProfileBox } from '../../component/ProfileBox/ProfileBox';
 import { ProfileHeader } from '../../component/ProfileHeader/ProfileHeader';
 import theme from '../../context/theme';
+
 export default function Profile() {
   return (
     <Layout>

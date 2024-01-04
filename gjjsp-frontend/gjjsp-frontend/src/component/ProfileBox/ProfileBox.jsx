@@ -56,12 +56,8 @@ export const ProfileBox = () => {
           }}
         >
           
+            
             <MUI.Box>
-                <MUI.Typography variant='h5'>Facebook Account</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
-            </MUI.Box>
-
-            <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Email Address</MUI.Typography>
                 <MUI.Typography sx={{mt: 2}}>{email_address}</MUI.Typography>
             </MUI.Box>
@@ -73,6 +69,7 @@ export const ProfileBox = () => {
 
         </MUI.Box>
       </MUI.Grid>
+      
     </MUI.Grid>
   )
 }
