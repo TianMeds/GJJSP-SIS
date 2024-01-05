@@ -119,7 +119,6 @@ export const SP_ListItems = (
   </MUI.ListSubheader>
 
     <CustomListItem to="/scholar-dashboard" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
-    <CustomListItem to="/scholar-profile" icon={<MUI.PersonIcon />} secondary="Profile" />
     <CustomListItem to="/scholar-submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
   
   {/* -------------------- Quick Actions Drawer Option --------------------*/}

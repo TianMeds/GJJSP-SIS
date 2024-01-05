@@ -42,12 +42,10 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user, $id)
     {
-        $user->update($request->only([
-            'first_name','middle_name','last_name','user_mobile_num',
-            'email_address','password','role_id','user_status',
-        ]));
+        $user = User::find($id);
+        $user->update($request->all());
         return new UserResource($user);
     }
 

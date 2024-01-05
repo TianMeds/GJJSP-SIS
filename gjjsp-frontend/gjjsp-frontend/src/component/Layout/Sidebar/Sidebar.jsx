@@ -21,6 +21,7 @@ export const Account = () => {
     const {auth} = useAuth();
     const last_name = auth?.user?.last_name || '';
     const roles_name = auth.roles_name || '';
+    const role_id = auth?.user?.role_id || '';
 
     return (
     <MUI.ThemeProvider theme={theme}>
@@ -38,7 +39,7 @@ export const Account = () => {
               <MUI.Typography variant="body2" color="textSecondary">
                 {roles_name}
               </MUI.Typography>
-              <MUI.Button variant='text' sx={{mt: -3, ml: -1}} component={Link} to="/profile">
+              <MUI.Button variant='text' sx={{mt: -3, ml: -1}} component={Link} to={role_id === 1  ? '/profile'  : role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/login'}>
               See Profile
             </MUI.Button>
             </MUI.Box>

@@ -205,11 +205,13 @@ function App() {
           </Suspense>
           }
         />
+      
 
       </Route>
 
       {/* All Routes */}
-      <Route element={<RequireAuth allowedRoles={[ROLES.Admin, ROLES.Manager, ROLES.Scholar]}/>}> 
+      <Route element={<RequireAuth allowedRoles={[ROLES.Admin, ROLES.Manager, ROLES.Scholar]}/>}>
+
 
         <Route 
           path="create" 

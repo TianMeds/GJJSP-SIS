@@ -25,6 +25,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::apiResource('/users', UserController::class)->only(['index', 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
     
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
@@ -45,7 +46,6 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;

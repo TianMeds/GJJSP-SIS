@@ -35,7 +35,9 @@ export default function User({state}) {
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
 
-  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch} = useUserStore();
+  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
+    selectedUser, setSelectedUser
+  } = useUserStore();
 
   const { showPassword, handleTogglePassword} = useLoginStore();
 
@@ -53,22 +55,33 @@ export default function User({state}) {
       },
     };
   
-    axios.post('/api/users', {
-      first_name: data.first_name,
-      middle_name: data.middle_name,
-      last_name: data.last_name,
-      user_mobile_num: data.user_mobile_num,
-      email_address: data.email_address,
-      password: data.password,
-      role_id: data.role_id,
-      user_status: data.user_status,
-    }, config)
-    .then(res => {
-      console.log('Posting Data', res);
-      handleCloseUser(); // Call the hook after successful submission
-    })
-    .catch(err => console.log(err));
-
+    if(editUser) {
+      axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
+      .then(res => {
+        console.log("Updating Data", res);
+        handleCloseUser(); // Call the hook after successful submission
+        setEditUser(false)
+        setSelectedUser(null)
+      }, config)
+      .catch(err => console.log(err));
+    }
+    else{
+      axios.post('/api/users', {
+        first_name: data.first_name,
+        middle_name: data.middle_name,
+        last_name: data.last_name,
+        user_mobile_num: data.user_mobile_num,
+        email_address: data.email_address,
+        password: data.password,
+        role_id: data.role_id,
+        user_status: data.user_status,
+      }, config)
+      .then(res => {
+        console.log('Posting Data', res);
+        handleCloseUser(); // Call the hook after successful submission
+      })
+      .catch(err => console.log(err));
+    }
   };
 
   // Get Function Data
@@ -83,7 +96,7 @@ export default function User({state}) {
         });
 
         if (response.status === 200) {
-          setUsers(response.data.data); // Assuming the array is under response.data.data
+          setUsers(response.data.data); 
         } else {
           console.error('Failed to fetch data');
         }
@@ -95,12 +108,27 @@ export default function User({state}) {
     fetchUsers();
   }, []);
 
+  // Update Function Data
+  const updateUser = (userId) => {
+    const selectedUser = users.find(user => user.id === userId);
+    setEditUser(true);
+    setSelectedUser(selectedUser)
+    handleOpenUser();
+    form.reset(selectedUser);
+  }
+
+
 
   // Delete Function Data
-  const deleteUser = (event, id) => {
+  const deleteUser = async (event, id) => {
     event.preventDefault();
 
-    axios.delete(`/api/users/${id}`)
+    const authToken = localStorage.getItem('remember_token');
+    const response = await axios.delete(`/api/users/${id}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}` // Include the token in the Authorization header
+      }
+    })
     .then(res => {
       console.log(res);
     })
@@ -211,6 +239,7 @@ export default function User({state}) {
 
                         <MUI.IconButton
                           color="inherit"
+                          onClick={() => updateUser(user.id)}
                         >
                           <MUI.BorderColorIcon />
 
