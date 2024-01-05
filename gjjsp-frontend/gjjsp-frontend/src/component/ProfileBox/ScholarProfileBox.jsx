@@ -38,11 +38,13 @@ export const ScholarProfileBox = () => {
            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
            padding: '20px',
            borderRadius: '5px',
+           '@media (max-width: 600px)': {
+            flexDirection: 'column',}
          }}
        >
        <MUI.Box>
          <MUI.Typography variant='h5'>Name</MUI.Typography>
-         <MUI.Typography sx={{ mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
+             <MUI.Typography sx={{ mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
        </MUI.Box>
 
        <MUI.Box>
