@@ -1,15 +1,16 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, lazy, Suspense} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import theme from '../../context/theme';
 import useUserStore from '../../store/UserStore';
 import useLoginStore from '../../store/LoginStore';
+import useAuthStore from '../../store/AuthStore';
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 import { Form, Link } from 'react-router-dom';
 import axios from '../../api/axios';
-
+const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -23,10 +24,11 @@ const FormValues = {
   first_name: "",
   middle_name: "",
   last_name: "",
-
-  emailAddress: "",
-  role: "",
-  userStatus: "",
+  user_mobile_num: "",
+  email_address: "",
+  password: "",
+  role_id: "",
+  user_status: "",
 }
 
 export default function User({state}) {
@@ -39,14 +41,15 @@ export default function User({state}) {
     selectedUser, setSelectedUser
   } = useUserStore();
 
-  const { showPassword, handleTogglePassword} = useLoginStore();
+  const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
+
+  const {getAuthToken} = useAuthStore();
 
 
   // Post Data to API 
-  const onSubmit = (data, event) => {
+  const onSubmit = async (data, event) => {
     event.preventDefault();
-  
-    const authToken = localStorage.getItem('remember_token');
+    const authToken = useAuthStore.getState().getAuthToken();
   
     const config = {
       headers: {
@@ -55,18 +58,20 @@ export default function User({state}) {
       },
     };
   
+  try {
     if(editUser) {
-      axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
-      .then(res => {
-        console.log("Updating Data", res);
-        handleCloseUser(); // Call the hook after successful submission
-        setEditUser(false)
-        setSelectedUser(null)
-      }, config)
-      .catch(err => console.log(err));
+      setLoading(true);
+      setLoadingMessage('Updating user...');
+      const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
+      handleCloseUser(); // Call the hook after successful submission
+      setEditUser(false)
+      setSelectedUser(null)
+    
     }
     else{
-      axios.post('/api/users', {
+      setLoading(true);
+      setLoadingMessage('Adding new user...');
+      const response = await axios.post('/api/users', {
         first_name: data.first_name,
         middle_name: data.middle_name,
         last_name: data.last_name,
@@ -76,19 +81,52 @@ export default function User({state}) {
         role_id: data.role_id,
         user_status: data.user_status,
       }, config)
-      .then(res => {
-        console.log('Posting Data', res);
         handleCloseUser(); // Call the hook after successful submission
-      })
-      .catch(err => console.log(err));
     }
-  };
+    const response = await axios.get('/api/users', {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    if (response.status === 200) {
+      const filteredUsers = response.data.data.map(user => {
+        const { password, ...filteredUser } = user;
+        return filteredUser;
+      });
+
+      setUsers(filteredUsers);
+    } else {
+      console.error('Failed to fetch data');
+    }
+    form.reset(FormValues);
+    setLoading(false)
+    setLoadingMessage('');
+  } 
+  catch (error) {
+    setLoading(false)
+    setLoadingMessage('');
+    if(error.response?.status === 422){
+      setErrMsg("Please fill up all the required field");
+    }
+    else if(error.response?.status === 409){
+      setErrMsg("Email Address already been taken");
+    }
+    else if(error.response?.status === 500){
+      setErrMsg("Server Error");
+    }
+    else{
+      setErrMsg("Something went wrong");
+    }
+  } 
+};
 
   // Get Function Data
   useEffect(() => {
+    setLoading(true);
+    setLoadingMessage('Fetching users...');
     const fetchUsers = async () => {
       try {
-        const authToken = localStorage.getItem('remember_token');
+        const authToken = useAuthStore.getState().getAuthToken();
         const response = await axios.get('/api/users',{
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -96,7 +134,14 @@ export default function User({state}) {
         });
 
         if (response.status === 200) {
-          setUsers(response.data.data); 
+          const filteredUsers = response.data.data.map(user => {
+            const { password, ...filteredUser } = user;
+            return filteredUser;
+          });
+    
+          setUsers(filteredUsers);
+          setLoading(false);
+          setLoadingMessage('');
         } else {
           console.error('Failed to fetch data');
         }
@@ -117,23 +162,45 @@ export default function User({state}) {
     form.reset(selectedUser);
   }
 
-
-
   // Delete Function Data
   const deleteUser = async (event, id) => {
     event.preventDefault();
-
-    const authToken = localStorage.getItem('remember_token');
-    const response = await axios.delete(`/api/users/${id}`, {
-      headers: {
-        Authorization: `Bearer ${authToken}` // Include the token in the Authorization header
+    setLoading(true);
+    setLoadingMessage('Deleting user...');
+    const authToken = useAuthStore.getState().getAuthToken();
+  
+    try {
+      await axios.delete(`/api/users/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+  
+      const response = await axios.get('/api/users', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+  
+      if (response.status === 200) {
+        const filteredUsers = response.data.data.map(user => {
+          const { password, ...filteredUser } = user;
+          return filteredUser;
+        });
+  
+        setUsers(filteredUsers);
+      } else {
+        console.error('Failed to fetch data');
       }
-    })
-    .then(res => {
-      console.log(res);
-    })
-    .catch(err => console.log(err));
-  }
+  
+      setLoading(false);
+      setLoadingMessage('');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setLoading(false);
+      setLoadingMessage('');
+    }
+  };
 
   const handleCancelUser = () => {
     form.reset(FormValues); // Reset the form fields
@@ -233,7 +300,7 @@ export default function User({state}) {
                       <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.user_status}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
-                        <MUI.IconButton color="inherit" component={Link} to="/profile">
+                        <MUI.IconButton color="inherit" component={Link} to='/profile'>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
 
@@ -271,6 +338,11 @@ export default function User({state}) {
             {/* Content of the Dialog */}
             <MUI.DialogTitle id="dialogTitle">New Users</MUI.DialogTitle>
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
+              <MUI.Grid sx={{marginLeft: 3}}>
+                <Suspense fallback="Scholarlink Loading...">
+                  <LazyErrMsg/>
+                </Suspense>
+              </MUI.Grid>
               <MUI.DialogContent>
                 
                 {/* Form Fields of New User*/}
@@ -396,8 +468,8 @@ export default function User({state}) {
                       }
                     })}
                   />
-                  {errors.emailAddress && (
-                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.emailAddress?.message}</p>
+                  {errors.email_address && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
                   )}
                 </MUI.Grid>
 
@@ -423,10 +495,6 @@ export default function User({state}) {
                       required: {
                         value: true,
                         message: 'Password is required',
-                      },
-                      pattern: {
-                        value: PWD_REGEX,
-                        message: 'Password should contain atleast 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character',
                       }
                     })}
                   />
@@ -462,8 +530,8 @@ export default function User({state}) {
                       </MUI.FormControl>
                     )}
                   />
-                  {errors.role && (
-                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.role?.message}</p>
+                  {errors.role_id && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.role_id?.message}</p>
                   )} 
                 </MUI.Grid>
 

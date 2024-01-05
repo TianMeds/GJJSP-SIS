@@ -2,7 +2,8 @@ import React, { lazy, Suspense }  from 'react';
 import * as MUI from '../../import';
 import axios from '../../api/axios';
 import useAuth from '../../hooks/useAuth';
-import useLoginStore from '../../store/LoginStore'
+import useLoginStore from '../../store/LoginStore';
+import useAuthStore from '../../store/AuthStore';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate} from 'react-router-dom';
 import { DevTool } from '@hookform/devtools';
@@ -20,14 +21,9 @@ export default function Login() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
 
-  const {
-    setErrMsg,
-    setLoading,
-    showPassword,
-    expirationTime,
-    setExpirationTime,
-    handleTogglePassword,
-  } = useLoginStore();
+  const {setAuthToken} = useAuthStore();
+
+  const {setErrMsg, setLoading, showPassword, expirationTime, setExpirationTime, handleTogglePassword, setLoadingMessage} = useLoginStore();
   
   const form = useForm();
   const { register, handleSubmit, control, formState } = form;
@@ -46,6 +42,7 @@ export default function Login() {
   const onSubmit = async (data, event) => {
     event.preventDefault(); // Prevent default form submission behavior
     setLoading(true);
+    setLoadingMessage('Logging in to Scholarlink...');
     await csrf()
     try {
       const config = {
@@ -71,11 +68,12 @@ export default function Login() {
       const role_id = response?.data?.user?.role_id;
 
       // Set the token and expiration time in local storage
-      localStorage.setItem('remember_token', remember_token);
+      useAuthStore.getState().setAuthToken(remember_token);
 
       setExpirationTime(new Date(expires_at).getTime());
       
       setLoading(false);
+      setLoadingMessage('');
 
       // Set the authenticated user state using setAuth from your useAuth hook
       setAuth({ user, remember_token, roles_name, role_id, expirationTime});
@@ -88,6 +86,7 @@ export default function Login() {
       
     } catch (err) {
       setLoading(false);
+      setLoadingMessage('');
       if(err.response?.status === 422){
         setErrMsg('Email address and password are required');
       }
@@ -123,7 +122,7 @@ export default function Login() {
         }}>
 
       {/* Loading Animation  */}
-      <LoaderAnimation />
+      <LoaderAnimation/>
 
         <MUI.Box
           sx={{

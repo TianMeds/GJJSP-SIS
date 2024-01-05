@@ -7,6 +7,7 @@ const LoaderAnimation = () =>  {
 
     const {
         loading,
+        loadingMessage
       } = useLoginStore();
   return (
     <>
@@ -31,7 +32,7 @@ const LoaderAnimation = () =>  {
                     <div className="cssload-cube cssload-c3"></div>
                 </div>
                 <br/>
-                <MUI.Typography sx={{fontSize: '1.5rem', fontWeight: 'bold', color:'white'}}>Scholarlink...</MUI.Typography>
+                <MUI.Typography sx={{fontSize: '1.5rem', fontWeight: 'bold', color:'white'}}>{loadingMessage}</MUI.Typography>
             </MUI.Box>
             </MUI.Backdrop>
         )}

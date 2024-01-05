@@ -1,14 +1,26 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import * as MUI from '../../import';
 import useAuth from '../../hooks/useAuth';
+import useUserStore from '../../store/UserStore';
+import useLoginStore from '../../store/LoginStore';
+import useAuthStore from '../../store/AuthStore';
+import axios from '../../api/axios';
 
-export const ProfileBox = () => {
+export const ProfileBox = ({ userId }) => {
     const {auth} = useAuth();
     const first_name = auth?.user?.first_name || '';
     const last_name = auth?.user?.last_name || '';
     const email_address = auth?.user?.email_address || '';
     const user_mobile_num = auth?.user?.user_mobile_num || '';
     const roles_name = auth.roles_name || '';
+
+    const {user, setUser} =useUserStore();
+    const {loading, setLoading, loadingMessage, setLoadingMessage} = useLoginStore();
+    const {authToken} = useAuthStore();
+    
+
+    //Get User Details
+
 
   return (
     <MUI.Grid container spacing={2} sx={{mt: 5}}>
