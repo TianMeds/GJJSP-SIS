@@ -1,5 +1,4 @@
   {/* Importing the MUI Component so it will not be called every page  */}
-
   import Avatar from '@mui/material/Avatar';
   import Button from '@mui/material/Button';
   import CssBaseline from '@mui/material/CssBaseline';

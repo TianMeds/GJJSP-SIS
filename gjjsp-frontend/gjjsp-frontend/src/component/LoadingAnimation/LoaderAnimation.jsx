@@ -1,8 +1,9 @@
 import React from 'react'
 import * as MUI from '../../import'
 import useLoginStore from '../../store/LoginStore'
+import '../../component/LoadingAnimation/LoaderAnimation.css'
 
-export const LoaderAnimation = () =>  {
+const LoaderAnimation = () =>  {
 
     const {
         loading,
@@ -23,10 +24,19 @@ export const LoaderAnimation = () =>  {
                 zIndex: (theme) => theme.zIndex.drawer + 2,
                 }}
             >
-                <MUI.CircularProgress />
+                <div className="cssload-thecube">
+                    <div className="cssload-cube cssload-c1"></div>
+                    <div className="cssload-cube cssload-c2"></div>
+                    <div className="cssload-cube cssload-c4"></div>
+                    <div className="cssload-cube cssload-c3"></div>
+                </div>
+                <br/>
+                <MUI.Typography sx={{fontSize: '1.5rem', fontWeight: 'bold', color:'white'}}>Scholarlink...</MUI.Typography>
             </MUI.Box>
             </MUI.Backdrop>
         )}
    </>
   )
 }
+
+export default LoaderAnimation;

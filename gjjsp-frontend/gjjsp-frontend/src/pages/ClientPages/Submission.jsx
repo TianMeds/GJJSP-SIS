@@ -1,8 +1,8 @@
 import React from 'react'
-import * as MUI from '../../../import';
-import Layout from '../../../component/Layout/SidebarNavbar/Layout';
-import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../../component/Layout/SidebarNavbar/Styles';
-import useSubmissionStore from '../../../store/SubmissionStore';
+import * as MUI from '../../import';
+import Layout from '../../component/Layout/SidebarNavbar/Layout';
+import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
+import useSubmissionStore from '../../store/SubmissionStore';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import classNames from 'classnames';

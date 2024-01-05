@@ -3,7 +3,7 @@ import * as MUI from '../../import'
 import BGIMG from '../../assets/SchoolBG1.jpg';
 
 
-export const LeftGrid = () => {
+ const LeftGrid = () => {
     {/* When its size to a Tablet mode the Left Grid display none  */}
     const isMobile = MUI.useMediaQuery('(max-width:768px)');
 
@@ -46,3 +46,5 @@ export const LeftGrid = () => {
     </>
   )
 }
+
+export default LeftGrid;

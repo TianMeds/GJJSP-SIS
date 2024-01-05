@@ -54,15 +54,22 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(User $user, $id)
     {
-        $user->delete();
+        $deleted = User::destroy($id);
 
-        return response()->json(null, Response::HTTP_NO_CONTENT);
+        if ($deleted === 0) {
+            return response()->json(['message' => 'User not found or already deleted'], 404);
+        } elseif ($deleted === null) {
+            return response()->json(['message' => 'Error deleting user'], 500);
+        }
+    
+        return response()->json(['message' => 'User deleted successfully'], 200);
+
     }
-    public function search(Request $request, $first_name)
-    {
-        $user = User::where('first_name', 'like', '%' . $first_name . '%')->get();
-        return UserResource::collection($user);
-    }
+    // public function search(Request $request, $first_name)
+    // {
+    //     $user = User::where('first_name', 'like', '%' . $first_name . '%')->get();
+    //     return UserResource::collection($user);
+    // }
 }

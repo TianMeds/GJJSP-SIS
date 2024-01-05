@@ -3,7 +3,7 @@ import * as MUI from '../../../import';
 import { AppBar, Drawer} from './Styles';
 import { NotificationIcon, HelpIcon, SettingsIcon, PortalName } from '../Navbar/Navbar';
 import { SideLogo, Account, SidebarListItem } from '../Sidebar/Sidebar';
-import { LoaderAnimation } from '../../LoadingAnimation/LoaderAnimation';
+import LoaderAnimation from '../../LoadingAnimation/LoaderAnimation';
 
 const defaultTheme = MUI.createTheme();
 
