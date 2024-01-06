@@ -119,15 +119,6 @@ function App() {
           }
         />
 
-        <Route 
-          path="scholar-profile" 
-          element={
-            <Suspense fallback="Scholarlink Loading...">
-              <LazyScholarProfile/>
-            </Suspense>
-          }
-        />
-
       </Route>
 
 
@@ -230,6 +221,16 @@ function App() {
           </Suspense>
           }
         />
+
+<Route 
+          path="scholar-profile" 
+          element={
+            <Suspense fallback="Scholarlink Loading...">
+              <LazyScholarProfile/>
+            </Suspense>
+          }
+        />
+        
       </Route>
     </Routes>
 

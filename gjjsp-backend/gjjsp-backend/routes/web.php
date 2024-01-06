@@ -1,6 +1,8 @@
 <?php
 
+use App\Mail\UserCredential;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    // Mail::to('medalladachris100@gmail.com')
+    // ->send(new UserCredential());
     return view('welcome');
 });

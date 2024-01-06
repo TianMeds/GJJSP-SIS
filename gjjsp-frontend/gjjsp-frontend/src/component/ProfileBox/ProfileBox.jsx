@@ -14,7 +14,7 @@ export const ProfileBox = ({ userId }) => {
     const user_mobile_num = auth?.user?.user_mobile_num || '';
     const roles_name = auth.roles_name || '';
 
-    const {user, setUser} =useUserStore();
+    const {user, setUser, selectedUser, setSelectedUser} =useUserStore();
     const {loading, setLoading, loadingMessage, setLoadingMessage} = useLoginStore();
     const {authToken} = useAuthStore();
     
@@ -42,12 +42,12 @@ export const ProfileBox = ({ userId }) => {
         >
         <MUI.Box>
           <MUI.Typography variant='h5'>Full Name</MUI.Typography>
-          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>{first_name + ' ' + last_name}</MUI.Typography>
+          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>{selectedUser.first_name + ' ' + selectedUser.last_name}</MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Role</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{roles_name}</MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}>{selectedUser.roles_name}</MUI.Typography>
         </MUI.Box>
 
         </MUI.Box>
@@ -71,12 +71,12 @@ export const ProfileBox = ({ userId }) => {
             
             <MUI.Box>
                 <MUI.Typography variant='h5'>Email Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{email_address}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.email_address}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mobile Number</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{user_mobile_num}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.user_mobile_num}</MUI.Typography>
             </MUI.Box>
 
         </MUI.Box>

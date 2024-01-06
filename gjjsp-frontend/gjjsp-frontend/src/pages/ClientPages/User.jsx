@@ -10,6 +10,7 @@ import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 import { Form, Link } from 'react-router-dom';
 import axios from '../../api/axios';
+import {useNavigate} from 'react-router-dom';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 
 //Regex Validations 
@@ -43,8 +44,9 @@ export default function User({state}) {
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
 
-  const {getAuthToken} = useAuthStore();
+  const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
 
+  const navigate = useNavigate();
 
   // Post Data to API 
   const onSubmit = async (data, event) => {
@@ -60,18 +62,19 @@ export default function User({state}) {
   
   try {
     if(editUser) {
-      setLoading(true);
-      setLoadingMessage('Updating user...');
+      setAlertOpen(true);
+      setAlertMessage('Updating user...');
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       setEditUser(false)
       setSelectedUser(null)
-    
+      setAlertOpen(true);
+      setAlertMessage('User Updated');
     }
     else{
-      setLoading(true);
-      setLoadingMessage('Adding new user...');
-      const response = await axios.post('/api/users', {
+      setAlertOpen(true);
+      setAlertMessage('Adding user...');
+      const response = await axios.post('/api/register', {
         first_name: data.first_name,
         middle_name: data.middle_name,
         last_name: data.last_name,
@@ -81,6 +84,8 @@ export default function User({state}) {
         role_id: data.role_id,
         user_status: data.user_status,
       }, config)
+        setAlertOpen(true);
+        setAlertMessage('User Added');
         handleCloseUser(); // Call the hook after successful submission
     }
     const response = await axios.get('/api/users', {
@@ -89,41 +94,45 @@ export default function User({state}) {
       }
     });
     if (response.status === 200) {
-      const filteredUsers = response.data.data.map(user => {
-        const { password, ...filteredUser } = user;
-        return filteredUser;
-      });
-
-      setUsers(filteredUsers);
+      setUsers(response.data.data)
+      setAlertOpen(true);
+      setAlertMessage('Users list has been updated');
     } else {
-      console.error('Failed to fetch data');
+      setAlertOpen(true);
+      setAlertMessage('Failed to fetch data');
     }
     form.reset(FormValues);
-    setLoading(false)
-    setLoadingMessage('');
   } 
   catch (error) {
-    setLoading(false)
-    setLoadingMessage('');
+
     if(error.response?.status === 422){
-      setErrMsg("Please fill up all the required field");
+      setErrorOpen(true)
+      setErrorMessage("Please fill up all the required fields");
     }
     else if(error.response?.status === 409){
-      setErrMsg("Email Address already been taken");
+      setErrorOpen(true)
+      setErrorMessage("Email already been taken");
     }
     else if(error.response?.status === 500){
-      setErrMsg("Server Error");
+      setErrorMessage("Server Error");
+    }
+    else if(error.response?.status === 401){
+      setErrorOpen(true)
+      setErrorMessage("You've been logout");
+      navigate('/login')
     }
     else{
-      setErrMsg("Something went wrong");
+      setErrorOpen(true);
+      setErrorMessage("Something went wrong");
     }
   } 
 };
 
   // Get Function Data
   useEffect(() => {
-    setLoading(true);
-    setLoadingMessage('Fetching users...');
+    setAlertOpen(true);
+    setErrorOpen(false);
+    setAlertMessage('Please wait updating users list');
     const fetchUsers = async () => {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
@@ -134,19 +143,20 @@ export default function User({state}) {
         });
 
         if (response.status === 200) {
-          const filteredUsers = response.data.data.map(user => {
-            const { password, ...filteredUser } = user;
-            return filteredUser;
-          });
-    
-          setUsers(filteredUsers);
-          setLoading(false);
-          setLoadingMessage('');
+          setUsers(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Updated Users List');
         } else {
-          console.error('Failed to fetch data');
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch data');
         }
+      
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if(error.response?.status === 401){
+          setErrorOpen(true)
+          setErrorMessage("You've been logout");
+          navigate('/login')
+        }
       }
     };
 
@@ -165,8 +175,8 @@ export default function User({state}) {
   // Delete Function Data
   const deleteUser = async (event, id) => {
     event.preventDefault();
-    setLoading(true);
-    setLoadingMessage('Deleting user...');
+    setAlertOpen(true);
+    setAlertMessage('Deleting user...');
     const authToken = useAuthStore.getState().getAuthToken();
   
     try {
@@ -189,16 +199,51 @@ export default function User({state}) {
         });
   
         setUsers(filteredUsers);
-      } else {
-        console.error('Failed to fetch data');
+      }
+      else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
       }
   
-      setLoading(false);
-      setLoadingMessage('');
+      setAlertOpen(true)
+      setAlertMessage('User Deleted');
     } catch (error) {
-      console.error('Error deleting user:', error);
-      setLoading(false);
-      setLoadingMessage('');
+      if (error.response?.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("You've been logged out");
+      } else if (error.response?.status === 404) {
+        setErrorOpen(true);
+        setErrorMessage('User not found');
+      } else if (error.response?.status === 403) {
+        setErrorOpen(true);
+        setErrorMessage('Unauthorized access');
+      } else if (error.response?.status === 500) {
+        setErrorOpen(true);
+        setErrorMessage('Server Error');
+      } else if (!error.response) {
+        setErrorOpen(true);
+        setErrorMessage('Network Error: Failed to reach the server');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('An unexpected error occurred');
+      }
+    }
+  };
+
+  //View Profile Function
+  const viewProfile = (userId) => {
+    const selectedUser = users.find((user) => user.id === userId);
+    
+    if (selectedUser) {
+      const { role_id } = selectedUser; // Accessing role_id from selectedUser
+    
+      setSelectedUser(selectedUser)
+      const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
+      navigate(rolePath);
+    } else {
+      // Handle the case when selectedUser is not found
+      // For example, show an error message or handle the navigation differently
+      console.error('User not found');
     }
   };
 
@@ -300,7 +345,7 @@ export default function User({state}) {
                       <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.user_status}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
-                        <MUI.IconButton color="inherit" component={Link} to='/profile'>
+                        <MUI.IconButton color="inherit" onClick={() => viewProfile(user.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
 
@@ -475,6 +520,9 @@ export default function User({state}) {
 
                 <MUI.Grid id="passwordGrid">
                   <MUI.InputLabel htmlFor="password" id="passwordLabel">Password</MUI.InputLabel>
+                  <MUI.Typography variant='h6' sx={{color: 'gray'}}> 
+                  <MUI.NotificationsIcon sx={{fontSize: '12px', mr: 1}}/>
+                  Just Edit this field for new user and changing password</MUI.Typography>
                   <MUI.TextField
                     type={showPassword ? 'text' : 'password'}
                     id='password'
@@ -585,6 +633,30 @@ export default function User({state}) {
           </MUI.Dialog>
 
           <DevTool control={control} />
+
+
+          <MUI.Snackbar
+            open={alertOpen}
+            autoHideDuration={5000}
+            onClose={() => setAlertOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+              {alertMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
+          <MUI.Snackbar
+            open={errorOpen}
+            autoHideDuration={5000}
+            onClose={() => setErrorOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+              {errorMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
       </MUI.Grid>
     </MUI.Container>
   </MUI.ThemeProvider>
