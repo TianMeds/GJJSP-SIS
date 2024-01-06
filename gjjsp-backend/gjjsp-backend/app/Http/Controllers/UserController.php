@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserUpdate;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources;
@@ -9,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -58,6 +60,25 @@ class UserController extends Controller
     {
         $user = User::find($id);
         $user->update($request->all());
+
+        if($user) {
+            try{
+                Mail::mailer('smtp')->to($user->email_address)->send(new UserUpdate($user));
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User has been updated',
+                    'method' => 'POST',
+                ], 200);
+            }
+            catch (\Exception $err){
+                $user->delete();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Could not send update Notification',
+                    'method' => 'POST',
+                ], 500);
+            }
+        }
         return new UserResource($user);
     }
 
