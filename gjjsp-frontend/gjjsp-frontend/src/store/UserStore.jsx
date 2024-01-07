@@ -3,10 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const useUserStore = create((set) => ({
     usersWithIndex: [], 
-    editUser:  false,
-    selectedUser: null,
-    setEditUser: (newEditUser) => set({editUser: newEditUser}),
-    setSelectedUser: (selectedUser) => set({ selectedUser}),
 
     //Hook For the Filter of Table 
     filteredRole: 'All',
@@ -19,6 +15,13 @@ const useUserStore = create((set) => ({
     users: [],
     user: false,
     setUsers: (users) => set({ users }),
+
+    //Hooks for Update User Data
+    editUser:  false,
+    setEditUser: (newEditUser) => set({editUser: newEditUser}),
+    selectedUser: null,
+    setSelectedUser: (selectedUser) => set({ selectedUser}),
+
 
     //Hooks for User Form
     first_name: '',

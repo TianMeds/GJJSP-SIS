@@ -6,6 +6,7 @@ use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ScholarshipCategController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::apiResource('/users', UserController::class)->only(['index', 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
     
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
@@ -40,12 +42,17 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/register', [AuthController::class, 'register']);
    // Route::get('/refresh-token', [AuthController::class,'refreshToken']); 
+
+   //Scholarship Route
+    // Route::post('/scholarships', [ScholarshipController::class, 'store']);
+    // Route::put('/scholarships/{id}', [ScholarshipController::class, 'update']);
+    // Route::delete('/scholarships/{id}', [ScholarshipController::class, 'destroy']);
 });
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;

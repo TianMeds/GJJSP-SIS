@@ -2,6 +2,8 @@ import * as MUI from '../../../import'
 import useAuth from '../../../hooks/useAuth'
 import {Link} from 'react-router-dom';
 import { SAP_ListItems, SMP_ListItems, SP_ListItems } from '../../../pages/Components/ListItems';
+import useUserStore from '../../../store/UserStore';
+import { useNavigate } from 'react-router-dom';
 import theme from '../../../context/theme';
 
 export const SideLogo = () => {
@@ -21,6 +23,17 @@ export const Account = () => {
     const {auth} = useAuth();
     const last_name = auth?.user?.last_name || '';
     const roles_name = auth.roles_name || '';
+    const role_id = auth?.user?.role_id || '';
+
+    const {selectedUser,setSelectedUser,user, users} = useUserStore();
+    const navigate = useNavigate();
+
+    const handleSeeProfile = () => {
+      setSelectedUser(auth.user); // Update the selectedUser state
+      const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
+      navigate(rolePath); // Navigate based on the rolePath
+  };
+  
 
     return (
     <MUI.ThemeProvider theme={theme}>
@@ -38,7 +51,7 @@ export const Account = () => {
               <MUI.Typography variant="body2" color="textSecondary">
                 {roles_name}
               </MUI.Typography>
-              <MUI.Button variant='text' sx={{mt: -3, ml: -1}} component={Link} to="/profile">
+              <MUI.Button variant='text' sx={{mt: -3, ml: -1}} onClick={handleSeeProfile}>
               See Profile
             </MUI.Button>
             </MUI.Box>

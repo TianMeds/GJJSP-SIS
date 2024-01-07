@@ -6,6 +6,7 @@ import { ProfileHeader } from '../../component/ProfileHeader/ProfileHeader';
 import theme from '../../context/theme';
 
 export default function Profile() {
+
   return (
     <Layout>
       <MUI.ThemeProvider theme={theme}>

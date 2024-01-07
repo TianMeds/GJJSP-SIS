@@ -3,6 +3,7 @@ import useLoginStore from '../../../store/LoginStore'
 import axios from '../../../api/axios'
 import { useState, useEffect } from 'react'
 import useAuth from '../../../hooks/useAuth'
+import useAuthStore from '../../../store/AuthStore'
 import { useNavigate } from 'react-router-dom'
 import { SAP_ListItems, SMP_ListItems, SP_ListItems } from '../../../pages/Components/ListItems'
 
@@ -67,6 +68,8 @@ export const SettingsIcon = () => {
         setToken,
     } = useLoginStore();
 
+    const {getAuthToken, resetAuthToken} = useAuthStore();
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -77,12 +80,13 @@ export const SettingsIcon = () => {
     };
 
     const onLogout = async() => {
+
         setLoading(true);
         try{
-          const remember_token = localStorage.getItem('remember_token');
+          const authToken = useAuthStore.getState().getAuthToken();
           const config = {
             headers: {
-              Authorization: `Bearer ${remember_token}` // Attach the token to the Authorization header
+              Authorization: `Bearer ${authToken}` // Attach the token to the Authorization header
             }
           };
   
@@ -91,7 +95,7 @@ export const SettingsIcon = () => {
               null,
               config
           )
-          localStorage.removeItem('remember_token');
+          useAuthStore.getState().resetAuthToken();
   
           setLoading(false);
   
@@ -100,7 +104,7 @@ export const SettingsIcon = () => {
         catch(err){
           setLoading(false);
           if(err.response.status === 401) {
-            localStorage.removeItem('remember_token');
+            useAuthStore.getState().resetAuthToken();
             setAuth(null); // Update authentication state
             navigate('/login')
           }
