@@ -22,7 +22,6 @@ const useUserStore = create((set) => ({
     selectedUser: null,
     setSelectedUser: (selectedUser) => set({ selectedUser}),
 
-
     //Hooks for User Form
     first_name: '',
     middle_name: '',
@@ -44,33 +43,6 @@ const useUserStore = create((set) => ({
     //Hooks for opening & closing user form
     handleOpenUser: () => set({user: true}),
     handleCloseUser: () => set({user: false}),
-    
-    addUser: (userName, emailAddress, role, userStatus) =>
-      set((store) => ({
-        users: [
-          ...store.users,
-          { id: uuidv4(), userName, emailAddress, role, userStatus },
-        ],
-        usersWithIndex: [
-          ...store.usersWithIndex,
-          { userName, emailAddress, role, userStatus, originalIndex: store.users.length },
-        ],
-    })),
-
-    updateUser: (userId, userName, emailAddress, role, userStatus) => 
-    set((store) => ({
-      users: store.users.map((user) => 
-        user.id === userId
-        ? { ...user, userName, emailAddress, role, userStatus }
-        : user
-      ),
-    })),
-
-    deleteUser: (userId) => 
-      set((store) => ({
-        users: store.users.filter((user) => user.id !== userId),
-        usersWithIndex: store.usersWithIndex.filter((user) => user.id !== userId),
-    })),
     
 }))
 

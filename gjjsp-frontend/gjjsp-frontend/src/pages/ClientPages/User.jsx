@@ -134,7 +134,6 @@ export default function User({state}) {
   // Get Function Data
   useEffect(() => {
     setAlertOpen(true);
-    setErrorOpen(false);
     setAlertMessage('Please wait updating users list');
     const fetchUsers = async () => {
       try {
@@ -179,6 +178,7 @@ export default function User({state}) {
   const deleteUser = async (event, id) => {
     event.preventDefault();
     setLoading(true);
+    setLoadingMessage("Deleting User please wait")
     setAlertOpen(true);
     setAlertMessage('Deleting user...');
     const authToken = useAuthStore.getState().getAuthToken();

@@ -1,48 +1,63 @@
-import React from 'react'
+import React, {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
-import useScholarshipStore from '../../store/ScholarshipStore';
 import theme from '../../context/theme';
 import {useForm, Controller } from 'react-hook-form';
-import { DevTool } from "@hookform/devtools";
 import { Form } from 'react-router-dom';
+import axios from '../../api/axios';
+
+// Zustand Imports 
+import useAuthStore from '../../store/AuthStore';
+import useLoginStore from '../../store/LoginStore';
+import useScholarshipStore from '../../store/ScholarshipStore';
+
+//Debugger
+import { DevTool } from "@hookform/devtools";
 
 const projectPartners = [
-  "BACPAT Youth Development Foundation Inc.",
-  "Welcome Home Foundation Inc. (BACPAT Scholars)",
-  "Education for Former OSY",
-  "Bahay Maria Children Center Formal",
-  "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
-  "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
-  "Canossian Sisters – Endorsed Scholars",
-  "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
-  "WHFI Formal Education for Former Out of School Youth",
-  "WHFI Formal Education for former OSY",
-  "WHFI Bacpat Youth Development Foundation, Inc.",
-  "WHFI- Literacy Program, Bacolod",
-  "WHFI- Literacy Program, Malaybalay",
-  "WHFI – Literacy Program",
-  "Benefactors Endorsed Applicant",
-  "Benefactors & Secretariat Endorsed",
-  "Benefactors Endorsed Scholars & GJJS Secretariat",
-  "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
-  "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
-  "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
-  "Jeri Jalandoni – Education for the Youth Diocese",
-  "Jeri Jalandoni – Education for the Island of Samar",
-  "A & A Catechetical Project",
-  "Volunteer Program B37 – 5th Year for College Graduates",
-  "Formal Education for Former Out of School Youth",
-  "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
-];
+  '1',
+  '2',
+  '3',
+  '4',
+]
+
+// const projectPartners = [
+//   "BACPAT Youth Development Foundation Inc.",
+//   "Welcome Home Foundation Inc. (BACPAT Scholars)",
+//   "Education for Former OSY",
+//   "Bahay Maria Children Center Formal",
+//   "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
+//   "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
+//   "Canossian Sisters – Endorsed Scholars",
+//   "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
+//   "WHFI Formal Education for Former Out of School Youth",
+//   "WHFI Formal Education for former OSY",
+//   "WHFI Bacpat Youth Development Foundation, Inc.",
+//   "WHFI- Literacy Program, Bacolod",
+//   "WHFI- Literacy Program, Malaybalay",
+//   "WHFI – Literacy Program",
+//   "Benefactors Endorsed Applicant",
+//   "Benefactors & Secretariat Endorsed",
+//   "Benefactors Endorsed Scholars & GJJS Secretariat",
+//   "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
+//   "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
+//   "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
+//   "Jeri Jalandoni – Education for the Youth Diocese",
+//   "Jeri Jalandoni – Education for the Island of Samar",
+//   "A & A Catechetical Project",
+//   "Volunteer Program B37 – 5th Year for College Graduates",
+//   "Formal Education for Former Out of School Youth",
+//   "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
+// ];
 
 const FormValues ={
-  projectName: '',
+  scholarship_categ_name: '',
   alias: '',
   benefactor: '',
-  projectStatus: '',
-  projectPartner: '',
+  scholarship_categ_status: '',
+  project_partner_id: '',
 }
 
 export default function Scholarship({state}) {
@@ -50,58 +65,204 @@ export default function Scholarship({state}) {
   const form = useForm();
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
+  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log("Form submitted", data);
+  const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
+  const {setLoading, setLoadingMessage} = useLoginStore();
 
-    if (editMode) {
-      // Handle update logic
-      updateProject(selectedProject.id, data.projectName, data.alias, data.benefactor, data.projectStatus, data.projectPartner);
-      setEditMode(false);
-    } else {
-      // Handle add logic
-      addProject(data.projectName, data.alias, data.benefactor, data.projectStatus, data.projectPartner);
-    }
-    form.reset(FormValues);
-    handleCloseScholarship();
-  }
-
-  const {
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus,
     handleOpenScholarship,
     handleCloseScholarship,
-    project,
-    filteredStatus,
-    setFilteredStatus,
-    setSelectedProject,
-    selectedProject,
-    editMode,
-    setEditMode,
-    updateProject,
-    searchQuery,
-    handleSearch,
-    addProject = ((store) => store.addProject), 
-    projects = ((store) => store.projects.filter((project) => project.state === state)),
+    selectedCategories,
+    setSelectedCategories,
+    editCategories,
+    setEditCategories,
   } = useScholarshipStore();
 
-  const handleEditClick = (index) => {
-    const selectedProject = projects[index];
-    if(selectedProject) {
-    setSelectedProject(selectedProject);
-    reset({
-      projectName: selectedProject.projectName,
-      alias: selectedProject.alias,
-      benefactor: selectedProject.benefactor,
-      projectStatus: selectedProject.projectStatus,
-      projectPartner: selectedProject.projectPartner,
-    })
-    setEditMode(true);
-    handleOpenScholarship(); 
+
+  //GET CATEGORIES DATA 
+  useEffect(() => {
+    setAlertOpen(true);
+    setErrorOpen(false)
+    setAlertMessage("Please wait updating scholarship list");
+    const fetchScholarship = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/scholarships', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+      if (response.status === 200) {
+        setProjects(response.data.data)
+        setAlertOpen(true);
+        setAlertMessage("Scholarship category list updated");
+      }
+      else{
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch scholarship data');
+      }
+      }
+      catch(err){
+        if(err.response?.status === 401){
+          setErrorOpen(true)
+          setErrorMessage("You've been logout");
+          navigate('/login')
+        }
+      }
+    }
+    fetchScholarship();
+  },[]);
+
+  //POST CATEGORIES DATA
+  const onSubmit = async (data, event) => {
+    event.preventDefault();
+    const authToken = useAuthStore.getState().getAuthToken();
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-type': 'application/json',
+      }
+    }
+    try {
+      if(editCategories){
+        setAlertOpen(true);
+        setAlertMessage("Please wait updating scholarship category");
+        setLoading(true);
+        setLoadingMessage('Updating scholarship please wait')
+        const response = await axios.put(`/api/scholarships/${selectedCategories.id}`,{...data}, config)
+        handleCloseScholarship();
+        setEditCategories(false);
+        setSelectedCategories(null);
+        setLoading(false);
+        setAlertOpen(true);
+        setAlertMessage("Scholarship category updated");
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage("Please wait adding scholarship category");
+        setLoading(true);
+        setLoadingMessage('Adding scholarship please wait')
+        const response = await axios.post('/api/scholarships',{
+          scholarship_categ_name: data.scholarship_categ_name,
+          alias: data.alias,
+          benefactor: data.benefactor,
+          scholarship_categ_status: data.scholarship_categ_status,
+          project_partner_id: data.project_partner_id,
+        }, config)
+        setAlertOpen(true);
+        setAlertMessage("Scholarship category added");
+        setLoading(false);
+        handleCloseScholarship();
+      }
+      const response = await axios.get('/api/scholarships', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.status === 200) {
+        setProjects(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage("Scholarship category list updated");
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage("Failed to fetch scholarship category data");
+      }
+      form.reset(FormValues);
+    }
+    catch(error){
+      if(error.response?.status === 422){
+        setErrorOpen(true)
+        setErrorMessage("Please fill up all the required fields");
+      }
+      else if(error.response?.status === 500){
+        setErrorMessage("Server Error");
+      }
+      else if(error.response?.status === 401){
+        setErrorOpen(true)
+        setErrorMessage("You've been logout");
+        navigate('/login')
+      }
+      else{
+        console.error('Unhandled error:', error);
+        setErrorOpen(true);
+        setErrorMessage("Something went wrong");
+      }
+    }
+  };
+
+  //Update Scholarship categories data
+  const updateCategories = (projectId) => {
+    const selectedCategories = projects.find(project => project.id === projectId );
+    setEditCategories(true);
+    setSelectedCategories(selectedCategories);
+    handleOpenScholarship();
+    form.reset(selectedCategories);
+  }
+
+  //DELETE CATEGORIES DATA
+  const deleteScholarship = async (event, id) => {
+    event.preventDefault();
+    setLoading(true);
+    setLoadingMessage('Deleting user please wait')
+    setAlertOpen(true);
+    setAlertMessage('Deleting user...');
+    const authToken = useAuthStore.getState().getAuthToken();
+  
+    try {
+      await axios.delete(`/api/scholarships/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+  
+      const response = await axios.get('/api/scholarships', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+  
+      if (response.status === 200) {
+        setProjects(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Updated Scholarship List');
+      }
+      else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+  
+      setAlertOpen(true)
+      setAlertMessage('Scholarship Category Deleted');
+      setLoading(false);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("You've been logged out");
+      } else if (error.response?.status === 404) {
+        setErrorOpen(true);
+        setErrorMessage('Scholarship Category not found');
+      } else if (error.response?.status === 403) {
+        setErrorOpen(true);
+        setErrorMessage('Unauthorized access');
+      } else if (error.response?.status === 500) {
+        setErrorOpen(true);
+        setErrorMessage('Server Error');
+      } else if (!error.response) {
+        setErrorOpen(true);
+        setErrorMessage('Network Error: Failed to reach the server');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('An unexpected error occurred');
+      }
     }
   };
 
   const handleCancelEdit = () => {
     form.reset(FormValues);
-    setEditMode(false);
+    setEditCategories(false);
     handleCloseScholarship();
   };
   
@@ -160,17 +321,23 @@ export default function Scholarship({state}) {
        
         <MUI.Grid container spacing={3} sx={{ margin: 5 }}>
           {projects
-           .filter((project) => filteredStatus === "All" || project.projectStatus === filteredStatus)
-           .filter((project) => project.projectName && project.projectName.toLowerCase().includes(searchQuery?.toLowerCase() || ''))
+            .filter((project) => {
+              return filteredStatus === 'All' ? true : (
+                project.scholarship_categ_status === filteredStatus
+              )
+            })
+            .filter((project) => 
+              project.scholarship_categ_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              project.benefactor.toLowerCase().includes(searchQuery.toLowerCase())
+            )
            .map((project, index) => (
-           (project.projectName || project.benefactor || project.projectStatus) && (
             <MUI.Grid key={index} item xs={12} sm={6} md={4}>
               <MUI.Card sx={{ maxWidth: 345, flex: '1 1 30%' }}>
                 <MUI.CardContent sx={{textAlign: 'center', alignItems: 'center' }}>
                   
                   <MUI.SchoolOutlinedIcon sx={{fontSize: 100, color: '#1e88e5'}}/>
                   <MUI.Typography gutterBottom variant="h4" component="div" sx={{fontWeight: 'bold'}}>
-                    {project.projectName}
+                    {project.scholarship_categ_name}
                   </MUI.Typography>
 
                   <MUI.Typography variant="body2" color="text.secondary" sx={{fontStyle: 'italic', fontSize: '16px', margin: 2}}>
@@ -178,7 +345,7 @@ export default function Scholarship({state}) {
                   </MUI.Typography>
 
                   <MUI.Typography variant="body2" color="text.secondary" sx={{fontSize: '18px'}}>
-                    {project.projectStatus}
+                    {project.scholarship_categ_status}
                   </MUI.Typography>
 
                   <MUI.Button
@@ -189,7 +356,7 @@ export default function Scholarship({state}) {
                     textTransform: 'capitalize',  
                     m: 3,
                   }}
-                  onClick={() => handleEditClick(index)}
+                  onClick={() => updateCategories(project.id)}
                 >
                   <MUI.Typography variant='h5'>
                   See for Information
@@ -200,36 +367,36 @@ export default function Scholarship({state}) {
               </MUI.Card>
             </MUI.Grid>
             )
-          ))}
+          )}
         </MUI.Grid>
 
          {/* Add User Dialog */}
          <MUI.Dialog open={project} onClose={handleCloseScholarship} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* Content of the Dialog */}
-          <MUI.DialogTitle id="dialogTitle">{editMode ?  'Edit ' + selectedProject.projectName: 'New Categories'}</MUI.DialogTitle>
+          <MUI.DialogTitle id="dialogTitle">{editCategories ?  'Edit ' + selectedCategories.scholarship_categ_name: 'New Categories'}</MUI.DialogTitle>
           <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
             <MUI.DialogContent>
               {/* Form Fields of New User*/}
               <MUI.Grid id="projectNameGrid">
-                <MUI.InputLabel htmlFor="projectName" id="projectNameLabel">Name</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="scholarship_categ_name" id="projectNameLabel">Name</MUI.InputLabel>
                   <MUI.TextField 
                     type='text'
-                    id="projectName"
+                    id="scholarship_categ_name"
                     placeholder='Project Name'
                     fullWidth 
 
-                    {...register('projectName', {
-                      required: 'Project Name is required',
+                    {...register('scholarship_categ_name', {
+                      required: 'Scholarship Name is required',
                       maxLength: {
                         value: 100,
-                        message: 'Project Name should not exceed 50 characters'
+                        message: 'Scholarship Name should not exceed 100 characters'
                       }
                     })}
                   />
-                  {errors.projectName && (
+                  {errors.scholarship_categ_name && (
                     <p id='errMsg'> 
                       <MUI.InfoIcon className='infoErr'/> 
-                      {errors.projectName.message}
+                      {errors.scholarship_categ_name.message}
                     </p>
                   )}
               </MUI.Grid>
@@ -244,7 +411,7 @@ export default function Scholarship({state}) {
                     required: 'Project Alias is required',
                     maxLength: {
                       value: 100,
-                      message: 'Project Alias should not exceed 50 characters'
+                      message: 'Project Alias should not exceed 100 characters'
                     }
                   })}
                 />
@@ -270,6 +437,7 @@ export default function Scholarship({state}) {
                     <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
                       <MUI.Select
                         {...field}
+                        id='benefactor'
                         native
                       >
                         <option value="" disabled>Select Benefactor</option>
@@ -287,19 +455,20 @@ export default function Scholarship({state}) {
               </MUI.Grid>
 
               <MUI.Grid id="projectStatusGrid">
-                <MUI.InputLabel htmlFor="projectStatus" id="projectStatusLabel">Status</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="scholarship_categ_status" id="projectStatusLabel">Status</MUI.InputLabel>
                 <Controller
-                  name="projectStatus"
+                  name="scholarship_categ_status"
                   control={control}
                   defaultValue=''
                   rules={{
-                    required: 'Project Status is required',
-                    validate: (value) => value !== '' || "Please select a project status"
+                    required: 'Scholarship Status is required',
+                    validate: (value) => value !== '' || "Please select a scholarship status"
                   }}
                   render={({ field }) => (
                     <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
                       <MUI.Select
                         {...field}
+                        id='scholarship_categ_status'
                         native
                       >
                         <option value="" disabled>Select Project Status</option>
@@ -318,9 +487,9 @@ export default function Scholarship({state}) {
               </MUI.Grid>
                 
               <MUI.Grid id="projectPartnerGrid">
-              <MUI.InputLabel htmlFor="projectPartner" id="projectPartnerLabel">Project Partner/s</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="project_partner_id" id="projectPartnerLabel">Project Partner/s</MUI.InputLabel>
                 <Controller
-                  name="projectPartner"
+                  name="project_partner_id"
                   control={control}
                   defaultValue=''
                   rules={{
@@ -331,6 +500,7 @@ export default function Scholarship({state}) {
                     <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
                       <MUI.Select
                         {...field}
+                        id="project_partner_id"
                         native
                       >
                         <option value="" disabled>Select Project Partner</option>
@@ -343,7 +513,7 @@ export default function Scholarship({state}) {
                     </MUI.FormControl>
                   )}
                 />
-                {errors.projectPartner && (
+                {errors.project_partner_id && (
                   <p id='errMsg'> 
                     <MUI.InfoIcon className='infoErr'/> 
                     {errors.projectPartner.message}
@@ -368,12 +538,35 @@ export default function Scholarship({state}) {
                     type='submit'
                     id='Button'
                   >
-                    {editMode ? 'Save Changes' : 'Add'}
+                    {editCategories ? 'Save Changes' : 'Add'}
                   </MUI.Button>
               </MUI.DialogActions>
 
         </MUI.Dialog>
         <DevTool control={control} />
+
+        <MUI.Snackbar
+            open={alertOpen}
+            autoHideDuration={5000}
+            onClose={() => setAlertOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+              {alertMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
+          <MUI.Snackbar
+            open={errorOpen}
+            autoHideDuration={5000}
+            onClose={() => setErrorOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+              {errorMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
       </MUI.Grid>
       </MUI.Container>
     </MUI.ThemeProvider>

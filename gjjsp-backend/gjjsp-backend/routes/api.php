@@ -44,15 +44,15 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
    // Route::get('/refresh-token', [AuthController::class,'refreshToken']); 
 
    //Scholarship Route
-    // Route::post('/scholarships', [ScholarshipController::class, 'store']);
-    // Route::put('/scholarships/{id}', [ScholarshipController::class, 'update']);
-    // Route::delete('/scholarships/{id}', [ScholarshipController::class, 'destroy']);
+    Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
+    Route::post('/scholarships', [ScholarshipCategController::class, 'store']);
+    Route::put('/scholarships/{id}', [ScholarshipCategController::class, 'update']);
+     Route::delete('/scholarships/{id}', [ScholarshipCategController::class, 'destroy']);
 });
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;
