@@ -6,6 +6,7 @@ import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/L
 import theme from '../../context/theme';
 import {useForm, Controller } from 'react-hook-form';
 import { Form } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import axios from '../../api/axios';
 
 // Zustand Imports 
@@ -66,18 +67,13 @@ export default function Scholarship({state}) {
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
   const navigate = useNavigate();
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
 
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
 
-  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus,
-    handleOpenScholarship,
-    handleCloseScholarship,
-    selectedCategories,
-    setSelectedCategories,
-    editCategories,
-    setEditCategories,
-  } = useScholarshipStore();
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories,} = useScholarshipStore();
 
 
   //GET CATEGORIES DATA 
@@ -277,7 +273,7 @@ export default function Scholarship({state}) {
             <MUI.Typography variant="h1" id="tabsTitle">Categories</MUI.Typography>
                       
               {/* Add User Button */}
-              <MUI.Button variant="contained" color="primary" id="addButton" onClick={handleOpenScholarship}>
+              <MUI.Button variant="contained" color="primary" id="addButton" onClick={handleOpenScholarship} disabled={role_id !== 1}>
                 <MUI.AddCircleOutlineIcon sx={{mr: 1}}/>
                 <MUI.Typography variant='body2'>Add Categories</MUI.Typography>
               </MUI.Button>
@@ -348,6 +344,7 @@ export default function Scholarship({state}) {
                     {project.scholarship_categ_status}
                   </MUI.Typography>
 
+                
                   <MUI.Button
                   variant="contained"
                   sx={{
@@ -526,19 +523,22 @@ export default function Scholarship({state}) {
 
               <MUI.DialogActions>
                 {/* Add action buttons, e.g., Save Changes and Cancel */}
-                <MUI.Button onClick={handleCancelEdit} 
-                color="primary"
-                id='Button'
-                >
-                  Cancel
-                </MUI.Button>
+
+                {role_id !== 2 && (
+                  <MUI.Button onClick={handleCancelEdit} 
+                  color="primary"
+                  id='Button'
+                  >
+                    Cancel
+                  </MUI.Button>
+                )}
                   <MUI.Button 
                     color="primary"
                     variant='contained'
-                    type='submit'
                     id='Button'
+                    onClick={role_id === 2 ? handleCancelEdit : handleSubmit(onSubmit)}
                   >
-                    {editCategories ? 'Save Changes' : 'Add'}
+                   {role_id === 2 ? 'Close' :  (editCategories ? 'Save Changes' : 'Add')}
                   </MUI.Button>
               </MUI.DialogActions>
 
