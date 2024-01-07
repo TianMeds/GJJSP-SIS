@@ -1,4 +1,4 @@
-import React, {useEffect, useState, lazy, Suspense} from 'react'
+import React, {useEffect,lazy, Suspense} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
@@ -16,7 +16,6 @@ const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const CONTACT_REGEX = /^(09\d{9}|0(2|2[1-8]\d|2[1-8]\d[1-9]|2[1-8]\d[1-9]\d)\d{7})$/
 
 
@@ -64,16 +63,19 @@ export default function User({state}) {
     if(editUser) {
       setAlertOpen(true);
       setAlertMessage('Updating user...');
+      setLoading(true);
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       setEditUser(false)
-      setSelectedUser(null)
+      setSelectedUser(null);
+      setLoading(false);
       setAlertOpen(true);
       setAlertMessage('User Updated');
     }
     else{
       setAlertOpen(true);
       setAlertMessage('Adding user...');
+      setLoading(true)
       const response = await axios.post('/api/register', {
         first_name: data.first_name,
         middle_name: data.middle_name,
@@ -86,6 +88,7 @@ export default function User({state}) {
       }, config)
         setAlertOpen(true);
         setAlertMessage('User Added');
+        setLoading(false)
         handleCloseUser(); // Call the hook after successful submission
     }
     const response = await axios.get('/api/users', {
@@ -175,6 +178,7 @@ export default function User({state}) {
   // Delete Function Data
   const deleteUser = async (event, id) => {
     event.preventDefault();
+    setLoading(true);
     setAlertOpen(true);
     setAlertMessage('Deleting user...');
     const authToken = useAuthStore.getState().getAuthToken();
@@ -207,6 +211,7 @@ export default function User({state}) {
   
       setAlertOpen(true)
       setAlertMessage('User Deleted');
+      setLoading(false);
     } catch (error) {
       if (error.response?.status === 401) {
         setErrorOpen(true);

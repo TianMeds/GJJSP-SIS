@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ScholarshipCollection extends ResourceCollection
+class ScholarshipCategCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.
@@ -14,8 +14,7 @@ class ScholarshipCollection extends ResourceCollection
      */
     public function toArray(Request $request): array
     {
-        return 
-        [
+        return [
             'data' => $this->collection,
         ];
     }

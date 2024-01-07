@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ScholarshipResource;
-use App\Http\Resources\ScholarshipCollection;
-use App\Models\Scholarship;
+use App\Http\Resources\ScholarshipCategCollection;
+use App\Http\Resources\ScholarshipCategResource;
+use App\Models\ScholarshipCateg;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class ScholarshipController extends Controller
+class ScholarshipCategController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return response()->json(new ScholarshipCategCollection(ScholarshipCateg::all()), Response::HTTP_OK);
     }
 
     /**
@@ -29,7 +29,7 @@ class ScholarshipController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Scholarship $scholarship)
+    public function show(ScholarshipCateg $scholarshipCateg)
     {
         //
     }
@@ -37,7 +37,7 @@ class ScholarshipController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Scholarship $scholarship)
+    public function update(Request $request, ScholarshipCateg $scholarshipCateg)
     {
         //
     }
@@ -45,7 +45,7 @@ class ScholarshipController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Scholarship $scholarship)
+    public function destroy(ScholarshipCateg $scholarshipCateg)
     {
         //
     }

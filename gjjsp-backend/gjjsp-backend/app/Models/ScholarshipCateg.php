@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Scholarship extends Model
+class ScholarshipCateg extends Model
 {
     use HasFactory;
 
@@ -14,5 +14,6 @@ class Scholarship extends Model
         'alias',
         'benefactor',
         'scholarship_categ_status',
+        'project_partner_id',
     ];
 }

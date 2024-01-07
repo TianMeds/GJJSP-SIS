@@ -14,7 +14,7 @@ export const ProfileBox = ({ userId }) => {
     const user_mobile_num = auth?.user?.user_mobile_num || '';
     const roles_name = auth.roles_name || '';
 
-    const {user, setUser, selectedUser, setSelectedUser} =useUserStore();
+    const {user, setUser, selectedUser, setSelectedUser} = useUserStore();
     const {loading, setLoading, loadingMessage, setLoadingMessage} = useLoginStore();
     const {authToken} = useAuthStore();
     
