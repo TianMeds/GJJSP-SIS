@@ -20,6 +20,8 @@ const useScholarshipStore = create((set) => ({
     setEditCategories: (newEditCategories) => set({editCategories: newEditCategories}),
     selectedCategories: null,
     setSelectedCategories: (selectedCategories) => set({ selectedCategories}),
+    currentProjectId: null,
+    setCurrentProjectId: (currentProjectId) => set({ currentProjectId}),
 
     // Hooks for Update Scholarship Data
     projectName: '',

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
@@ -25,32 +25,32 @@ const projectPartners = [
 ]
 
 // const projectPartners = [
-//   "BACPAT Youth Development Foundation Inc.",
-//   "Welcome Home Foundation Inc. (BACPAT Scholars)",
-//   "Education for Former OSY",
-//   "Bahay Maria Children Center Formal",
-//   "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
-//   "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
-//   "Canossian Sisters – Endorsed Scholars",
-//   "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
-//   "WHFI Formal Education for Former Out of School Youth",
-//   "WHFI Formal Education for former OSY",
-//   "WHFI Bacpat Youth Development Foundation, Inc.",
-//   "WHFI- Literacy Program, Bacolod",
-//   "WHFI- Literacy Program, Malaybalay",
-//   "WHFI – Literacy Program",
-//   "Benefactors Endorsed Applicant",
-//   "Benefactors & Secretariat Endorsed",
-//   "Benefactors Endorsed Scholars & GJJS Secretariat",
-//   "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
-//   "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
-//   "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
-//   "Jeri Jalandoni – Education for the Youth Diocese",
-//   "Jeri Jalandoni – Education for the Island of Samar",
-//   "A & A Catechetical Project",
-//   "Volunteer Program B37 – 5th Year for College Graduates",
-//   "Formal Education for Former Out of School Youth",
-//   "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
+  // "BACPAT Youth Development Foundation Inc.",
+  // "Welcome Home Foundation Inc. (BACPAT Scholars)",
+  // "Education for Former OSY",
+  // "Bahay Maria Children Center Formal",
+  // "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
+  // "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
+  // "Canossian Sisters – Endorsed Scholars",
+  // "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
+  // "WHFI Formal Education for Former Out of School Youth",
+  // "WHFI Formal Education for former OSY",
+  // "WHFI Bacpat Youth Development Foundation, Inc.",
+  // "WHFI- Literacy Program, Bacolod",
+  // "WHFI- Literacy Program, Malaybalay",
+  // "WHFI – Literacy Program",
+  // "Benefactors Endorsed Applicant",
+  // "Benefactors & Secretariat Endorsed",
+  // "Benefactors Endorsed Scholars & GJJS Secretariat",
+  // "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
+  // "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
+  // "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
+  // "Jeri Jalandoni – Education for the Youth Diocese",
+  // "Jeri Jalandoni – Education for the Island of Samar",
+  // "A & A Catechetical Project",
+  // "Volunteer Program B37 – 5th Year for College Graduates",
+  // "Formal Education for Former Out of School Youth",
+  // "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
 // ];
 
 const FormValues ={
@@ -73,8 +73,7 @@ export default function Scholarship({state}) {
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
 
-  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories,} = useScholarshipStore();
-
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId} = useScholarshipStore();
 
   //GET CATEGORIES DATA 
   useEffect(() => {
@@ -191,20 +190,21 @@ export default function Scholarship({state}) {
 
   //Update Scholarship categories data
   const updateCategories = (projectId) => {
-    const selectedCategories = projects.find(project => project.id === projectId );
+    const selectedCategories = projects.find((project) => project.id === projectId );
     setEditCategories(true);
     setSelectedCategories(selectedCategories);
+    setCurrentProjectId(projectId)
     handleOpenScholarship();
     form.reset(selectedCategories);
   }
 
   //DELETE CATEGORIES DATA
-  const deleteScholarship = async (event, id) => {
+  const deleteCategories = async (event, id) => {
     event.preventDefault();
     setLoading(true);
-    setLoadingMessage('Deleting user please wait')
+    setLoadingMessage("Deleting Category please wait")
     setAlertOpen(true);
-    setAlertMessage('Deleting user...');
+    setAlertMessage('Deleting category...');
     const authToken = useAuthStore.getState().getAuthToken();
   
     try {
@@ -221,9 +221,8 @@ export default function Scholarship({state}) {
       });
   
       if (response.status === 200) {
-        setProjects(response.data.data);
-        setAlertOpen(true);
-        setAlertMessage('Updated Scholarship List');
+       setProjects(response.data.data);
+       handleCloseScholarship()
       }
       else {
         setErrorOpen(true);
@@ -231,7 +230,7 @@ export default function Scholarship({state}) {
       }
   
       setAlertOpen(true)
-      setAlertMessage('Scholarship Category Deleted');
+      setAlertMessage('User Deleted');
       setLoading(false);
     } catch (error) {
       if (error.response?.status === 401) {
@@ -239,7 +238,7 @@ export default function Scholarship({state}) {
         setErrorMessage("You've been logged out");
       } else if (error.response?.status === 404) {
         setErrorOpen(true);
-        setErrorMessage('Scholarship Category not found');
+        setErrorMessage('Category not found');
       } else if (error.response?.status === 403) {
         setErrorOpen(true);
         setErrorMessage('Unauthorized access');
@@ -360,6 +359,7 @@ export default function Scholarship({state}) {
                   </MUI.Typography>
                 </MUI.Button>
 
+
                 </MUI.CardContent>
               </MUI.Card>
             </MUI.Grid>
@@ -380,6 +380,7 @@ export default function Scholarship({state}) {
                     type='text'
                     id="scholarship_categ_name"
                     placeholder='Project Name'
+                    disabled={role_id === 2}
                     fullWidth 
 
                     {...register('scholarship_categ_name', {
@@ -404,6 +405,8 @@ export default function Scholarship({state}) {
                   id="alias"
                   placeholder='Project Alias (e.g., Formal Educ)' 
                   fullWidth 
+                  disabled={role_id === 2}
+
                   {...register('alias', {
                     required: 'Project Alias is required',
                     maxLength: {
@@ -436,6 +439,7 @@ export default function Scholarship({state}) {
                         {...field}
                         id='benefactor'
                         native
+                        disabled={role_id === 2}
                       >
                         <option value="" disabled>Select Benefactor</option>
                         <option value="Gado (Ganet Management Corporation)">Gado (Ganet Management Corporation)</option>
@@ -467,6 +471,7 @@ export default function Scholarship({state}) {
                         {...field}
                         id='scholarship_categ_status'
                         native
+                        disabled={role_id === 2}
                       >
                         <option value="" disabled>Select Project Status</option>
                         <option value="Closed for Application">Closed for Application</option>
@@ -499,6 +504,7 @@ export default function Scholarship({state}) {
                         {...field}
                         id="project_partner_id"
                         native
+                        disabled={role_id === 2}
                       >
                         <option value="" disabled>Select Project Partner</option>
                         {projectPartners.map((p, index) => (
@@ -517,8 +523,27 @@ export default function Scholarship({state}) {
                   </p>
                 )}
               </MUI.Grid>
-                    
-                    {/* Add more form fields as needed */}
+
+              {editCategories && role_id === 1 && (
+                <MUI.Grid id="deleteGrid">
+                  <MUI.Typography id="deleteLabel" sx={{color: 'red'}}>Danger Zone</MUI.Typography>
+                  <MUI.Button
+                    variant="contained"
+                    color="error"
+                    sx={{
+                      borderRadius: '5px', 
+                      borderColor: 'primary.main',
+                      textTransform: 'capitalize',  
+                    }}
+                  >
+                    <MUI.Typography variant='h6' sx={{color: 'white'}} onClick={(event) => deleteCategories(event, currentProjectId)}>
+                      Delete this category 
+                    </MUI.Typography>
+                  </MUI.Button>
+
+                  <MUI.Typography sx={{fontSize: '12px', mt: 2}}>This will permanently delete this category and may affect other data</MUI.Typography>
+                </MUI.Grid>
+              )}  
             </MUI.DialogContent>
 
               <MUI.DialogActions>

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScholarshipCategController;
+use App\Http\Controllers\ProjectPartnerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +48,13 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
     Route::post('/scholarships', [ScholarshipCategController::class, 'store']);
     Route::put('/scholarships/{id}', [ScholarshipCategController::class, 'update']);
-     Route::delete('/scholarships/{id}', [ScholarshipCategController::class, 'destroy']);
+    Route::delete('/scholarships/{id}', [ScholarshipCategController::class, 'destroy']);
+
+    //ProjectPartner Route
+    Route::apiResource('/project-partners', ProjectPartnerController::class)->only(['index', 'show']);
+    Route::post('/project-partners', [ProjectPartnerController::class, 'store']);
+    Route::put('/project-partners/{id}', [ProjectPartnerController::class, 'update']);
+    Route::delete('/project-partners/{id}', [ProjectPartnerController::class, 'destroy']);
 });
 
 

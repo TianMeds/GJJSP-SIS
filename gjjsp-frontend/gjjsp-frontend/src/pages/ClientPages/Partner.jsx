@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import * as MUI from '../../import'
 import Layout from '../../component/Layout/SidebarNavbar/Layout'
 import theme from '../../context/theme';
@@ -7,13 +7,17 @@ import { DevTool } from "@hookform/devtools";
 import {useForm, Controller } from 'react-hook-form';
 import usePartnerStore from '../../store/PartnerStore';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
+import {useNavigate} from 'react-router-dom';
+import axios from '../../api/axios';
+import useLoginStore from '../../store/LoginStore';
+import useAuthStore from '../../store/AuthStore';
 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 
 const FormValues = {
-  partnerName: '',
-  partnerMobileNum: '',
-  partnerSchool: '',
+  project_partner_name: '',
+  project_partner_mobile_num: '',
+  school_id: '',
 }
 
 export default function Partner({state}) {
@@ -21,60 +25,190 @@ export default function Partner({state}) {
   const form  = useForm();
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
+  const navigate = useNavigate();
   
   const { 
+    partners,
+    partner,
+    setPartners,
     searchQuery,
     handleSearch,
-    updatePartner, 
     setEditPartner, 
     editPartner, 
-    partner, 
     handleClosePartner, 
     handleOpenPartner, 
     selectedPartner, 
     setSelectedPartner, 
     filteredPartner, 
     setFilteredPartner, 
-    addPartner = ((store) => store.addPartner),
-    deletePartner = ((store) => store.deletePartner),
-    partners = ((store) => store.partners.filter((partner) => partner.state === state)),
   } = usePartnerStore();  
 
-  const onSubmit = (data) => {
-    console.log("Form submitted", data);
+  const {setLoading, setLoadingMessage} = useLoginStore();
+  const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
 
-    if (editPartner) {
-      updatePartner(selectedPartner.id, data.partnerName, data.partnerMobileNum, data.partnerSchool);
-      setEditPartner(false);
-      form.reset(FormValues);
-    } else {
-      addPartner(data.partnerName, data.partnerMobileNum, data.partnerSchool);
+
+  //Get Partners Data
+  useEffect(() => {
+    setAlertOpen(true);
+    setErrorOpen(false);
+    setAlertMessage("Please wait updating Partners List");
+
+    const fetchPartner = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/project-partners', {
+          headers: {
+            'Authorization' : `Bearer ${authToken}`
+          }
+        });
+        if (response.status === 200) {
+          setPartners(response.data.data)
+          setAlertOpen(true);
+          setAlertMessage('Project partners list updated');
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage('Something went wrong while fetching project partners list');
+        }
+      }
+      catch(err){
+        if(err.response?.status === 401){
+          setErrorOpen(true);
+          setErrorMessage('Unauthorized Access');
+          navigate('/login')
+        }
+      }
     }
-    form.reset();
-    handleClosePartner();
-  }
+    fetchPartner();
+  }, []);
 
-  const handleEditPartner = (partnerId) => {
-    const selectedPartner = partners.find((partner) => partner.id === partnerId);
-    if (selectedPartner) {
-      setSelectedPartner(selectedPartner);
-      reset({
-        partnerName: selectedPartner.partnerName,
-        partnerMobileNum: selectedPartner.partnerMobileNum,
-        partnerSchool: selectedPartner.partnerSchool,
+
+  //Add Partner
+  const onSubmit = async (data, event) => {
+    event.preventDefault();
+    const authToken = useAuthStore.getState().getAuthToken();
+
+    const config = {
+      headers: {
+        'Authorization' : `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+      }
+    }
+
+    try{
+      if(editPartner) {
+        setAlertOpen(true);
+        setAlertMessage('Please wait while updating partner');
+        setLoading(true);
+        setLoadingMessage('Updating Partner');
+        const response = await axios.put(`/api/project-partners/${selectedPartner.id}`, {...data}, config)
+        handleClosePartner();
+        setEditPartner(false);
+        setLoading(false)
+        setAlertOpen(true);
+        setAlertMessage('Partner updated');
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage('Please wait while adding partner');
+        setLoading(true);
+        setLoadingMessage('Adding Partner');
+        const response = await axios.post('/api/project-partners', {
+          project_partner_name: data.project_partner_name,
+          project_partner_mobile_num: data.project_partner_mobile_num,
+          school_id: data.school_id,
+        }, config)
+        setAlertOpen(true);
+        setAlertMessage('Adding Partner please wait');
+        setLoading(false);
+        handleClosePartner();
+      }
+      const response = await axios.get('/api/project-partners',{
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
       });
-      setEditPartner(true);
-      handleOpenPartner();
+      if (response.status === 200) {
+        setPartners(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Project partners list updated');
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage('Something went wrong while fetching project partners list');
+      }
+      form.reset(FormValues);
     }
-  };
-
-  const handleDeletePartner = (partnerId) => {
-    const selectedPartner = partners.find((partner) => partner.id === partnerId);
-    if (selectedPartner) {
-      deletePartner(selectedPartner.id);
+    catch(err){
+      if(err.response?.status === 401){
+        setErrorOpen(true);
+        setErrorMessage("You've been logout");
+        navigate('/login')
+      }
+      else if(err.response?.status === 422){
+        setErrorOpen(true);
+        setErrorMessage('Please fill up all the required fields');
+      }
+      else{
+        setErrorOpen(true);
+        setErrorMessage('Something went wrong');
+      }
     }
   }
 
+  //Update function for partner
+  const updatePartner = (partnerId) => {
+    const selectedPartner = partners.find((partner) => partner.id === partnerId);
+    setEditPartner(true);
+    setSelectedPartner(selectedPartner);
+    handleOpenPartner();
+    form.reset(selectedPartner);
+  }
+
+  //Delete function for partner
+  const deletePartner = async (event, id) => {
+    event.preventDefault();
+    setLoading(true);
+    setLoadingMessage('Deleting Partner');
+    setAlertOpen(true);
+    setAlertMessage('Please wait while deleting partner');
+    const authToken = useAuthStore.getState().getAuthToken();
+
+    try{
+      await axios.delete(`/api/project-partners/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      const response = await axios.get('/api/project-partners',{
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.status === 200) {
+        setPartners(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Project partners list updated');
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage('Something went wrong while fetching project partners list');
+      }
+      setLoading(false);
+    }
+    catch(err){
+      if(err.response?.status === 401){
+        setErrorOpen(true);
+        setErrorMessage("You've been logout");
+        navigate('/login')
+      }
+      else{
+        setErrorOpen(true);
+        setErrorMessage('Something went wrong');
+      }
+    }
+  }
+  
   const handleCancelPartner = () => {
     form.reset(FormValues);
     setEditPartner(false);
@@ -147,29 +281,24 @@ export default function Partner({state}) {
               </MUI.TableHead>
                 <MUI.TableBody>
                   {partners
-                    .filter((partner) => filteredPartner === 'All' || partner.partnerSchool === filteredPartner)
-                    .filter((partner) => (partner.partnerName.toLowerCase().includes(searchQuery.toLowerCase()))
-                    )
-                    .reverse()
-                    .map((partner) => (
-                      (partner.partnerName || partner.partnerMobileNum || partner.partnerSchool) && (
-                    <MUI.TableRow key={partner.id} className='partner' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerName'>{partner.partnerName}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerMobileNum'>{partner.partnerMobileNum}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerSchool'>{partner.partnerSchool}</MUI.TableCell>
+                    .map((partner, index) => (
+                    <MUI.TableRow key={index} className='partner' >
+                      <MUI.TableCell sx={{border: 'none'}}  className='partnerName'>{partner.project_partner_name}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='partnerMobileNum'>{partner.project_partner_mobile_num}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='partnerSchool'>{partner.school_id}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none',  color: '#2684ff' }}>
 
-                        <MUI.IconButton color="inherit" onClick={() => handleEditPartner(partner.id)}>
+                        <MUI.IconButton color="inherit" onClick={() => updatePartner(partner.id)}>
                           <MUI.BorderColorIcon />
                         </MUI.IconButton>
 
-                        <MUI.IconButton color="inherit" sx={{ textTransform: 'capitalize' }} onClick={() => handleDeletePartner(partner.id)}>
+                        <MUI.IconButton color="inherit" sx={{ textTransform: 'capitalize' }} onClick={(event) => deletePartner(event, partner.id)}>
                           <MUI.DeleteIcon />
                         </MUI.IconButton>
 
                       </MUI.TableCell>
                     </MUI.TableRow>
-                  )))}
+                  ))}
                 </MUI.TableBody>
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>
@@ -183,14 +312,14 @@ export default function Partner({state}) {
             <MUI.DialogContent>
               
               <MUI.Grid id="partnerNameGrid">
-                <MUI.InputLabel htmlFor="partnerName" id="partnerNameLabel">Name</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="project_partner_name" id="partnerNameLabel">Name</MUI.InputLabel>
                 <MUI.TextField
                   type='text'
-                  id="partnerName"
+                  id="project_partner_name"
                   placeholder='Christian Medallada'
                   fullWidth
 
-                  {...register('partnerName', {
+                  {...register('project_partner_name', {
                     required: {
                       value: true,
                       message: 'Partner Name is required'
@@ -201,56 +330,56 @@ export default function Partner({state}) {
                     }
                   })}
                 />
-                {errors.partnerName && (
+                {errors.project_partner_name && (
                   <p id='errMsg'>
                     <MUI.InfoIcon className='infoErr'/>
-                    {errors.partnerName?.message}
+                    {errors.project_partner_name.message}
                   </p>
                 )}   
               </MUI.Grid>
 
               <MUI.Grid id="partnerMobileNumGrid">
-                <MUI.InputLabel htmlFor="partnerMobileNum" id="partnerMobileNumLabel">Mobile Number</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="project_partner_mobile_num" id="partnerMobileNumLabel">Mobile Number</MUI.InputLabel>
                 <MUI.TextField
                   type='text'
-                  id="partnerMobileNum"
+                  id="project_partner_mobile_num"
                   placeholder='09123456789'
                   fullWidth
 
-                  {...register('partnerMobileNum', {
+                  {...register('project_partner_mobile_num', {
                     required: {
                       value: true,
                       message: 'Mobile Number is required'
                     },
                   })}
                 />
-                {errors.partnerMobileNum && (
+                {errors.project_partner_mobile_num && (
                   <p id='errMsg'>
                     <MUI.InfoIcon className='infoErr'/>
-                    {errors.partnerMobileNum?.message}
+                    {errors.project_partner_mobile_num?.message}
                   </p>
                 )}
               </MUI.Grid>
 
               <MUI.Grid id="partnerSchoolGrid">
-                <MUI.InputLabel htmlFor="partnerSchool" id="partnerSchoolLabel">School</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="school_id" id="partnerSchoolLabel">School</MUI.InputLabel>
                 <MUI.TextField
                   type='text'
-                  id="partnerSchool"
+                  id="school_id"
                   placeholder='school'
                   fullWidth
 
-                  {...register('partnerSchool', {
+                  {...register('school_id', {
                     required: {
                       value: true,
                       message: 'School is required'
                     },
                   })}
                 />
-                {errors.partnerSchool && (
+                {errors.school_id && (
                   <p id='errMsg'>
                     <MUI.InfoIcon className='infoErr'/>
-                    {errors.partnerSchool?.message}
+                    {errors.school_id?.message}
                   </p>
                 )}
               </MUI.Grid>
@@ -263,7 +392,28 @@ export default function Partner({state}) {
             </MUI.DialogActions>
           </MUI.Dialog>
 
-          
+          <MUI.Snackbar
+            open={alertOpen}
+            autoHideDuration={5000}
+            onClose={() => setAlertOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+              {alertMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
+          <MUI.Snackbar
+            open={errorOpen}
+            autoHideDuration={5000}
+            onClose={() => setErrorOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+              {errorMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
           </MUI.Grid>
         </MUI.Container>
         </MUI.ThemeProvider>
