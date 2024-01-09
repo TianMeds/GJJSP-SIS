@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email_address')->unique();
             $table->string('password');
             $table->unsignedBigInteger('role_id');
-            $table->enum('user_status',['Active','Inactive','Suspended','Deleted']);
+            $table->enum('user_status',['Active','Inactive','Revoked']);
             $table->rememberToken();
             $table->timestamps();
 

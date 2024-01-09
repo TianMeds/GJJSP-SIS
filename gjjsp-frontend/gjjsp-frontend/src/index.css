@@ -44,7 +44,8 @@
 #scholarStatusGrid
 #partnerNameGrid,
 #partnerMobileNumGrid,
-#partnerSchoolGrid{
+#partnerSchoolGrid,
+#deleteGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -68,7 +69,8 @@
 #scholarStatusLabel,
 #partnerNameLabel,
 #partnerMobileNumLabel,
-#partnerSchoolLabel{
+#partnerSchoolLabel,
+#deleteLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;

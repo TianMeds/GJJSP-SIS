@@ -3,10 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const useUserStore = create((set) => ({
     usersWithIndex: [], 
-    editUser:  false,
-    selectedUser: null,
-    setEditUser: (newEditUser) => set({editUser: newEditUser}),
-    setSelectedUser: (selectedUser) => set({ selectedUser}),
 
     //Hook For the Filter of Table 
     filteredRole: 'All',
@@ -19,6 +15,12 @@ const useUserStore = create((set) => ({
     users: [],
     user: false,
     setUsers: (users) => set({ users }),
+
+    //Hooks for Update User Data
+    editUser:  false,
+    setEditUser: (newEditUser) => set({editUser: newEditUser}),
+    selectedUser: null,
+    setSelectedUser: (selectedUser) => set({ selectedUser}),
 
     //Hooks for User Form
     first_name: '',
@@ -41,33 +43,6 @@ const useUserStore = create((set) => ({
     //Hooks for opening & closing user form
     handleOpenUser: () => set({user: true}),
     handleCloseUser: () => set({user: false}),
-    
-    addUser: (userName, emailAddress, role, userStatus) =>
-      set((store) => ({
-        users: [
-          ...store.users,
-          { id: uuidv4(), userName, emailAddress, role, userStatus },
-        ],
-        usersWithIndex: [
-          ...store.usersWithIndex,
-          { userName, emailAddress, role, userStatus, originalIndex: store.users.length },
-        ],
-    })),
-
-    updateUser: (userId, userName, emailAddress, role, userStatus) => 
-    set((store) => ({
-      users: store.users.map((user) => 
-        user.id === userId
-        ? { ...user, userName, emailAddress, role, userStatus }
-        : user
-      ),
-    })),
-
-    deleteUser: (userId) => 
-      set((store) => ({
-        users: store.users.filter((user) => user.id !== userId),
-        usersWithIndex: store.usersWithIndex.filter((user) => user.id !== userId),
-    })),
     
 }))
 
