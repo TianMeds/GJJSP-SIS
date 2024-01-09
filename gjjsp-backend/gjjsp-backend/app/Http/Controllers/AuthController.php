@@ -26,32 +26,53 @@ class AuthController extends Controller
 
         // Extract the password before hashing it - For sending Credential
         $plainPassword = $fields['password'];
+        $phoneNumber = $fields['user_mobile_num']; 
 
         $user = User::create([
             'first_name' => $fields['first_name'],
             'middle_name' => $fields['middle_name'],
             'last_name' => $fields['last_name'],
-            'user_mobile_num' => $fields['user_mobile_num'],
+            'user_mobile_num' => $phoneNumber,
             'email_address' => $fields['email_address'],
             'password' => bcrypt($plainPassword),
             'role_id' => $fields['role_id'],
             'user_status' => $fields['user_status'],
         ]);
         
-        if($user) {
-            try{
+        if ($user) {
+            try {
                 Mail::mailer('smtp')->to($user->email_address)->send(new UserCredential($user, $plainPassword));
-                return response()->json([
-                    'status' => true,
-                    'message' => 'User has been added, credential will be sent to the given email',
-                    'method' => 'POST',
-                ], 200);
-            }
-            catch (\Exception $err){
+
+                // Sending SMS after user creation
+                $basic = new \Vonage\Client\Credentials\Basic("53ea6fdd", "VG8vvjUb99KI5gZG");
+                $client = new \Vonage\Client($basic);
+
+                $message = 'Hello from GJJSP! Your account has been created successfully.';
+
+                $response = $client->sms()->send(
+                    new \Vonage\SMS\Message\SMS($phoneNumber, 'GJJSP', $message)
+                );
+
+                $smsMessage = $response->current();
+
+                if ($smsMessage->getStatus() == 0) {
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'User has been added, credential sent to the given email, and SMS sent.',
+                        'method' => 'POST',
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Could not send SMS. User added and email sent. Please try again later.',
+                        'method' => 'POST',
+                    ], 500);
+                }
+            } catch (\Exception $err) {
                 $user->delete();
                 return response()->json([
                     'status' => false,
-                    'message' => 'Could not send user credentials. Please try again ',
+                    'message' => 'Could not send user credentials or SMS. Please try again ',
                     'method' => 'POST',
                 ], 500);
             }

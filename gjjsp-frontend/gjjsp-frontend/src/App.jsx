@@ -87,15 +87,6 @@ function App() {
           }
         />
 
-        <Route 
-          path="view" 
-          element={
-          <Suspense fallback="Scholarlink Loading...">
-            <LazyViewSubmission/>
-          </Suspense>
-          }
-        />
-
       </Route>
 
       {/* Scholar Route */}
@@ -197,6 +188,15 @@ function App() {
           }
         />
       
+      <Route 
+          path="view" 
+          element={
+          <Suspense fallback="Scholarlink Loading...">
+            <LazyViewSubmission/>
+          </Suspense>
+          }
+        />
+
 
       </Route>
 

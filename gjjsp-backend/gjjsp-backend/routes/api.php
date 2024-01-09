@@ -8,6 +8,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScholarshipCategController;
 use App\Http\Controllers\ProjectPartnerController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\SMSController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,11 +57,15 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/project-partners', [ProjectPartnerController::class, 'store']);
     Route::put('/project-partners/{id}', [ProjectPartnerController::class, 'update']);
     Route::delete('/project-partners/{id}', [ProjectPartnerController::class, 'destroy']);
+
+    //Submission Route
 });
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('submissions', [SubmissionController::class, 'submission'])->name('submission');
+Route::get('/sms', [SMSController::class, 'index']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;

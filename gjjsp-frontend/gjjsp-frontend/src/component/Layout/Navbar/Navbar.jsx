@@ -64,8 +64,7 @@ export const SettingsIcon = () => {
         loading,
         setLoading,
         expirationTime,
-        token,
-        setToken,
+        setLoadingMessage
     } = useLoginStore();
 
     const {getAuthToken, resetAuthToken} = useAuthStore();
@@ -82,6 +81,7 @@ export const SettingsIcon = () => {
     const onLogout = async() => {
 
         setLoading(true);
+        setLoadingMessage("Logging out")
         try{
           const authToken = useAuthStore.getState().getAuthToken();
           const config = {

@@ -16,8 +16,7 @@ const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-const CONTACT_REGEX = /^(09\d{9}|0(2|2[1-8]\d|2[1-8]\d[1-9]|2[1-8]\d[1-9]\d)\d{7})$/
-
+const CONTACT_REGEX = /^\+?63\d{10}$/
 
 //Reseting Form Values 
 const FormValues = {
@@ -64,6 +63,7 @@ export default function User({state}) {
       setAlertOpen(true);
       setAlertMessage('Updating user...');
       setLoading(true);
+      setLoadingMessage("Updating user")
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       setEditUser(false)

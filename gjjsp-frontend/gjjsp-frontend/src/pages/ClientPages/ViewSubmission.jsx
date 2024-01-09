@@ -2,9 +2,8 @@ import React from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
-import useSubmissionStore from '../../store/SubmissionStore'
+import useSubmissionStore from '../../store/SubmissionStore';
 import StatusProgress from '../Components/StatusProgress';
-import faker from 'faker';
 import classNames from 'classnames';
 
 
@@ -302,48 +301,46 @@ export default function ViewSubmission() {
             </MUI.Grid>
 
 
-        <MUI.Dialog open={submissionManage !== ''} onClose={handleCloseSubmission} fullWidth maxWidth="xs">
-          <MUI.DialogContent>
-           <MUI.Typography sx={{display: 'flex', alignItems: 'center', fontSize: '1.2rem', fontWeight: 'bold', margin: '12px 0'}}> 
-              <MUI.InfoIcon sx={{color: '#D97706', mr: 1}}/>
-              {submissionManage === 'approval' ? 'Submission Approval Confirmation' : 'Reason for Disapproval'}
+          <MUI.Dialog open={submissionManage !== ''} onClose={handleCloseSubmission} fullWidth maxWidth="xs">
+            <MUI.DialogContent>
+            <MUI.Typography sx={{display: 'flex', alignItems: 'center', fontSize: '1.2rem', fontWeight: 'bold', margin: '12px 0'}}> 
+                <MUI.InfoIcon sx={{color: '#D97706', mr: 1}}/>
+                {submissionManage === 'approval' ? 'Submission Approval Confirmation' : 'Reason for Disapproval'}
+              </MUI.Typography>
+            <MUI.Typography sx={{color: '#44546F', fontSize: '0.9rem'}}>
+              {submissionManage === 'approval' 
+                ? 'Are you sure you want to approve this submission?'
+                : 'Specify the reason for disapproving this submission:'
+              }
             </MUI.Typography>
-           <MUI.Typography sx={{color: '#44546F', fontSize: '0.9rem'}}>
-            {submissionManage === 'approval' 
-              ? 'Are you sure you want to approve this submission?'
-              : 'Specify the reason for disapproving this submission:'
-            }
-           </MUI.Typography>
 
-           {submissionManage === 'disapproval' && (
-            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-              <MUI.Select native>
-                <option value="" disabled>
-                  Select Role
-                </option>
-                <option value="Wrong Documents">Wrong Documents</option>
-                <option value="Lack of Documents">Lack of Documents</option>
-              </MUI.Select>
-            </MUI.FormControl>
-          )}
-          </MUI.DialogContent>
-          <MUI.DialogActions>
-            <MUI.Button onClick={handleCloseSubmission}>Cancel</MUI.Button>
-            {submissionManage === 'approval' ? (
-              <MUI.Button onClick={handleApproveSubmission} variant="contained">
-                Confirm Approval
-              </MUI.Button>
-            ) : (
-              <MUI.Button onClick={handleDisapproveSubmission} variant="contained">
-                Confirm Disapproval
-              </MUI.Button>
+            {submissionManage === 'disapproval' && (
+              <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                <MUI.Select native>
+                  <option value="" disabled>
+                    Select Role
+                  </option>
+                  <option value="Wrong Documents">Wrong Documents</option>
+                  <option value="Lack of Documents">Lack of Documents</option>
+                </MUI.Select>
+              </MUI.FormControl>
             )}
-          </MUI.DialogActions>
-        </MUI.Dialog>
-       
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseSubmission}>Cancel</MUI.Button>
+              {submissionManage === 'approval' ? (
+                <MUI.Button onClick={handleApproveSubmission} variant="contained">
+                  Confirm Approval
+                </MUI.Button>
+              ) : (
+                <MUI.Button onClick={handleDisapproveSubmission} variant="contained">
+                  Confirm Disapproval
+                </MUI.Button>
+              )}
+            </MUI.DialogActions>
+          </MUI.Dialog>
     </MUI.Container>
-
-    
+  
     </Layout>
   )
 }
