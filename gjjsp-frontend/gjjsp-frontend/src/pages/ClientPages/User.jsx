@@ -76,6 +76,7 @@ export default function User({state}) {
       setAlertOpen(true);
       setAlertMessage('Adding user...');
       setLoading(true)
+      setLoadingMessage("Adding user")
       const response = await axios.post('/api/register', {
         first_name: data.first_name,
         middle_name: data.middle_name,
@@ -179,7 +180,7 @@ export default function User({state}) {
   const deleteUser = async (event, id) => {
     event.preventDefault();
     setLoading(true);
-    setLoadingMessage("Deleting User please wait")
+    setLoadingMessage("Deleting user")
     setAlertOpen(true);
     setAlertMessage('Deleting user...');
     const authToken = useAuthStore.getState().getAuthToken();

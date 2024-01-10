@@ -100,7 +100,7 @@ export default function Partner({state}) {
         setAlertOpen(true);
         setAlertMessage('Please wait while updating partner');
         setLoading(true);
-        setLoadingMessage('Updating Partner');
+        setLoadingMessage('Updating partner');
         const response = await axios.put(`/api/project-partners/${selectedPartner.id}`, {...data}, config)
         handleClosePartner();
         setEditPartner(false);
@@ -112,14 +112,14 @@ export default function Partner({state}) {
         setAlertOpen(true);
         setAlertMessage('Please wait while adding partner');
         setLoading(true);
-        setLoadingMessage('Adding Partner');
+        setLoadingMessage('Adding partner');
         const response = await axios.post('/api/project-partners', {
           project_partner_name: data.project_partner_name,
           project_partner_mobile_num: data.project_partner_mobile_num,
           school_id: data.school_id,
         }, config)
         setAlertOpen(true);
-        setAlertMessage('Adding Partner please wait');
+        setAlertMessage('Adding partner please wait');
         setLoading(false);
         handleClosePartner();
       }
@@ -169,7 +169,7 @@ export default function Partner({state}) {
   const deletePartner = async (event, id) => {
     event.preventDefault();
     setLoading(true);
-    setLoadingMessage('Deleting Partner');
+    setLoadingMessage('Deleting partner');
     setAlertOpen(true);
     setAlertMessage('Please wait while deleting partner');
     const authToken = useAuthStore.getState().getAuthToken();
