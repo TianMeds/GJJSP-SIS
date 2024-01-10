@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('submitted_by');
             $table->string('submission_type')->nullable();
             $table->string('due_datetime');
-            $table->string('term_submitted');
-            $table->string('school_yr_submitted');
             $table->dateTime('submitted_datetime');
             $table->string('submission_status');
             $table->string('updated_by');

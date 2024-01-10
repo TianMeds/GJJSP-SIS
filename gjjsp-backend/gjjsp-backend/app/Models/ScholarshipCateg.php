@@ -14,6 +14,5 @@ class ScholarshipCateg extends Model
         'alias',
         'benefactor',
         'scholarship_categ_status',
-        'project_partner_id',
     ];
 }

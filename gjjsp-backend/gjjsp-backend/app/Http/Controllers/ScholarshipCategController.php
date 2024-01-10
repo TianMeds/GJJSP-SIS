@@ -28,7 +28,6 @@ class ScholarshipCategController extends Controller
             'alias',
             'benefactor',
             'scholarship_categ_status',
-            'project_partner_id',
         ]));
         
         return new ScholarshipCategResource($scholarshipCateg);

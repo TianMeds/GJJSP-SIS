@@ -103,6 +103,8 @@
   import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
   import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
   import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+  import AttachFileIcon from '@mui/icons-material/AttachFile';
+  import Input from '@mui/material/Input';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -216,5 +218,7 @@
     PublicIcon,
     CameraAltOutlinedIcon,
     PersonAddAltOutlinedIcon,
-    AddCircleOutlineIcon
+    AddCircleOutlineIcon,
+    Input,
+    AttachFileIcon
   };

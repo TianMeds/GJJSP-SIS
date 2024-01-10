@@ -6,12 +6,16 @@ const usePartnerStore = create((set) => ({
     partners: [],
     partner: false,
     setPartners: (partners) => set({ partners }),
+    selectedProjectPartner: '',
+    setSelectedProjectPartner: (selectedProjectPartner) => set({ selectedProjectPartner}),
 
     //Hook for edit partner
     editPartner: false,
     setEditPartner: (newEditPartner) => set({editPartner: newEditPartner}),
     selectedPartner: null,
     setSelectedPartner: (selectedPartner) => set({ selectedPartner}),
+    selectedProjectPartnerId: '',
+    setSelectedProjectPartnerId: (selectedProjectPartnerId) => set({ selectedProjectPartnerId}),
     
     partnersWithIndex: [],
     partnerName: '',

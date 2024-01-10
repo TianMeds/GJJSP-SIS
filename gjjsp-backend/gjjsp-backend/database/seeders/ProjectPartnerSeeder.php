@@ -170,6 +170,163 @@ class ProjectPartnerSeeder extends Seeder
                 'project_partner_mobile_Num' => '09033445566',
                 'school_id' => 26
             ],
+            [
+                'scholarship_categ_id' => 27,
+                'project_partner_name' => 'Ateneo De Manila University',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 27
+            ],
+            [
+                'scholarship_categ_id' => 28,
+                'project_partner_name' => 'Assumption College – Makati City | Assumption college',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 28
+            ],
+            [
+                'scholarship_categ_id' => 29,
+                'project_partner_name' => 'Don Bosco Technical College – Mandaluyong | Don Bosco Technical College',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 29
+            ],
+            [
+                'scholarship_categ_id' => 30,
+                'project_partner_name' => 'Don Bosco Training Center Nueva Ecija',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 30
+            ],
+            [
+                'scholarship_categ_id' => 31,
+                'project_partner_name' => 'Don Bosco Technical College – Technical Vocational Educational Technology',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 31
+            ],
+            [
+                'scholarship_categ_id' => 32,
+                'project_partner_name' => 'Don Bosco Technical College – Mandaluyong – BATCH 18',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 32
+            ],
+            [
+                'scholarship_categ_id' => 33,
+                'project_partner_name' => 'Don Bosco Technical College – Technical Vocational Educational Technology – BATCH 19',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 33
+            ],
+            [
+                'scholarship_categ_id' => 34,
+                'project_partner_name' => 'Don Bosco Training Center Mandaluyong Technical Vocational Educational Technology',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 34
+            ],
+            [
+                'scholarship_categ_id' => 35,
+                'project_partner_name' => 'Don Bosco Training Center Nueva Ecija c/o Fr. Clarence (Sr. Elizabeth Tolentino, FDCC)',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 35
+            ],
+            [
+                'scholarship_categ_id' => 36,
+                'project_partner_name' => 'University of St. La Salle – Bacolod',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 36
+            ],
+            [
+                'scholarship_categ_id' => 37,
+                'project_partner_name' => 'La Consolacion College – Bacolod',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 37
+            ],
+            [
+                'scholarship_categ_id' => 38,
+                'project_partner_name' => 'La Consolacion College – Manila',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 38
+            ],
+            [
+                'scholarship_categ_id' => 39,
+                'project_partner_name' => 'La Consolacion College – Binan',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 39
+            ],
+            [
+                'scholarship_categ_id' => 40,
+                'project_partner_name' => 'University of Negros Occidental – Recoletos | University of Negros Occidental',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 40
+            ],
+            [
+                'scholarship_categ_id' => 41,
+                'project_partner_name' => 'University of Perpetual Help System Dalta – Laguna',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 41
+            ],
+            [
+                'scholarship_categ_id' => 42,
+                'project_partner_name' => 'Concordia College – Manila',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 42
+            ],
+            [
+                'scholarship_categ_id' => 43,
+                'project_partner_name' => 'Canossa College of San Pablo City',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 43
+            ],
+            [
+                'scholarship_categ_id' => 44,
+                'project_partner_name' => 'Iloilo Science and Technology University',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 44
+            ],
+            [
+                'scholarship_categ_id' => 45,
+                'project_partner_name' => 'West Visayas State University (Iloilo City) | West Visayas State University',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 45
+            ],
+            [
+                'scholarship_categ_id' => 46,
+                'project_partner_name' => 'ISAT-U, Colegio de Sagrado, U.I & Other State Colleges',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 46
+            ],
+            [
+                'scholarship_categ_id' => 47,
+                'project_partner_name' => 'University of Santo Tomas',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 47
+            ],
+            [
+                'scholarship_categ_id' => 48,
+                'project_partner_name' => 'Polytech University of the Philippines',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 48
+            ],
+            [
+                'scholarship_categ_id' => 49,
+                'project_partner_name' => 'Centro Escolar University',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 49
+            ],
+            [
+                'scholarship_categ_id' => 50,
+                'project_partner_name' => 'Makati Science Technological Institute of the Philippines',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 50
+            ],
+            [
+                'scholarship_categ_id' => 51,
+                'project_partner_name' => 'Saint Pedro Poveda College',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 51
+            ],
+            [
+                'scholarship_categ_id' => 52,
+                'project_partner_name' => 'Visayan Center for Hotel and Restaurant Services',
+                'project_partner_mobile_Num' => '',
+                'school_id' => 52
+            ]
+            
         ]);
     }
 }

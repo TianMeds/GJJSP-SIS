@@ -134,6 +134,7 @@ export default function User({state}) {
   // Get Function Data
   useEffect(() => {
     setAlertOpen(true);
+    setErrorOpen(false);
     setAlertMessage('Please wait updating users list');
     const fetchUsers = async () => {
       try {
@@ -482,7 +483,7 @@ export default function User({state}) {
                   <MUI.TextField 
                     type='text'
                     id='user_mobile_num'
-                    placeholder='(09XX)-XXX-XXXX' 
+                    placeholder='63XXX-XXXX-XXX' 
                     fullWidth 
                     {...register("user_mobile_num", {
                       required: {
@@ -491,7 +492,7 @@ export default function User({state}) {
                       },
                       pattern: {
                         value: CONTACT_REGEX,
-                        message: 'Please enter a valid mobile number',
+                        message: 'Enter your mobile number in 63 format with no spaces and symbol',
                       }
                     })}
                   />

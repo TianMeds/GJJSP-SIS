@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('alias');
             $table->string('benefactor');
             $table->string('scholarship_categ_status');
-            $table->unsignedBigInteger('project_partner_id');
             $table->timestamps();
         });
     }

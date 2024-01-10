@@ -1,16 +1,19 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
 import useSubmissionStore from '../../store/SubmissionStore';
 import StatusProgress from '../Components/StatusProgress';
 import classNames from 'classnames';
+import axios from '../../api/axios';
 
 
 export default function ViewSubmission() {
 
     const {
+      submissions,
         submission,
+        setSubmissions,
         scholarshipType,
         submissionType,
         submissionSent,
@@ -74,6 +77,23 @@ export default function ViewSubmission() {
       // Add more statuses as needed
     ]
 
+
+    // Get Function 
+    useEffect(() => {
+      const fetchSubmission = async () => {
+        try {
+          const response = await axios.get('/api/submissions');
+  
+          if (response.status === 200) {
+            setSubmissions(response.data.data)
+          } 
+        } catch (error) {
+          console.log(error);
+        }
+      };
+  
+      fetchSubmission();
+    }, []);
   return (
     <Layout>
     <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -243,24 +263,14 @@ export default function ViewSubmission() {
 
                   <MUI.Collapse in={attachmentOpen} timeout="auto" unmountOnExit>
                     <MUI.List disablePadding>
-                      <MUI.ListItemButton sx={{ pl: 4 }}>
+                      {submissions.map((submission, index) => (
+                      <MUI.ListItemButton key={index} sx={{ pl: 4 }}>
                         <MUI.ListItemIcon>
                           <MUI.DescriptionOutlinedIcon />
                         </MUI.ListItemIcon>
-                        <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
+                        <MUI.ListItemText primary={submission.submission_type} />
                       </MUI.ListItemButton>
-                      <MUI.ListItemButton sx={{ pl: 4 }}>
-                        <MUI.ListItemIcon>
-                          <MUI.DescriptionOutlinedIcon />
-                        </MUI.ListItemIcon>
-                        <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
-                      </MUI.ListItemButton>
-                      <MUI.ListItemButton sx={{ pl: 4 }}>
-                        <MUI.ListItemIcon>
-                          <MUI.DescriptionOutlinedIcon />
-                        </MUI.ListItemIcon>
-                        <MUI.ListItemText primary="BRGY_CERT_MEDALLADA.PDF" />
-                      </MUI.ListItemButton>
+                    ))}
                     </MUI.List>
                   </MUI.Collapse>
                 </MUI.Grid>

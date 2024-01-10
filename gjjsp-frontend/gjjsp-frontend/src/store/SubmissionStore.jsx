@@ -2,8 +2,6 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid';
 
 const useSubmissionStore = create((set) => ({
-    submissions: [],
-    submission: false,
     attachmentOpen: false,
     submissionFormOpen: false,
     submissionStatusOpen: false,
@@ -14,6 +12,14 @@ const useSubmissionStore = create((set) => ({
     submissionSent: '12/01/2023',
     submissionStatus: 'SAVED',
     submissionRespond: 'Respond',
+
+    // Submission Form
+    file: '',
+    setFile: (newFile) => set({file: newFile}),
+    submissions: [],
+    submission: false,
+    setSubmissions: (newSubmissions) => set({submissions: newSubmissions}),
+
     setSubmission: (newSubmission) => set({submission: newSubmission}),
     setSubmissionManage: (newSubmissionManage) => set({submissionManage: newSubmissionManage}),
     setSubmissionStatusOpen: (newSubmissionStatusOpen) => set({submissionStatusOpen: newSubmissionStatusOpen}),

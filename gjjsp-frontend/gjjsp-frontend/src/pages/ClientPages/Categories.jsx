@@ -13,6 +13,7 @@ import axios from '../../api/axios';
 import useAuthStore from '../../store/AuthStore';
 import useLoginStore from '../../store/LoginStore';
 import useScholarshipStore from '../../store/ScholarshipStore';
+import usePartnerStore from '../../store/PartnerStore';
 
 //Debugger
 import { DevTool } from "@hookform/devtools";
@@ -24,41 +25,11 @@ const projectPartners = [
   '4',
 ]
 
-// const projectPartners = [
-  // "BACPAT Youth Development Foundation Inc.",
-  // "Welcome Home Foundation Inc. (BACPAT Scholars)",
-  // "Education for Former OSY",
-  // "Bahay Maria Children Center Formal",
-  // "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino",
-  // "Canossian Sisters – Endorsed Grantees c/o Sr. Elizabeth Tolentino & Sr. Mila Reyes",
-  // "Canossian Sisters – Endorsed Scholars",
-  // "Canossian Sisters – Educational Scholars by Sister Milagros Reyes",
-  // "WHFI Formal Education for Former Out of School Youth",
-  // "WHFI Formal Education for former OSY",
-  // "WHFI Bacpat Youth Development Foundation, Inc.",
-  // "WHFI- Literacy Program, Bacolod",
-  // "WHFI- Literacy Program, Malaybalay",
-  // "WHFI – Literacy Program",
-  // "Benefactors Endorsed Applicant",
-  // "Benefactors & Secretariat Endorsed",
-  // "Benefactors Endorsed Scholars & GJJS Secretariat",
-  // "Archdiocese of Jaro Youth Ministry & Balay ni Maria Foundation",
-  // "Cara & Matthew Financial Aid for Out of School Youth (Urban Poor and Youth with Disabilities)",
-  // "Outreach Project to help DEAF of Malaybay for Skills Training & Spiritual Formation Sessions",
-  // "Jeri Jalandoni – Education for the Youth Diocese",
-  // "Jeri Jalandoni – Education for the Island of Samar",
-  // "A & A Catechetical Project",
-  // "Volunteer Program B37 – 5th Year for College Graduates",
-  // "Formal Education for Former Out of School Youth",
-  // "Saint Vincent Ferrer Parish / Fr. Jomar Valdevieso"
-// ];
-
 const FormValues ={
   scholarship_categ_name: '',
   alias: '',
   benefactor: '',
   scholarship_categ_status: '',
-  project_partner_id: '',
 }
 
 export default function Scholarship({state}) {
@@ -72,9 +43,44 @@ export default function Scholarship({state}) {
 
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
-
   const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId} = useScholarshipStore();
+  const {partners, partner, setPartners, selectedProjectPartner, setSelectedProjectPartner, selectedProjectPartnerId, setSelectedProjectPartnerId} = usePartnerStore();
 
+  // Get Project Partners Data 
+  useEffect(() => {
+    const fetchProjectPartners = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/project-partners', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        if (response.status === 200) {
+          setPartners(response.data.data)
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch project partners data');
+        }
+      }
+      catch(err){
+        if(err.response?.status === 401){
+          setErrorOpen(true)
+          setErrorMessage("You've been logout");
+          navigate('/login')
+        }
+      }
+    }
+    fetchProjectPartners();
+  },[]);
+
+  const handleProjectChange = (event) => {
+    const selectedId = event.target.value;
+    setSelectedProjectPartnerId(selectedId);
+  };
+
+  
   //GET CATEGORIES DATA 
   useEffect(() => {
     setAlertOpen(true);
@@ -144,7 +150,6 @@ export default function Scholarship({state}) {
           alias: data.alias,
           benefactor: data.benefactor,
           scholarship_categ_status: data.scholarship_categ_status,
-          project_partner_id: data.project_partner_id,
         }, config)
         setAlertOpen(true);
         setAlertMessage("Scholarship category added");
@@ -484,42 +489,6 @@ export default function Scholarship({state}) {
                   <p id='errMsg'> 
                     <MUI.InfoIcon className='infoErr'/> 
                     {errors.projectStatus.message}
-                  </p>
-                )}
-              </MUI.Grid>
-                
-              <MUI.Grid id="projectPartnerGrid">
-              <MUI.InputLabel htmlFor="project_partner_id" id="projectPartnerLabel">Project Partner/s</MUI.InputLabel>
-                <Controller
-                  name="project_partner_id"
-                  control={control}
-                  defaultValue=''
-                  rules={{
-                    required: 'Project Partner is required',
-                    validate: (value) => value !== '' || "Please select a project partner"
-                  }}
-                  render={({ field }) => (
-                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
-                      <MUI.Select
-                        {...field}
-                        id="project_partner_id"
-                        native
-                        disabled={role_id === 2}
-                      >
-                        <option value="" disabled>Select Project Partner</option>
-                        {projectPartners.map((p, index) => (
-                          <option key={index} value={p}>
-                            {p}
-                          </option>
-                        ))}
-                      </MUI.Select>
-                    </MUI.FormControl>
-                  )}
-                />
-                {errors.project_partner_id && (
-                  <p id='errMsg'> 
-                    <MUI.InfoIcon className='infoErr'/> 
-                    {errors.projectPartner.message}
                   </p>
                 )}
               </MUI.Grid>

@@ -9,7 +9,6 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScholarshipCategController;
 use App\Http\Controllers\ProjectPartnerController;
 use App\Http\Controllers\SubmissionController;
-use App\Http\Controllers\SMSController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,8 +63,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('submissions', [SubmissionController::class, 'submission'])->name('submission');
-Route::get('/sms', [SMSController::class, 'index']);
+Route::get('submissions', [SubmissionController::class, 'index'])->name('submission');
+Route::post('submissions', [SubmissionController::class, 'submission']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;
