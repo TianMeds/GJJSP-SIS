@@ -125,7 +125,7 @@ export default function Scholarship({state}) {
         setAlertOpen(true);
         setAlertMessage("Please wait updating scholarship category");
         setLoading(true);
-        setLoadingMessage('Updating scholarship please wait')
+        setLoadingMessage('Updating category')
         const response = await axios.put(`/api/scholarships/${selectedCategories.id}`,{...data}, config)
         handleCloseScholarship();
         setEditCategories(false);
@@ -138,7 +138,7 @@ export default function Scholarship({state}) {
         setAlertOpen(true);
         setAlertMessage("Please wait adding scholarship category");
         setLoading(true);
-        setLoadingMessage('Adding scholarship please wait')
+        setLoadingMessage('Adding category')
         const response = await axios.post('/api/scholarships',{
           scholarship_categ_name: data.scholarship_categ_name,
           alias: data.alias,
@@ -202,7 +202,7 @@ export default function Scholarship({state}) {
   const deleteCategories = async (event, id) => {
     event.preventDefault();
     setLoading(true);
-    setLoadingMessage("Deleting Category please wait")
+    setLoadingMessage("Deleting category")
     setAlertOpen(true);
     setAlertMessage('Deleting category...');
     const authToken = useAuthStore.getState().getAuthToken();
