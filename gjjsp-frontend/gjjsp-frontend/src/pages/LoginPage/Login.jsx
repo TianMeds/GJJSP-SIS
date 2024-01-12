@@ -37,13 +37,11 @@ export default function Login() {
     return supportedDomains.includes(domain) || educationalDomainRegex.test(email);
   };
 
-  const csrf = () => axios.get("/sanctum/csrf-cookie")
 
   const onSubmit = async (data, event) => {
     event.preventDefault(); // Prevent default form submission behavior
     setLoading(true);
     setLoadingMessage('Logging in to Scholarlink...');
-    await csrf()
     try {
       const config = {
         headers: {

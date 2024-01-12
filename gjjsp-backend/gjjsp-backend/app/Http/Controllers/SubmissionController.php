@@ -18,10 +18,16 @@ class SubmissionController extends Controller
     public function submission(Request $request) {
         if ($request->hasFile('documents')) {
             $file = $request->file('documents'); 
-            $filename = $file->getClientOriginalName();
+            $filename = $file->hashName();
             $finalName = date('His') . $filename;
     
             $file->storeAs('submissions/', $finalName, 'public');
+
+            $submission = new Submission();
+            $submission->submission_type = $finalName; // Replace 'file_name' with the actual column name in your submissions table
+            $submission->save();
+
+            
             return response()->json(["message" => "Successfully uploaded a file"]);
         } else {
             return response()->json(["message" => "No file found"]);

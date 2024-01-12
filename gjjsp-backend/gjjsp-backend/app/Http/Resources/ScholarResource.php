@@ -17,8 +17,7 @@ class ScholarResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'scholar_id' => $this->scholar_id,
-            'scholarship_type_id' => $this->scholarship_type_id,
+            'scholarship_categ_id' => $this->scholarship_categ_id,
             'project_partner_id' => $this->project_partner_id,
             'gender' => $this->gender,
             'birthdate' => $this->birthdate,
@@ -33,6 +32,12 @@ class ScholarResource extends JsonResource
             'home_address_id' => $this->home_address_id,
             'fb_account' => $this->fb_account,
             'scholar_status_id' => $this->scholar_status_id,
+            'scholar_status_name' => $this->getScholarStatusNameAttribute() ?? 'N/A',
+            'user_first_name' => $this->getUserFirstNameAttribute() ?? 'N/A',
+            'user_last_name' => $this->getUserLastNameAttribute() ?? 'N/A',
+            'user_middle_name' => $this->getUserMiddleNameAttribute() ?? 'N/A',
+            'user_email_address' => $this->getUserEmailAddressAttribute() ?? 'N/A',
+            'user_mobile_num' => $this->getUserMobileNumAttribute() ?? 'N/A',
         ];
     }
 }

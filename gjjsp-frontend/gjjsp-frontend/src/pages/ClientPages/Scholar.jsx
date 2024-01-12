@@ -1,12 +1,14 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import theme from '../../context/theme';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import useScholarStore from '../../store/ScholarStore';
 import { DevTool } from "@hookform/devtools";
 import {useForm, Controller } from 'react-hook-form';
+import axios from '../../api/axios';
+import useAuthStore from '../../store/AuthStore';
 
 const FormValues = {
   scholarName: '',
@@ -22,24 +24,52 @@ export default function Scholar({state}) {
   const form  = useForm();
   const { register, control, handleSubmit, formState, reset, validate} = form
   const { errors } = formState;
+  const navigate = useNavigate();
+  
+  //Zustand hooks 
+  const {getAuthToken, setAlertOpen, setErrorOpen, setAlertMessage, setErrorMessage} = useAuthStore();
+  const {scholars, scholar, setScholars} = useScholarStore();
 
   const onSubmit = (data) => {
     console.log("Form submitted", data)
-
-    if(editScholar) {
-      updateScholar(selectedScholar.id, data.scholarName, data.scholarEmailAddress, data.scholarCategory, data.scholarStatus);
-      setEditScholar(false);
-      form.reset(FormValues); 
-    }
-    else {
-      addScholar(data.scholarName, data.scholarEmailAddress, data.scholarCategory, data.scholarStatus);
-    }
-    form.reset();
-    handleCloseScholar();
   }
 
+  useEffect(() => {
+    setAlertOpen(true);
+    setErrorOpen(false);
+    setAlertMessage('Please wait updating scholar list');
+
+    const fetchScholars = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/scholars', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setScholars(response.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated Scholars List")
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage("Error updating scholars list")
+        }
+      }
+      catch (err) {
+        if(response?.status === 401) {
+          setErrorOpen(true);
+          setErrorMessage("Session expired. Please login again.")
+          navigate('/login')
+        }
+      }
+    };
+    fetchScholars();
+  }, []);
+
   const {
-    scholar,
     handleOpenScholar,
     handleCloseScholar,
     filteredScholar,
@@ -53,7 +83,6 @@ export default function Scholar({state}) {
     setSelectedScholar,
     addScholar = ((store) => store.addScholar),
     deleteScholar = ((store) => store.deleteScholar),
-    scholars = ((store) => store.scholars.filter((scholar) => scholar.state === state)),
   } = useScholarStore();
 
   const handleEditScholar = (scholarId) => {
@@ -70,6 +99,8 @@ export default function Scholar({state}) {
       handleOpenScholar();
     }
   };
+
+
 
   const handleDeleteScholar = (scholarId) => {
     const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
@@ -172,18 +203,12 @@ export default function Scholar({state}) {
               </MUI.TableHead>
                 <MUI.TableBody>
                   {scholars
-                    .filter((scholar) => filteredScholar === "All" || scholar.scholarStatus === filteredScholar)
-                    .filter((scholar) => (scholar.scholarName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                    (scholar.scholarEmailAddress.toLowerCase().includes(searchQuery.toLowerCase()))
-                    )
-                    .reverse()
-                    .map((scholar) => (
-                      (scholar.scholarName || scholar.scholarEmailAddress || scholar.scholarCategory || scholar.scholarStatus) && (
-                    <MUI.TableRow  key={scholar.id} className='scholar' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarName'>{scholar.scholarName}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarEmail'>{scholar.scholarEmailAddress}</MUI.TableCell>
+                    .map((scholar, index) => (
+                    <MUI.TableRow  key={index} className='scholar' >
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarName'>{`${scholar.user_first_name} ${scholar.user_middle_name} ${scholar.user_last_name}`}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarEmail'>{scholar.user_email_address}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarCatergory'>{scholar.scholarCategory}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarStatus'>{scholar.scholarStatus}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarStatus'>{scholar.scholar_status_name}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
                         <MUI.IconButton color="inherit" component={Link} to="/profile">
@@ -210,7 +235,7 @@ export default function Scholar({state}) {
 
                       </MUI.TableCell>
                     </MUI.TableRow>
-                  )))}
+                  ))}
                 </MUI.TableBody>
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>

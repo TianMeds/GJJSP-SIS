@@ -17,7 +17,8 @@ class ScholarController extends Controller
      */
     public function index()
     {
-        return response()->json(new ScholarCollection(Scholar::all()),Response::HTTP_OK);
+        $scholars = Scholar::with('user','scholarStatus')->get();
+        return response()->json(new ScholarCollection($scholars), Response::HTTP_OK);
     }
 
     /**
@@ -26,10 +27,9 @@ class ScholarController extends Controller
     public function store(Request $request)
     {
         $scholar = Scholar::create($request->only([
-            'user_id','scholarship_type_id','project_partner_id','scholar_photo_filepath','gender',
-            'religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
+            'user_id','scholarship_categ_id','scholar_photo_filepath','gender','religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
             'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
-            'fb_account','scholar_status_id',
+            'fb_account',
         ]));
         return new ScholarResource($scholar);
     }
@@ -39,7 +39,26 @@ class ScholarController extends Controller
      */
     public function show(Scholar $scholar)
     {
-        return new ScholarResource($scholar);
+        $scholarResource = new ScholarResource($scholar);
+
+        // Include the ScholarStatus data
+        $scholarResource->additional([
+            'scholar_status' => [
+                'id' => $scholar->scholar_status_id,
+                'name' => $scholar->scholar_status_name,
+            ],
+            'user' => [
+                'id' => $scholar->user_id,
+                'first_name' => $scholar->user_first_name,
+                'last_name' => $scholar->user_last_name,
+                'middle_name' => $scholar->user_middle_name,
+                'email_address' => $scholar->user_email_address,
+                'user_mobile_num' => $scholar->user_mobile_num,
+            ]
+            
+        ]);
+
+        return $scholarResource;
     }
 
     /**
@@ -48,10 +67,10 @@ class ScholarController extends Controller
     public function update(Request $request, Scholar $scholar)
     {
         $scholar->update($request->only([
-            'user_id','scholarship_type_id','project_partner_id','scholar_photo_filepath','gender',
+            'scholar_photo_filepath','gender',
             'religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
             'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
-            'fb_account','scholar_status_id',
+            'fb_account',
         ]));
         return new ScholarResource($scholar);
     }

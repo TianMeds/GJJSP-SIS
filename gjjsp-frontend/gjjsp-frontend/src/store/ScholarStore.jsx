@@ -2,9 +2,14 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid';
 
 const useScholarStore = create((set) => ({
-    scholarsWithIndex: [],
+
+    //Hook for get function
     scholars: [],
     scholar: false,
+    setScholars: (scholars) => set({scholars}),
+    setScholar: (newScholar) => set({scholar: newScholar}),
+    
+    scholarsWithIndex: [],
     editScholar: false,
     scholarName: '',
     scholarEmailAddress: '',

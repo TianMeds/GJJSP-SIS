@@ -47,7 +47,7 @@ export const ProfileBox = ({ userId }) => {
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Role</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{selectedUser.roles_name}</MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}>{selectedUser.role_id === 1 ? "Scholarship Administrator" : selectedUser.role_id === 2 ? "Scholar Manager" : selectedUser.role_id === 3 ? "Scholar" : "Unknown Role"}</MUI.Typography>
         </MUI.Box>
 
         </MUI.Box>
