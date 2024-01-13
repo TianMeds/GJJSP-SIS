@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ScholarStatus;
 use App\Models\User;
+use App\Models\ScholarshipCateg;
 
 class Scholar extends Model
 {
@@ -43,6 +44,11 @@ class Scholar extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function scholarship_categs()
+    {
+        return $this->belongsTo(ScholarshipCateg::class, 'scholarship_categ_id');
+    }
+
     public function getScholarStatusNameAttribute()
     {
         return $this->scholarStatus->scholar_status_name;
@@ -69,6 +75,11 @@ class Scholar extends Model
     public function getUserMobileNumAttribute()
     {
         return $this->user->user_mobile_num;
+    }
+
+    public function getScholarshipCategNameAttribute()
+    {
+        return $this->scholarship_categs->scholarship_categ_name;
     }
     protected $guarded;
 }

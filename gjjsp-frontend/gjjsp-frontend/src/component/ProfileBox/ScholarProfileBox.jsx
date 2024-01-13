@@ -315,12 +315,12 @@ export const ScholarProfileBox = () => {
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Email Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{email_address}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholar.user_email_address}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mobile Number</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{mobile_Number}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholar.user_mobile_num}</MUI.Typography>
             </MUI.Box>
             
           </MUI.Box>

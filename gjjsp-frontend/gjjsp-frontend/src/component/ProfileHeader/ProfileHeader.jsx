@@ -1,13 +1,19 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import * as MUI from '../../import';
-import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from '../../api/axios';   
+import useAuthStore from '../../store/AuthStore';
+import useUserStore from '../../store/UserStore';
 
 export const ProfileHeader = () => {
 
+    const {getAuthToken, setAlertOpen, setAlertMessage, setErrorOpen, setErrorMessage} = useAuthStore();
+    const {avatarInitial, setAvatarInitial} = useUserStore();
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedOption, setSelectedOption] = useState('Anyone');
     const [avatarSrc, setAvatarSrc] = useState('');
     const [isHovered, setIsHovered] = useState(false);
+    const navigate = useNavigate();
 
     const handleOpenMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -30,6 +36,16 @@ export const ProfileHeader = () => {
           reader.readAsDataURL(file);
         }
       };
+
+        const firstName = "Christian";
+        const lastName = "Medallada";
+
+        // Function to calculate initials
+        const calculateInitials = () => {
+        const firstInitial = firstName.charAt(0).toUpperCase();
+        const lastInitial = lastName.charAt(0).toUpperCase();
+        return `${firstInitial}${lastInitial}`;
+        };
 
 
     return ( 
@@ -71,7 +87,7 @@ export const ProfileHeader = () => {
                             cursor: 'pointer',
                             }}
                         >
-                            {avatarSrc ? null : 'CM'}
+                            {avatarSrc ? null : avatarInitial}
                         </MUI.Avatar>
 
                         {isHovered && (
@@ -127,7 +143,7 @@ export const ProfileHeader = () => {
                     >
                         <MUI.MenuItem onClick={() => handleCloseMenu('Anyone')}>
                         <MUI.PublicIcon />
-                        <MUI.Typography>Anyone</MUI.Typography>
+                        <MUI.Typography></MUI.Typography>
                         </MUI.MenuItem>
                         <MUI.MenuItem onClick={() => handleCloseMenu('Only me')}>
                         <MUI.PersonIcon />

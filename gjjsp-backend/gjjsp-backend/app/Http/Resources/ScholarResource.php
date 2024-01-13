@@ -38,6 +38,7 @@ class ScholarResource extends JsonResource
             'user_middle_name' => $this->getUserMiddleNameAttribute() ?? 'N/A',
             'user_email_address' => $this->getUserEmailAddressAttribute() ?? 'N/A',
             'user_mobile_num' => $this->getUserMobileNumAttribute() ?? 'N/A',
+            'scholarship_categ_name' => $this->getScholarshipCategNameAttribute() ?? 'N/A',
         ];
     }
 }

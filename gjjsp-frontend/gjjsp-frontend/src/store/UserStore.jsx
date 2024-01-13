@@ -22,6 +22,10 @@ const useUserStore = create((set) => ({
     selectedUser: null,
     setSelectedUser: (selectedUser) => set({ selectedUser}),
 
+    //Hook for View Profile Avatar
+    avatarInitial: '',
+    setAvatarInitial: (newAvatarInitial) => set({avatarInitial: newAvatarInitial}),
+
     //Hooks for User Form
     first_name: '',
     middle_name: '',

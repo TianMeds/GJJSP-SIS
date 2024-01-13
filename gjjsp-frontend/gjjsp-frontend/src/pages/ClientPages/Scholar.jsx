@@ -34,6 +34,7 @@ export default function Scholar({state}) {
     console.log("Form submitted", data)
   }
 
+  // Get Scholar Data 
   useEffect(() => {
     setAlertOpen(true);
     setErrorOpen(false);
@@ -68,6 +69,22 @@ export default function Scholar({state}) {
     };
     fetchScholars();
   }, []);
+
+  // View Profile Scholar 
+  const viewScholarProfile = (scholarId) => {
+    const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
+  
+    if (selectedScholar) {
+      const { user_id } = selectedScholar; // Accessing user_id from selectedScholar
+  
+      setSelectedScholar(selectedScholar);
+      const scholarPath  = user_id === 4 ? '/scholar-profile' : '*';
+      navigate(scholarPath);
+    } else {
+      // Handle the case when selectedScholar is not found
+      console.error('Scholar not found');
+    }
+  };
 
   const {
     handleOpenScholar,
@@ -207,11 +224,11 @@ export default function Scholar({state}) {
                     <MUI.TableRow  key={index} className='scholar' >
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarName'>{`${scholar.user_first_name} ${scholar.user_middle_name} ${scholar.user_last_name}`}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarEmail'>{scholar.user_email_address}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarCatergory'>{scholar.scholarCategory}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarCatergory'>{scholar.scholarship_categ_name}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarStatus'>{scholar.scholar_status_name}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
-                        <MUI.IconButton color="inherit" component={Link} to="/profile">
+                        <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
 

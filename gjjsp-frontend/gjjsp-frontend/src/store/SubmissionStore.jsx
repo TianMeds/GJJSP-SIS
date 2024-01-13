@@ -20,6 +20,16 @@ const useSubmissionStore = create((set) => ({
     submission: false,
     setSubmissions: (newSubmissions) => set({submissions: newSubmissions}),
 
+    //Table Pagination
+    page: 0,
+    setPage: (newPage) => set({ page: newPage }),
+  
+    rowsPerPage: 5,
+    setRowsPerPage: (newRowsPerPage) => set({ rowsPerPage: newRowsPerPage }),
+  
+    pressedRows: [],
+    setPressedRows: (newPressedRows) => set({ pressedRows: newPressedRows }),
+
     setSubmission: (newSubmission) => set({submission: newSubmission}),
     setSubmissionManage: (newSubmissionManage) => set({submissionManage: newSubmissionManage}),
     setSubmissionStatusOpen: (newSubmissionStatusOpen) => set({submissionStatusOpen: newSubmissionStatusOpen}),

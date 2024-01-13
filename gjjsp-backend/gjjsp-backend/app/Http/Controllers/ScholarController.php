@@ -17,7 +17,7 @@ class ScholarController extends Controller
      */
     public function index()
     {
-        $scholars = Scholar::with('user','scholarStatus')->get();
+        $scholars = Scholar::with('user','scholarStatus', 'scholarship_categs')->get();
         return response()->json(new ScholarCollection($scholars), Response::HTTP_OK);
     }
 
@@ -54,7 +54,11 @@ class ScholarController extends Controller
                 'middle_name' => $scholar->user_middle_name,
                 'email_address' => $scholar->user_email_address,
                 'user_mobile_num' => $scholar->user_mobile_num,
-            ]
+            ],
+            'scholarship_categs' => [
+                'id' => $scholar->scholarship_categ_id,
+                'scholarship_categ_name' => $scholar->scholarship_categ_name,
+            ],
             
         ]);
 

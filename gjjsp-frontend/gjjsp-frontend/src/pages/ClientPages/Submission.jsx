@@ -17,11 +17,15 @@ export default function Submission({state}) {
     submissions = ((store) => store.submissions.filter((submission) => submission.state === state)),
     searchQuery,
     handleSearch,
+    page,
+    setPage,
+    rowsPerPage,
+    setRowsPerPage,
+    pressedRows,
+    setPressedRows,
   } = useSubmissionStore();
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-  const [pressedRows, setPressedRows] = useState([]);
+  
   const handleBookmarkClick = (rowId) => {
     setPressedRows((prevPressedRows) => {
       if (prevPressedRows.includes(rowId)) {

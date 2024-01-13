@@ -37,7 +37,7 @@ export default function User({state}) {
   const { errors } = formState;
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
-    selectedUser, setSelectedUser
+    selectedUser, setSelectedUser, avatarInitial, setAvatarInitial
   } = useUserStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
@@ -119,6 +119,7 @@ export default function User({state}) {
     }
     else if(error.response?.status === 500){
       setErrorMessage("Server Error");
+      setLoading(false);
     }
     else if(error.response?.status === 401){
       setErrorOpen(true)
@@ -242,9 +243,11 @@ export default function User({state}) {
     const selectedUser = users.find((user) => user.id === userId);
     
     if (selectedUser) {
-      const { role_id } = selectedUser; // Accessing role_id from selectedUser
+      const { role_id, first_name, last_name } = selectedUser; // Accessing role_id from selectedUser 
     
       setSelectedUser(selectedUser)
+      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`);
+
       const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
       navigate(rolePath);
     } else {
@@ -253,6 +256,10 @@ export default function User({state}) {
       console.error('User not found');
     }
   };
+
+  useEffect(() => {
+    console.log('Initials:', avatarInitial);
+  }, [avatarInitial]);
 
   const handleCancelUser = () => {
     form.reset(FormValues); // Reset the form fields
@@ -344,7 +351,7 @@ export default function User({state}) {
                     )
                     .map((user, index) => (
                     <MUI.TableRow key={index} className='user' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='name'>{`${user.first_name} ${user.middle_name} ${user.last_name}`}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='name'>{`${user.first_name} ${user.middle_name ? user.middle_name : ''} ${user.last_name}`}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.email_address}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='role'>
                         {user.role_id === 1 ? 'Scholarship Administrator' : user.role_id === 2 ? 'Scholar Manager' : 'Scholar'}
@@ -426,23 +433,12 @@ export default function User({state}) {
                 </MUI.Grid>
 
                 <MUI.Grid id="userNameGrid">
-                  <MUI.InputLabel htmlFor="middle_name" id="userNameLabel">Middle Name</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="middle_name" id="middleNameLabel">Middle Name</MUI.InputLabel>
                     <MUI.TextField 
                       type='text'
                       id='middle_name'
                       placeholder='Name' 
                       fullWidth 
-                      
-                      {...register("middle_name", {
-                        required: {
-                          value: true,
-                          message: 'Middle name is required',
-                        },
-                        pattern: {
-                          value: USER_REGEX,
-                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
-                        }
-                      })}
                     />
                     {errors.middle_name && (
                      <p id='errMsg'> 
