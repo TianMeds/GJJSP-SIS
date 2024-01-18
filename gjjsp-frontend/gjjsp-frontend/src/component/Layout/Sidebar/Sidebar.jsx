@@ -21,18 +21,20 @@ export const Account = () => {
 
     const isSmallScreen = MUI.useMediaQuery('(max-width:600px)');
     const {auth} = useAuth();
-    const last_name = auth?.user?.last_name || '';
     const roles_name = auth.roles_name || '';
-    const role_id = auth?.user?.role_id || '';
 
-    const {selectedUser,setSelectedUser,user, users} = useUserStore();
+    const {selectedUser,setSelectedUser,user, users, avatarInitial, setAvatarInitial} = useUserStore();
     const navigate = useNavigate();
+    const {role_id, first_name, last_name} = auth.user;
 
     const handleSeeProfile = () => {
       setSelectedUser(auth.user); // Update the selectedUser state
       const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
       navigate(rolePath); // Navigate based on the rolePath
-  };
+
+      // Function to calculate initials
+      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`)
+    };
   
 
     return (

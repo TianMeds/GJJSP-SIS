@@ -5,6 +5,7 @@ import { ScholarProfileBox } from '../../../component/ProfileBox/ScholarProfileB
 import { ProfileHeader } from '../../../component/ProfileHeader/ProfileHeader';
 import theme from '../../../context/theme';
 
+
 export default function ScholarProfile() {
   return (
     <Layout>
@@ -27,10 +28,11 @@ export default function ScholarProfile() {
         <ProfileHeader/>
       
         <ScholarProfileBox/>
-        
-        
-        
     </MUI.Grid>
+
+      <MUI.Dialog>
+        
+      </MUI.Dialog>
     </MUI.ThemeProvider>
   </Layout>
   )

@@ -67,7 +67,7 @@ export const SettingsIcon = () => {
         setLoadingMessage
     } = useLoginStore();
 
-    const {getAuthToken, resetAuthToken} = useAuthStore();
+    const {getAuthToken, resetAuthToken, setOpenDialog, setOpenPrivacyDialog} = useAuthStore();
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -98,6 +98,7 @@ export const SettingsIcon = () => {
           useAuthStore.getState().resetAuthToken();
   
           setLoading(false);
+        {/* Pop up Dialog  for Privacy Notice and Warning */}
   
           setAuth(null); // Update authentication state
         }

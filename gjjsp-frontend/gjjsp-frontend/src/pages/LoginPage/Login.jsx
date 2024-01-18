@@ -8,6 +8,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useNavigate} from 'react-router-dom';
 import { DevTool } from '@hookform/devtools';
 import LoaderAnimation from '../../component/LoadingAnimation/LoaderAnimation';
+import EditProfileDialog from '../../component/Layout/Dialog/EditProfileDialog';
 import theme from '../../context/theme';
 
 //Component Imports
@@ -21,7 +22,7 @@ export default function Login() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
 
-  const {setAuthToken} = useAuthStore();
+  const {setAuthToken, setOpenDialog, setOpenPrivacyDialog} = useAuthStore();
 
   const {setErrMsg, setLoading, showPassword, expirationTime, setExpirationTime, handleTogglePassword, setLoadingMessage} = useLoginStore();
   
@@ -81,6 +82,8 @@ export default function Login() {
   
       // Navigate the user to the intended route (from variable contains the intended route)
       navigate(rolePath);
+
+      setOpenPrivacyDialog(true);
       
     } catch (err) {
       setLoading(false);

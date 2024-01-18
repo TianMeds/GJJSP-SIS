@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
@@ -67,6 +67,18 @@ export default function ViewSubmission() {
       setSubmissionManage('disapproval'); // Set the submission type to 'disapproval'
       handleCloseSubmission();
     };
+
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleFileClick = (file) => {
+      // Set the selected file when a file is clicked
+      setSelectedFile(file);
+    };
+
+    const handleDownload = () => {
+    // Handle the download logic here, e.g., initiate a file download
+    console.log("Downloading file:", selectedFile);
+  };
 
     const numOfDividers = 3;
 
@@ -263,17 +275,22 @@ export default function ViewSubmission() {
 
                   <MUI.Collapse in={attachmentOpen} timeout="auto" unmountOnExit>
                     <MUI.List disablePadding>
-                      {submissions.map((submission, index) => (
-                      <MUI.ListItemButton key={index} sx={{ pl: 4 }}>
+                      <MUI.ListItemButton key={index} sx={{ pl: 4 }} >
                         <MUI.ListItemIcon>
                           <MUI.DescriptionOutlinedIcon />
                         </MUI.ListItemIcon>
-                        <MUI.ListItemText primary={submission.submission_type} />
+                        <MUI.ListItemText primary="" />
                       </MUI.ListItemButton>
-                    ))}
                     </MUI.List>
                   </MUI.Collapse>
+
+                  <MUI.Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <MUI.Button onClick={handleDownload} variant="outlined">
+                        Download
+                      </MUI.Button>
+                    </MUI.Grid>
                 </MUI.Grid>
+
 
                 <MUI.Grid item xs={12} md={4}>
                   <MUI.Grid item sx={{ marginBottom: 2, alignItems: 'center' , display: 'flex'}}>

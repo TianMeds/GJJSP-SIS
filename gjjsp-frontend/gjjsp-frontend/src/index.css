@@ -45,7 +45,8 @@
 #partnerNameGrid,
 #partnerMobileNumGrid,
 #partnerSchoolGrid,
-#deleteGrid{
+#deleteGrid,
+#profileNameGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -71,7 +72,8 @@
 #partnerNameLabel,
 #partnerMobileNumLabel,
 #partnerSchoolLabel,
-#deleteLabel{
+#deleteLabel,
+#profileNameLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -97,7 +99,8 @@
 #scholarStatusLabel::after,
 #partnerNameLabel::after,
 #partnerMobileNumLabel::after,
-#partnerSchoolLabel::after {
+#partnerSchoolLabel::after,
+#profileNameLabel::after {
     content: " *";
     color: red; 
 }   
@@ -126,6 +129,7 @@
     border-radius: 4px;
     font-size: small;
 }
+
 
 
 .SAVED{

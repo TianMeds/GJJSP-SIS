@@ -71,20 +71,20 @@ export default function Scholar({state}) {
   }, []);
 
   // View Profile Scholar 
-  const viewScholarProfile = (scholarId) => {
-    const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
+  // const viewScholarProfile = (scholarId) => {
+  //   const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
   
-    if (selectedScholar) {
-      const { user_id } = selectedScholar; // Accessing user_id from selectedScholar
+  //   if (selectedScholar) {
+  //     const { user_id } = selectedScholar; // Accessing user_id from selectedScholar
   
-      setSelectedScholar(selectedScholar);
-      const scholarPath  = user_id === 4 ? '/scholar-profile' : '*';
-      navigate(scholarPath);
-    } else {
-      // Handle the case when selectedScholar is not found
-      console.error('Scholar not found');
-    }
-  };
+  //     setSelectedScholar(selectedScholar);
+  //     const scholarPath  = user_id === 4 ? '/scholar-profile' : '*';
+  //     navigate(scholarPath);
+  //   } else {
+  //     // Handle the case when selectedScholar is not found
+  //     console.error('Scholar not found');
+  //   }
+  // };
 
   const {
     handleOpenScholar,
@@ -101,30 +101,6 @@ export default function Scholar({state}) {
     addScholar = ((store) => store.addScholar),
     deleteScholar = ((store) => store.deleteScholar),
   } = useScholarStore();
-
-  const handleEditScholar = (scholarId) => {
-    const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
-    if(selectedScholar) {
-      setSelectedScholar(selectedScholar);
-      reset({
-        scholarName: selectedScholar.scholarName,
-        scholarEmailAddress: selectedScholar.scholarEmailAddress,
-        scholarCategory: selectedScholar.scholarCategory,
-        scholarStatus: selectedScholar.scholarStatus,
-      });
-      setEditScholar(true);
-      handleOpenScholar();
-    }
-  };
-
-
-
-  const handleDeleteScholar = (scholarId) => {
-    const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
-    if(selectedScholar) {
-      deleteScholar(selectedScholar.id);
-    }
-  };
 
   const handleCancelScholar = () => {
     form.reset(FormValues);
@@ -148,7 +124,7 @@ export default function Scholar({state}) {
                   <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
                 </MUI.Button>
 
-                <MUI.Button variant="contained" id='addButton' onClick={handleOpenScholar} >
+                <MUI.Button variant="contained" id='addButton' >
                   <MUI.PersonAddAltOutlinedIcon sx={{mr: 1}}/>
                   <MUI.Typography variant='body2' >{editScholar ? 'Edit Scholar' : 'Add Scholar'}</MUI.Typography>
                 </MUI.Button>
@@ -234,7 +210,6 @@ export default function Scholar({state}) {
 
                         <MUI.IconButton
                           color="inherit"
-                          onClick={() => handleEditScholar(scholar.id)}
                         >
                           <MUI.BorderColorIcon />
 
@@ -243,7 +218,6 @@ export default function Scholar({state}) {
 
                         <MUI.IconButton
                           color="inherit"
-                          onClick={() => handleDeleteScholar(scholar.id)}
                           sx={{ textTransform: 'capitalize' }}
                         >
                           <MUI.DeleteIcon />
@@ -259,12 +233,10 @@ export default function Scholar({state}) {
           </MUI.TableContainer>   
 
            {/* Add Scholar Dialog */}
-           <MUI.Dialog open={scholar} onClose={handleCloseScholar} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
-                {/* Content of the Dialog */}
+           {/* <MUI.Dialog  fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
                 <MUI.DialogTitle variant='h3' sx={{fontWeight: 'bold'}}>Add Scholar</MUI.DialogTitle>
                 <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
                 <MUI.DialogContent>
-                  {/* Form Fields of New Notification */}
                 
                 <MUI.Grid id="scholarNameGrid">
                   <MUI.InputLabel htmlFor="scholarName" id="scholarNameLabel">Name</MUI.InputLabel>
@@ -388,11 +360,9 @@ export default function Scholar({state}) {
                     )}
                 </MUI.Grid>
                     
-                    {/* Add more form fields as needed */}
                 </MUI.DialogContent>
 
                   <MUI.DialogActions>
-                    {/* Add action buttons, e.g., Save Changes and Cancel */}
                     <MUI.Button onClick={handleCancelScholar} color="primary">
                       Cancel
                     </MUI.Button>
@@ -404,7 +374,7 @@ export default function Scholar({state}) {
                     </MUI.Button>
                   </MUI.DialogActions>
 
-              </MUI.Dialog>
+              </MUI.Dialog> */}
 
           
         </MUI.Grid>

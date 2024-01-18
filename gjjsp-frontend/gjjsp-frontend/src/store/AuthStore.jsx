@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 
+
 const useAuthStore = create((set) => ({
 authToken: null,
 
@@ -11,6 +12,13 @@ resetAuthToken: () => {
     set({ authToken: null });
 },
 
+//Check Functions 
+openDialog: true,
+setOpenDialog: (newOpenDialog) => set({openDialog: newOpenDialog}),
+openPrivacyDialog: true,
+setOpenPrivacyDialog: (newOpenPrivacyDialog) => set({openPrivacyDialog: newOpenPrivacyDialog}),
+openPrivacyNotice: false,
+setOpenPrivacyNotice: (newOpenPrivacyNotice) => set({openPrivacyNotice: newOpenPrivacyNotice}),
 
 //Alert Functions 
 alertOpen: true,

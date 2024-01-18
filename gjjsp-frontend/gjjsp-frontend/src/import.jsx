@@ -106,6 +106,9 @@
   import AttachFileIcon from '@mui/icons-material/AttachFile';
   import Input from '@mui/material/Input';
   import LoopIcon from '@mui/icons-material/Loop';
+  import Accordion from '@mui/material/Accordion';
+  import AccordionSummary from '@mui/material/AccordionSummary';
+  import AccordionDetails from '@mui/material/AccordionDetails';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -222,5 +225,8 @@
     AddCircleOutlineIcon,
     Input,
     AttachFileIcon,
-    LoopIcon
+    LoopIcon,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
   };

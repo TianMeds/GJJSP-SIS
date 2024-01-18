@@ -8,6 +8,7 @@ import axios from '../../api/axios';
 import useDashboardStore from '../../store/DashboardStore';
 import useAuthStore from '../../store/AuthStore';
 import useSubmissionStore from '../../store/SubmissionStore';
+import PrivacyNotice from '../../component/Layout/Dialog/PrivacyNotice';
 
 export default function Dashboard() {
 
@@ -49,8 +50,6 @@ export default function Dashboard() {
     };
 
     fetchScholarStatus();
-
-    
   }, [])
 
   //Get Scholars Data
@@ -186,6 +185,10 @@ export default function Dashboard() {
               </MUI.Grid>
           </MUI.Grid>
         </MUI.Container>
+
+        {/* Pop up Dialog  for Privacy Notice and Warning */}
+        <PrivacyNotice />
+
       </MUI.ThemeProvider>
     </Layout>
   )

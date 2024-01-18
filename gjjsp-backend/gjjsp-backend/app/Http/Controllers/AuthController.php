@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
 class AuthController extends Controller
 {
+
+
     public function register(Request $request){
         $fields = $request->validate([
             'first_name' => 'required|string',

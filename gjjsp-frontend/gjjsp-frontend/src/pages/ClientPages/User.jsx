@@ -1,15 +1,20 @@
 import React, {useEffect,lazy, Suspense} from 'react'
+import axios from '../../api/axios';
+
+//Components
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import theme from '../../context/theme';
+
+//Zustand Components
 import useUserStore from '../../store/UserStore';
 import useLoginStore from '../../store/LoginStore';
 import useAuthStore from '../../store/AuthStore';
+
+//React Hook Form
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
-import { Form, Link } from 'react-router-dom';
-import axios from '../../api/axios';
 import {useNavigate} from 'react-router-dom';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 
@@ -102,7 +107,7 @@ export default function User({state}) {
       setAlertOpen(true);
       setAlertMessage('Users list has been updated');
     } else {
-      setAlertOpen(true);
+      setErrorOpen(true);
       setAlertMessage('Failed to fetch data');
     }
     form.reset(FormValues);
@@ -257,9 +262,6 @@ export default function User({state}) {
     }
   };
 
-  useEffect(() => {
-    console.log('Initials:', avatarInitial);
-  }, [avatarInitial]);
 
   const handleCancelUser = () => {
     form.reset(FormValues); // Reset the form fields
@@ -395,7 +397,7 @@ export default function User({state}) {
           {/* Add User Dialog */}
           <MUI.Dialog open={user} onClose={handleCloseUser} fullWidth maxWidth="xs" onSubmit={handleSubmit(onSubmit)} component='form' method='post' noValidate>
             {/* Content of the Dialog */}
-            <MUI.DialogTitle id="dialogTitle">New Users</MUI.DialogTitle>
+            <MUI.DialogTitle id="dialogTitle">{editUser ? "Edit User" : "New User"}</MUI.DialogTitle>
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
               <MUI.Grid sx={{marginLeft: 3}}>
                 <Suspense fallback="Scholarlink Loading...">
@@ -439,6 +441,13 @@ export default function User({state}) {
                       id='middle_name'
                       placeholder='Name' 
                       fullWidth 
+
+                      {...register("middle_name", {
+                        pattern: {
+                          value: USER_REGEX,
+                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
+                        }
+                      })}
                     />
                     {errors.middle_name && (
                      <p id='errMsg'> 
@@ -521,11 +530,9 @@ export default function User({state}) {
                   )}
                 </MUI.Grid>
 
+                {!editUser && (
                 <MUI.Grid id="passwordGrid">
                   <MUI.InputLabel htmlFor="password" id="passwordLabel">Password</MUI.InputLabel>
-                  <MUI.Typography variant='h6' sx={{color: 'gray'}}> 
-                  <MUI.NotificationsIcon sx={{fontSize: '12px', mr: 1}}/>
-                  Just Edit this field for new user and changing password</MUI.Typography>
                   <MUI.TextField
                     type={showPassword ? 'text' : 'password'}
                     id='password'
@@ -553,6 +560,7 @@ export default function User({state}) {
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.password?.message}</p>
                   )}
                 </MUI.Grid>
+                )}
 
 
                 <MUI.Grid id="roleGrid">
