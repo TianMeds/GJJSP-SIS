@@ -9,20 +9,23 @@ import PrivacyNotice from './PrivacyNotice';
 export default function EditProfileDialog() {
   const {openDialog, setOpenDialog, openPrivacyNotice, setOpenPrivacyNotice } = useAuthStore();
   const { auth } = useAuth();
-  const role_id = auth?.user?.role_id || '';
-  const { setSelectedUser } = useUserStore();
+  const {role_id, first_name, last_name} = auth.user;
+  const { setSelectedUser, setAvatarInitial } = useUserStore();
   const navigate = useNavigate();
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
 
+  
+
   const handleSeeProfile = () => {
     setSelectedUser(auth.user);
-    const rolePath =
-      role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
-    navigate(rolePath);
-    handleCloseDialog();
+    const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
+      navigate(rolePath);
+      // Function to calculate initials
+      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`)
+      handleCloseDialog();
   };
 
   const handleNext = () => {

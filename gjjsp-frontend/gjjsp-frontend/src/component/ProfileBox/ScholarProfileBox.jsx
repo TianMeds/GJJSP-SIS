@@ -69,7 +69,7 @@ export const ScholarProfileBox = () => {
       const fetchUser = async() => {
         try{
           const authToken = useAuthStore.getState().getAuthToken();
-          const response = await axios.get('/api/users', {
+          const response = await axios.get('/api/profile', {
             headers: {
               'Authorization': `Bearer ${authToken}`
             }
@@ -116,7 +116,7 @@ export const ScholarProfileBox = () => {
           }}
         >
         
-          <MUI.Grid mr={3}>
+          {/* <MUI.Grid mr={3}>
             <MUI.Typography variant='h5' fontWeight="bold">Name</MUI.Typography>
             <MUI.Typography sx={{ mt: 2, width: '100%', mb: 2 }}>{scholar.user_first_name + ' ' + scholar.user_last_name}</MUI.Typography>
           </MUI.Grid>
@@ -149,7 +149,7 @@ export const ScholarProfileBox = () => {
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Years as Scholar</MUI.Typography>
             <MUI.Typography sx={{ mt: 2, width: '100%' }}>{num_yrs_scholar}</MUI.Typography>
-          </MUI.Grid>
+          </MUI.Grid> */}
         </MUI.Box>
 
      </MUI.Grid>
@@ -169,7 +169,7 @@ export const ScholarProfileBox = () => {
             borderRadius: '5px',
           }}
         >
-        <MUI.Box>
+        {/* <MUI.Box>
           <MUI.Typography variant='h5'>Scholarship Type</MUI.Typography>
           <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>{scholarship_type}</MUI.Typography>
         </MUI.Box>
@@ -192,7 +192,7 @@ export const ScholarProfileBox = () => {
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Program</MUI.Typography>
           <MUI.Typography sx={{mt: 2}}>{scholar.program}</MUI.Typography>
-        </MUI.Box>
+        </MUI.Box> */}
 
         </MUI.Box>
       </MUI.Grid>
@@ -212,7 +212,7 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            <MUI.Box>
+            {/* <MUI.Box>
                 <MUI.Typography variant='h5'>School</MUI.Typography>
                 <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
             </MUI.Box>
@@ -230,7 +230,7 @@ export const ScholarProfileBox = () => {
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Graduated</MUI.Typography>
                 <MUI.Typography sx={{mt: 2}}>{shs_graduated}</MUI.Typography>
-            </MUI.Box>
+            </MUI.Box> */}
           
         </MUI.Box>
       </MUI.Grid>
@@ -250,7 +250,7 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            <MUI.Box>
+            {/* <MUI.Box>
                 <MUI.Typography variant='h5'>Last Name</MUI.Typography>
                 <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholar.user_last_name}</MUI.Typography>
             </MUI.Box>
@@ -288,7 +288,7 @@ export const ScholarProfileBox = () => {
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Civil Status</MUI.Typography>
                 <MUI.Typography sx={{mt: 2}}>{scholar.civil_status}</MUI.Typography>
-            </MUI.Box>
+            </MUI.Box> */}
 
         </MUI.Box>
       </MUI.Grid>
@@ -308,7 +308,7 @@ export const ScholarProfileBox = () => {
             }}
           >
           
-            <MUI.Box>
+            {/* <MUI.Box>
                 <MUI.Typography variant='h5'>Facebook</MUI.Typography>
                 <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholar.fb_account}</MUI.Typography>
             </MUI.Box>
@@ -321,7 +321,7 @@ export const ScholarProfileBox = () => {
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mobile Number</MUI.Typography>
                 <MUI.Typography sx={{mt: 2}}>{scholar.user_mobile_num}</MUI.Typography>
-            </MUI.Box>
+            </MUI.Box> */}
             
           </MUI.Box>
 
@@ -338,7 +338,7 @@ export const ScholarProfileBox = () => {
                 borderRadius: '5px',
               }}
             > 
-                <MUI.Box>
+                {/* <MUI.Box>
                     <MUI.Typography variant='h5'>Present Address</MUI.Typography>
                     <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
                 </MUI.Box>
@@ -346,7 +346,7 @@ export const ScholarProfileBox = () => {
                 <MUI.Box sx={{mt: 3}}>
                     <MUI.Typography variant='h5'>Permanent Address</MUI.Typography>
                     <MUI.Typography sx={{mt: 2}}>{permanent_Address}</MUI.Typography>
-                </MUI.Box>
+                </MUI.Box> */}
 
               </MUI.Box>
           </MUI.Grid>
@@ -372,7 +372,7 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            <MUI.Box>
+            {/* <MUI.Box>
                 <MUI.Typography variant='h5'>Number of Family Members</MUI.Typography>
                 <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
             </MUI.Box>
@@ -382,7 +382,7 @@ export const ScholarProfileBox = () => {
                 <MUI.Typography sx={{mt: 2}}>{mothers_Name}</MUI.Typography>
                 <MUI.Typography variant='h5'>Fathers Name</MUI.Typography>
                 <MUI.Typography sx={{mt: 2}}>{fathers_Name}</MUI.Typography>
-            </MUI.Box>
+            </MUI.Box> */}
 
             </MUI.Box>
       </MUI.Grid>

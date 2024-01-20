@@ -31,13 +31,20 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    
+    Route::get('/profile', [UserController::class, 'profile']);
+    Route::put('/profile/{id}', [UserController::class, 'updateProfile']);
+
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
     Route::post('/scholars', [ScholarController::class, 'store']);
     Route::put('/scholars/{user_id}', [ScholarController::class, 'update']);
     Route::delete('/scholars/{user_id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
+
+    //Scholars Profile Route
+    Route::post('/scholarsProfile', [ScholarController::class, 'storeScholarProfile']);
+    Route::put('/scholarsProfile/{id}', [ScholarController::class, 'updateScholarProfile']);
+    Route::get('/scholarsProfile', [ScholarController::class, 'scholarProfile']);
 
     //Roles Route
     Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);

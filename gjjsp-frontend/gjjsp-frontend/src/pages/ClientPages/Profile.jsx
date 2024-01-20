@@ -15,6 +15,7 @@ import useProfileStore from '../../store/ProfileStore';
 import useLoginStore from '../../store/LoginStore';
 import useUserStore from '../../store/UserStore';
 import useAuthStore from '../../store/AuthStore';
+import useAuth from '../../hooks/useAuth';
 
 //React Hook Form
 import {useForm, Controller } from 'react-hook-form';
@@ -35,122 +36,205 @@ const FormValues = {
 export default function Profile() {
 
   const form  = useForm();
-  const { register, control, handleSubmit, formState, reset, validate} = form
+  const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
   const navigate = useNavigate();
+  const password = watch("password");
 
-  const {profiles, profile, setProfiles, handleOpenProfile, handleCloseProfile, editProfile, setEditProfile, selectedProfile, setSelectedProfile} = useProfileStore();
+  //Zustand Hooks
+  const 
+  {profile, setProfiles, handleOpenProfile, handleCloseProfile, 
+  editProfile, setEditProfile,setSelectedProfile, 
+  changePassword, handleOpenChangePassword, 
+  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword} = useProfileStore();
+
   const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
+
   const {selectedUser, setSelectedUser} = useUserStore();
-  const { showPassword, handleTogglePassword } = useLoginStore();
+
+  const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
 
   //Regex Validation
   const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
   const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
   const CONTACT_REGEX = /^\+?63\d{10}$/
 
-  //Submit Form
-  const onSubmit = async (data, event) => {
-    event.preventDefault();
-    const authToken = useAuthStore.getState().getAuthToken();
+  
 
-    const config = {
-      headers: {
-        "Content-type": "application/json",
-        'Authorization': `Bearer ${authToken}`
-      }
-    };
+//Submit Form
+const onSubmitProfileForm = async (data, event) => {
+  event.preventDefault();
+  const authToken = useAuthStore.getState().getAuthToken();
+
+  const config = {
+    headers: {
+      "Content-type": "application/json",
+      'Authorization': `Bearer ${authToken}`
+    }
+  };
+
   try {
-    if(editProfile) {
+    setLoading(true);
+    setLoadingMessage('Updating profile...');
+
+    if (editProfile) {
+      // Assuming /api/profile returns the authenticated user's profile directly
+      const response = await axios.put(`/api/profile/${selectedUser.id}`, { ...data }, config);
+      setEditProfile(false);
+      handleCloseProfile();
+      handleCloseChangePassword();
+      setProfiles([response.data.data]); // Update with the actual response structure
+      setSelectedUser(response.data.data);
       setAlertOpen(true);
-      setAlertMessage('Updating profile...');
-      const response = await axios.put(
-        `/api/users/${selectedProfile.id}`, {...data}, config)
-        setEditProfile(false)
-        setSelectedProfile(null);
-        handleCloseProfile();
+      setAlertMessage('Profile Updated');
+      setLoading(false);
+    } 
+    if(response.status === 200){
+      setProfiles(response.data.data); // Update with the actual response structure
+      setSelectedUser(response.data.data);
+      setAlertOpen(true);
+      setAlertMessage('Profile Updated');
+      
+      form.reset(FormValues);
+    }
+  } catch (error) {
+    if (error.response?.status === 401) {
+      setLoading(false)
+      setErrorOpen(true);
+      setErrorMessage("You've been logout");
+      navigate('/login');
+    } 
+    else if(error.response?.status === 409) {
+      setLoading(false)
+      setErrorOpen(true);
+      setErrorMessage("Email already exists");
+    }
+  }
+}
+
+//Change Password Form
+const onSubmitPasswordForm = async (data, event) => {
+  event.preventDefault();
+  const authToken = useAuthStore.getState().getAuthToken();
+
+  const config = {
+    headers: {
+      "Content-type": "application/json",
+      'Authorization': `Bearer ${authToken}`
+    }
+  };
+
+  try {
+    setLoading(true);
+    setLoadingMessage('Updating password...');
+    
+    const response = await axios.put(
+      `/api/profile/${selectedUser.id}`, { password: data.password }, config
+    );
+
+    if (response.status === 200) {
+      setAlertOpen(true);
+      setAlertMessage('Password Updated');
+    } else {
+      setErrorOpen(true);
+      setErrorMessage('Failed to update password');
+    }
+
+    handleCloseChangePassword();
+    setLoading(false);
+  } catch (error) {
+    if (error.response?.status === 401) {
+      setErrorOpen(true);
+      setErrorMessage("You've been logout");
+      navigate('/login');
+    } 
+  }
+};
+
+//Get Value 
+useEffect(() => {
+  setLoading(true);
+  setErrorOpen(false)
+  setLoadingMessage('Fetching Updated Profile...');
+  const fetchProfiles = async () => {
+    try {
+      const authToken = getAuthToken();
+      const response = await axios.get('/api/profile',{
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.status === 200) {
+        setProfiles(response.data.data);
         setAlertOpen(true);
-        setAlertMessage('Profile Updated');
+        setAlertMessage('You can now edit your profile');
+        setLoading(false)
+      }
     }
-    else{
-      const response = await axios.post(
-        '/api/users',{
-          first_name: data.first_name,
-          middle_name: data.middle_name,
-          last_name: data.last_name,
-          user_mobile_num: data.user_mobile_num,
-          email_address: data.email_address,
-          password: data.password,
-          role_id: data.role_id,
-          user_status: data.user_status,
-        }, config)
-        handleCloseProfile();
+    catch (error) {
+      console.log(error);
     }
-    const response = await axios.get('/api/users', {
+  }
+  fetchProfiles();
+}, []);
+  
+  
+//Update Profile Data
+const updateProfile = async () => {
+  setLoading(true)
+  setLoadingMessage("Please wait opening edit profile")
+  setEditProfile(true);
+  try {
+    const authToken = useAuthStore.getState().getAuthToken();
+    const response = await axios.get(`/api/profile`, {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
     });
-    if (response.status === 200) {
-      setProfiles(response.data.data);
-      setSelectedUser(selectedProfile);
-      setAlertOpen(true);
-      setAlertMessage('Profile Updated');
-    }
-    else {
-      setErrorOpen(true);
-      setErrorMessage('Failed to fetch data');
-    }
-    form.reset(FormValues)
+
+    const profileWithoutPassword = {
+      ...response.data.data,
+      password: undefined
+    };
+
+    setSelectedProfile(profileWithoutPassword);
+    handleOpenProfile();
+    form.reset(profileWithoutPassword);
+    setLoading(false)
+  } catch (error) {
+    // Handle error, such as displaying an error message
+    console.error('Error fetching user data:', error);
+  }
+};
+
+//Update Password Data
+const updatePassword = async () => {
+  setLoading(true)
+  setLoadingMessage("Please wait opening change password")
+  setEditPassword(true)
+
+  try{
+    const authToken = getAuthToken();
+    const response = await axios.get(`/api/profile`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    const passwordWithoutPassword = {
+      ...response.data.data,
+      password: undefined
+    };
+
+    setSelectedPassword(passwordWithoutPassword);
+    handleOpenChangePassword();
+    form.reset(passwordWithoutPassword);
+    setLoading(false)
   }
   catch (error) {
-    if (error.response?.status === 401) {
-      setErrorOpen(true)
-      setErrorMessage("You've been logout");
-      navigate('/login')
-    }
+    // Handle error, such as displaying an error message
+    console.error('Error fetching user data:', error);
   }
 }
-  //Get Value 
-  useEffect(() => {
-    setAlertOpen(true)
-    setErrorOpen(false)
-    setAlertMessage('Please wait fetching profile data');
-    const fetchProfiles = async () => {
-      try {
-        const authToken = getAuthToken();
-        const response = await axios.get('/api/users',{
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        if (response.status === 200) {
-          setProfiles(response.data.data);
-          setAlertOpen(true);
-          setAlertMessage('You can now edit your profile');
-        }
-      }
-      catch (error) {
-        console.log(error);
-      }
-    }
-    fetchProfiles();
-  }, []);
-  
-  //Update Profile Data
-  const updateProfile = (profileId) => {
-    const selectedProfile = profiles.find(profile => profile.id === profileId);
-    setEditProfile(true)
-    setSelectedProfile(selectedProfile);
-    handleOpenProfile()
-    form.reset(selectedProfile)
-  }
-
-  const refreshProfile = (profileId) => {
-    const selectedProfile = profiles.find(profile => profile.id === profileId);
-    setSelectedUser(selectedProfile);
-  }
-  
   return (
     <Layout>
       <MUI.ThemeProvider theme={theme}>
@@ -160,12 +244,6 @@ export default function Profile() {
       <MUI.Typography variant='h1' sx={{ color: 'black', fontWeight: 'bold', marginRight: 'auto' }}>
         Profile
       </MUI.Typography>
-      
-      <MUI.Button variant="outlined" onClick={() =>  refreshProfile(selectedUser.id)} sx={{mr: 2}}>
-        Refresh Profile
-      </MUI.Button>
-
-      <MUI.Button variant='outlined'>Change Password</MUI.Button>
 
     </MUI.Box>
 
@@ -177,7 +255,7 @@ export default function Profile() {
           <MUI.Link>Learn more about our data privacy policy.</MUI.Link>
         </MUI.Box>
 
-        <ProfileHeader handleOpenProfile={handleOpenProfile} updateProfile={updateProfile}/>
+        <ProfileHeader handleOpenProfile={handleOpenProfile} updateProfile={updateProfile} updatePassword={updatePassword}/>
       
         <ProfileBox/>
         
@@ -185,7 +263,8 @@ export default function Profile() {
     </MUI.Grid>
 
     {/* Update Profile Dialog */}
-    <MUI.Dialog open={profile} onClose={handleCloseProfile} fullWidth maxWidth="xs" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmit)}>
+    {profile && (
+    <MUI.Dialog open={profile} onClose={handleCloseProfile} fullWidth maxWidth="xs" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitProfileForm)}>
     {/* Content of the Dialog */}
       <MUI.DialogTitle id="dialogTitle">Edit Profile</MUI.DialogTitle>
         <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
@@ -337,7 +416,109 @@ export default function Profile() {
               {editProfile ? 'Save Changes' : ''}
             </MUI.Button>
           </MUI.DialogActions>
-        </MUI.Dialog>
+    </MUI.Dialog>
+    )}
+
+
+    {/* Update Password Dialog */}
+    {changePassword && (
+        <MUI.Dialog open={changePassword} onClose={handleCloseChangePassword} fullWidth maxWidth="xs" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitPasswordForm)}>
+        <MUI.DialogTitle id="dialogTitle">Change Password</MUI.DialogTitle>
+          <MUI.DialogContent>
+
+            <MUI.Grid id="userNameGrid">
+              <MUI.InputLabel htmlFor="password" id="userNameLabel">New Password</MUI.InputLabel>
+                <MUI.TextField 
+                  type={showPassword ? 'text' : 'password'}
+                  id='password'
+                  placeholder='Password' 
+                  fullWidth 
+                  InputProps={{
+                    endAdornment: (
+                      <MUI.InputAdornment position="end">
+                        <MUI.IconButton onClick={handleTogglePassword} edge="end">
+                          {showPassword ? 
+                          <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                          }
+                        </MUI.IconButton>
+                      </MUI.InputAdornment>
+                    ),
+                  }} 
+                  {...register("password", {
+                    required: {
+                    value: true,
+                    message: 'Password is required',
+                  },
+                    minLength: {
+                    value: 8,
+                    message: 'Password should be at least 8 characters long',
+                  }
+                  })}
+                />
+              {errors.password && (
+                <p id='errMsg'> 
+                <MUI.InfoIcon className='infoErr'/> 
+                {errors.password?.message}  
+                </p>
+              )}
+            </MUI.Grid>
+
+            <MUI.Grid id="userNameGrid">
+            <MUI.InputLabel htmlFor="confirmPassword" id="confirmPasswordLabel">Confirm Password</MUI.InputLabel>
+            <MUI.TextField
+            type={showPassword ? 'text' : 'password'}
+            id="confirmPassword"
+            placeholder='Confirm password'
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <MUI.InputAdornment position="end">
+                  <MUI.IconButton onClick={handleTogglePassword} edge="end">
+                    {showPassword ? 
+                    <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                    }
+                  </MUI.IconButton>
+                </MUI.InputAdornment>
+              ),
+            }} 
+            {...register("confirmPassword", {
+              required: {
+              value: true,
+              message: 'Password is required',
+            },
+              minLength: {
+              value: 8,
+              message: 'Password should be at least 8 characters long',
+            },
+              validate: (value) => value === password || 'The passwords do not match',
+            })}
+            />
+            {errors.confirmPassword && (
+              <p id='errMsg'> 
+              <MUI.InfoIcon className='infoErr'/> 
+              {errors.confirmPassword?.message}  
+              </p>
+            )}
+          </MUI.Grid>
+          </MUI.DialogContent>
+
+          <MUI.DialogActions>
+            {/* Add action buttons, e.g., Save Changes and Cancel */}
+            <MUI.Button onClick={handleCloseChangePassword} color="primary" id='Button'>
+              Cancel
+            </MUI.Button>
+            <MUI.Button
+              color="primary" 
+              type='submit' 
+              variant='contained'
+              id='addUserBtn'
+            >
+              {editPassword ? 'Save Changes' : ''}
+            </MUI.Button>
+          </MUI.DialogActions>
+          </MUI.Dialog>
+    )}
+    
       <DevTool control={control} />
 
       <MUI.Snackbar

@@ -46,7 +46,9 @@
 #partnerMobileNumGrid,
 #partnerSchoolGrid,
 #deleteGrid,
-#profileNameGrid{
+#profileNameGrid,
+#passwordGrid,
+#confirmPasswordGrid{
    margin: 5px;
 }
 #userNameLabel, 
@@ -73,7 +75,9 @@
 #partnerMobileNumLabel,
 #partnerSchoolLabel,
 #deleteLabel,
-#profileNameLabel{
+#profileNameLabel,
+#passwordLabel,
+#confirmPasswordLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -100,7 +104,9 @@
 #partnerNameLabel::after,
 #partnerMobileNumLabel::after,
 #partnerSchoolLabel::after,
-#profileNameLabel::after {
+#profileNameLabel::after,
+#passwordLabel::after,
+#confirmPasswordLabel::after {
     content: " *";
     color: red; 
 }   

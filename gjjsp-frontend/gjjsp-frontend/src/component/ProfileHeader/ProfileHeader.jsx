@@ -7,7 +7,7 @@ import useProfileStore from '../../store/ProfileStore';
 import useAuthStore from '../../store/AuthStore';
 import axios from '../../api/axios';
 
-export const ProfileHeader = ({updateProfile}) => {
+export const ProfileHeader = ({updateProfile, updatePassword, updateScholarProfile}) => {
 
     const {avatarInitial, selectedUser} = useUserStore();
     const [anchorEl, setAnchorEl] = useState(null);
@@ -15,7 +15,8 @@ export const ProfileHeader = ({updateProfile}) => {
     const [avatarSrc, setAvatarSrc] = useState('');
     const [isHovered, setIsHovered] = useState(false);
     const {auth} = useAuth();
-    const {profiles, profile, setProfile, handleOpenProfile, handleCloseProfile} = useProfileStore();
+    const {profiles, profile, setProfile, handleOpenProfile, handleCloseProfile, handleOpenChangePassword} = useProfileStore();
+    const {role_id} = auth.user;
 
       const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -29,6 +30,7 @@ export const ProfileHeader = ({updateProfile}) => {
       };
 
       const isOwnProfile = selectedUser.id === auth.user.id;
+      const isScholar = role_id === 3;
       
     return ( 
         <MUI.Container sx={{mt: 3, ml: -3}}>
@@ -110,7 +112,24 @@ export const ProfileHeader = ({updateProfile}) => {
                 
                 <MUI.Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 7}}>
 
-                {isOwnProfile && <MUI.Button variant='outlined' onClick={() => updateProfile(selectedUser.id)}>Edit Profile</MUI.Button>}
+                {isOwnProfile && (
+                    <>
+                    {!isScholar && (
+                       <MUI.Button variant='outlined' onClick={() => updateProfile()} sx={{mr: 2}}>
+                            Edit Profile
+                        </MUI.Button>
+                    )}
+
+                    {isScholar && (
+                        <MUI.Button variant='outlined' onClick={() => updateScholarProfile()} sx={{mr: 2}}>
+                            Update Scholar Profile
+                        </MUI.Button>
+                    
+                    )}
+
+                        <MUI.Button variant='text' onClick={() => updatePassword()}>Change Password</MUI.Button>
+                    </>
+                )}
                 </MUI.Box>
             </MUI.Box>
         </MUI.Container>

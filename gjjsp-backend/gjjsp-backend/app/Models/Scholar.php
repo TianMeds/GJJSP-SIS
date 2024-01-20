@@ -30,7 +30,6 @@ class Scholar extends Model
         'home_visit_sched',
         'home_address_id',
         'fb_account',
-        'scholar_status_name',
         'scholar_status_id',
     ];
 
@@ -52,6 +51,8 @@ class Scholar extends Model
     public function getScholarStatusNameAttribute()
     {
         return $this->scholarStatus->scholar_status_name;
+
+        
     }
 
     public function getUserFirstNameAttribute()

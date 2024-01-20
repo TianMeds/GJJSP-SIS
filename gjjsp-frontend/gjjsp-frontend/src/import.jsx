@@ -109,6 +109,7 @@
   import Accordion from '@mui/material/Accordion';
   import AccordionSummary from '@mui/material/AccordionSummary';
   import AccordionDetails from '@mui/material/AccordionDetails';
+  import HttpsIcon from '@mui/icons-material/Https';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -228,5 +229,6 @@
     LoopIcon,
     Accordion,
     AccordionSummary,
-    AccordionDetails
+    AccordionDetails,
+    HttpsIcon
   };

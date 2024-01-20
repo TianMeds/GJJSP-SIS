@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Http\Resources\UserResource;
 use App\Http\Resources\ScholarResource;
 use App\Http\Resources\ScholarCollection;
 use App\Http\Resources;
 use App\Models\Scholar;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ScholarController extends Controller
 {
@@ -88,9 +90,29 @@ class ScholarController extends Controller
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }
-    public function search(Request $request, $user_id)
+
+    public function scholarProfile()
     {
-        $scholars = Scholar::where('user_id', '=', $user_id)->get();
-        return ScholarResource::collection($scholars);
+        try {
+            $userId = Auth::id(); // Retrieve the authenticated user's ID
+            $user = User::findOrFail($userId);
+    
+            return new UserResource($user);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
     }
+
+    public function storeScholarProfile(Request $request)
+    {
+        $scholar = Scholar::create($request->only([
+            'user_id', 'scholarship_categ_id', 'scholar_photo_filepath', 'project_partner_id', 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem', 'school_yr_started', 'school_yr_graduated', 'school_id', 'program', 'home_visit_sched', 'home_address_id', 'fb_account', 'scholar_status_id'
+        ]));
+        return new ScholarResource($scholar);
+    }
+    // public function search(Request $request, $user_id)
+    // {
+    //     $scholars = Scholar::where('user_id', '=', $user_id)->get();
+    //     return ScholarResource::collection($scholars);
+    // }
 }

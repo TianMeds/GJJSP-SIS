@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -98,6 +99,48 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully'], 200);
 
     }
+    public function profile()
+    {
+        try {
+            $userId = Auth::id(); // Retrieve the authenticated user's ID
+            $user = User::findOrFail($userId);
+    
+            return new UserResource($user);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+    public function updateProfile(Request $request, $id)
+{
+    try {
+        $userId = Auth::id();
+
+        // Check if the authenticated user matches the provided $id
+        if ($userId != $id) {
+            return response()->json(['message' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user = User::findOrFail($userId);
+
+        // Validate the request data, including unique email validation
+        $request->validate([
+            'email' => 'sometimes|required|email|unique:users,email,' . $userId,
+            // Add other validation rules as needed
+        ]);
+
+        $user->update($request->all());
+
+        return new UserResource($user);
+    } catch (\Exception $e) {
+        // Check if the exception is due to a unique constraint violation on the email field
+        if ($e instanceof \Illuminate\Database\QueryException && $e->errorInfo[1] == 1062) {
+            return response()->json(['message' => 'Email already taken'], Response::HTTP_CONFLICT);
+        }
+
+        return response()->json(['message' => 'Error updating profile'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
     // public function search(Request $request, $first_name)
     // {
     //     $user = User::where('first_name', 'like', '%' . $first_name . '%')->get();
