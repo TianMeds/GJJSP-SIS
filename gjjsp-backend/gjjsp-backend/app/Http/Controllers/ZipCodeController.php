@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ZipCodeResource;
+use App\Http\Resources\ZipCodeCollection;
 use App\Models\ZipCode;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ZipCodeController extends Controller
 {

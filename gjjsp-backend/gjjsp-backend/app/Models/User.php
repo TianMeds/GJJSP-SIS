@@ -12,6 +12,24 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Listen for the 'created' event
+        static::created(function ($user) {
+            // Check if the user has a role_id of 3 (Scholar)
+            if ($user->role_id === 3) {
+                // Create a Scholar record for the user
+                $user->scholar()->create([
+                    'user_id' => $user->id,
+                ]);
+            }
+        });
+    }
+
+
     /**
      * The attributes that are mass assignable.
      *
@@ -38,6 +56,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function scholar()
+    {
+        return $this->hasOne(Scholar::class);
+    }
+
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -50,5 +73,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'user_id' => 'integer'
     ];
+    
 }

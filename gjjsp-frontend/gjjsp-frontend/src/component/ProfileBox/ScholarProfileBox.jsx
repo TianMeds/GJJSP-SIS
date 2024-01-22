@@ -29,41 +29,10 @@ export const ScholarProfileBox = () => {
     let scholarship_type = 'full scholarship';
     let program = 'Bacher of Science in Information Technology';
 
-    const {scholars, setScholars, scholar, setScholar} = useScholarStore();
+    const {scholars, setScholars, scholar, setScholar, scholarsData, setScholarsData} = useScholarStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
 
 
-    //Get Scholar Data 
-    useEffect(() => {
-      setAlertOpen(true);
-      setErrorOpen(false);
-      setAlertMessage('Loading Scholar Profile');
-
-      const fetchProfile = async () => {
-        try {
-          const authToken = useAuthStore.getState().getAuthToken();
-          const response = await axios.get('/api/scholars', {
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-          });
-
-          if (response.status === 200) {
-            console.log(response.data)
-            const firstScholar = response.data.data[0];
-            setScholar(firstScholar);
-          } else {
-            setErrorMessage('Something went wrong');
-            setErrorOpen(true);
-          }
-        } catch (error) {
-          setErrorMessage('Something went wrong');
-          setErrorOpen(true);
-        }
-      };
-
-      fetchProfile();
-    }, []);
     //Get Foreign Key Data to users
     useEffect(() => {
       const fetchUser = async() => {
@@ -91,6 +60,33 @@ export const ScholarProfileBox = () => {
       fetchUser();
     },[])
 
+  useEffect(() => {
+    const fetchScholar = async() => {
+      try{
+        const authToken = useAuthStore.getState().getAuthToken();
+        const scholarResponse = await axios.get('/api/scholarsProfile', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if(scholarResponse.status === 200){
+          setScholarsData(scholarResponse.data.data);
+          console.log(scholarResponse.data.data);
+        }
+        else{
+          setErrorMessage('Something went wrong');
+          setErrorOpen(true);
+        }
+      }
+      catch(error){
+        setErrorMessage('Something went wrong');
+        setErrorOpen(true);
+      }
+    }
+    fetchScholar();
+  }, [])
+
     
 
   return (
@@ -116,26 +112,26 @@ export const ScholarProfileBox = () => {
           }}
         >
         
-          {/* <MUI.Grid mr={3}>
+          <MUI.Grid mr={3}>
             <MUI.Typography variant='h5' fontWeight="bold">Name</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%', mb: 2 }}>{scholar.user_first_name + ' ' + scholar.user_last_name}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%', mb: 2 }}>{scholars.first_name + ' ' + scholars.last_name}</MUI.Typography>
           </MUI.Grid>
 
-          <MUI.Grid mr={3}>
+         <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Started</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%',mb: 2 }}>S.Y {`${scholar.school_yr_started} - ${parseInt(scholar.school_yr_started) + 1}`}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%',mb: 2 }}>S.Y {`${scholarsData.school_yr_started} - ${parseInt(scholarsData.school_yr_started) + 1}`}</MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Graduated</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>Expected S.Y {`${scholar.school_yr_graduated} - ${parseInt(scholar.school_yr_graduated) + 1}`}</MUI.Typography>
-          </MUI.Grid>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}>Expected S.Y {`${scholarsData.school_yr_graduated} - ${parseInt(scholarsData.school_yr_graduated) + 1}`}</MUI.Typography>
+          </MUI.Grid> 
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Status</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{scholar.scholar_status_name}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{scholars.scholar_status_name}</MUI.Typography>
           </MUI.Grid>
-
+  {/*
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">GWA</MUI.Typography>
             <MUI.Typography sx={{ mt: 2, width: '100%' }}>{gwa}</MUI.Typography>
@@ -250,46 +246,45 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            {/* <MUI.Box>
+             <MUI.Box>
                 <MUI.Typography variant='h5'>Last Name</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholar.user_last_name}</MUI.Typography>
+                <MUI.Typography sx={{ mt: 2}}>{scholars.last_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>FirstName</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.user_first_name}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholars.first_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>MiddleName</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.user_middle_name}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholars.middle_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Gender</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.gender}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholarsData.gender}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Religion</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.religion}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholarsData.religion}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Birth Date</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.birthdate}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholarsData.birthdate}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Place of Birth</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.birthplace}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholarsData.birthplace}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Civil Status</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.civil_status}</MUI.Typography>
-            </MUI.Box> */}
-
+                <MUI.Typography sx={{mt: 2}}>{scholarsData.civil_status}</MUI.Typography>
+            </MUI.Box> 
         </MUI.Box>
       </MUI.Grid>
 
@@ -308,20 +303,20 @@ export const ScholarProfileBox = () => {
             }}
           >
           
-            {/* <MUI.Box>
+           <MUI.Box>
                 <MUI.Typography variant='h5'>Facebook</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholar.fb_account}</MUI.Typography>
+                <MUI.Typography sx={{ mt: 2}}>{scholarsData.fb_account}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Email Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.user_email_address}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{scholars.email_address}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mobile Number</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholar.user_mobile_num}</MUI.Typography>
-            </MUI.Box> */}
+                <MUI.Typography sx={{mt: 2}}>{scholars.user_mobile_num}</MUI.Typography>
+            </MUI.Box> 
             
           </MUI.Box>
 

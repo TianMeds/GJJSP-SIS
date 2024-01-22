@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('zip_codes', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('zip_code_value');
         });
     }
 

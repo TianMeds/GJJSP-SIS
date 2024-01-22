@@ -27,8 +27,7 @@ return new class extends Migration
             $table->year('school_yr_graduated');
             $table->integer('school_id');
             $table->string('program');
-            $table->dateTime('home_visit_sched');
-            $table->integer('home_address_id');
+            $table->date    ('home_visit_sched');
             $table->string('fb_account');
             $table->integer('scholar_status_id');
             $table->timestamps();

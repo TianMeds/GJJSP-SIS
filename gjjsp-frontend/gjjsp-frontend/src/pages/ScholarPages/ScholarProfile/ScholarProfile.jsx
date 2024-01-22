@@ -1,6 +1,7 @@
 import React, {lazy, Suspense} from 'react';
 import axios from '../../../api/axios';
 
+
 //Material UI Components
 import * as MUI from '../../../import';
 import Layout from '../../../component/Layout/SidebarNavbar/Layout';
@@ -21,6 +22,7 @@ import { DevTool } from "@hookform/devtools";
 
 //Custom Components
 import theme from '../../../context/theme';
+import useAuth from '../../../hooks/useAuth';
 
 
 export default function ScholarProfile() {
@@ -30,7 +32,7 @@ export default function ScholarProfile() {
   const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
   const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
+  const {auth} = useAuth();
 
   //Regex Validation
   const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -67,125 +69,69 @@ export default function ScholarProfile() {
     school_id: '',
     program: '',
     home_visit_sched: '',
-    home_address_id: '',
     fb_account: ''
   }
-  //Submit Form
-  const onSubmitProfileForm = async (data, event) => {
-    event.preventDefault();
-    const authToken = useAuthStore.getState().getAuthToken();
-  
-    const config = {
-      headers: {
-        "Content-type": "application/json",
-        'Authorization': `Bearer ${authToken}`
-      }
-    };
-  
-    try {
-      setLoading(true);
-      setLoadingMessage('Updating profile...');
-  
-      if (editProfile) {
-        // Assuming /api/profile returns the authenticated user's profile directly
-        const response = await axios.put(`/api/profile/${selectedUser.id}`, { ...data }, config);
-        setEditProfile(false);
-        handleCloseProfile();
-        handleCloseChangePassword();
-        setProfiles([response.data.data]); // Update with the actual response structure
-        setSelectedUser(response.data.data);
-        setAlertOpen(true);
-        setAlertMessage('Profile Updated');
-        setLoading(false);
-      } 
-      if(response.status === 200){
-        setProfiles(response.data.data); // Update with the actual response structure
-        setSelectedUser(response.data.data);
-        setAlertOpen(true);
-        setAlertMessage('Profile Updated');
-        
-        form.reset(FormValues);
-      }
-    } catch (error) {
-      if (error.response?.status === 401) {
-        setErrorOpen(true);
-        setErrorMessage("You've been logout");
-        navigate('/login');
-      } 
-    }
-  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+};
+
   //Submit Form Scholar Data
   const onSubmitScholarProfileForm = async (data, event) => {
     event.preventDefault();
     const authToken = useAuthStore.getState().getAuthToken();
 
     const config = {
-      headers: {
-        "Content-type": "application/json",
-        'Authorization': `Bearer ${authToken}`
-      }
+        headers: {
+            "Content-type": "application/json",
+            'Authorization': `Bearer ${authToken}`
+        }
+    };
+
+    const formattedData = {
+        ...data,
+        birthdate: formatDate(data.birthdate),
+        home_visit_sched: formatDate(data.home_visit_sched),
     };
 
     try {
-      if(editScholarProfile){
-        setLoading(true);
-        setLoadingMessage('Updating profile...');
-        const response = await axios.put(`/api/scholarsProfile/${selectedScholarProfile.id}`, {...data}, config);
-        setEditScholarProfile(false);
-        handleCloseScholarProfile();
-        setAlertOpen(true);
-        setAlertMessage('Profile Updated');
-        setLoading(false);
-      }
-      else{
-        setAlertOpen(true);
-        setAlertMessage('Adding profile...');
-        setLoading(true);
-        setLoadingMessage('Adding profile...');
-        const response = await axios.post('/api/scholarsProfile', {
-        gender: data.gender,
-        religion: data.religion,
-        birthdate: data.birthdate,
-        birthplace: data.birthplace,
-        civil_status: data.civil_status,
-        num_fam_mem: data.num_fam_mem,
-        school_yr_started: data.school_yr_started,
-        school_yr_graduated: data.school_yr_graduated,
-        school_id: data.school_id,
-        program: data.program,
-        home_visit_sched: data.home_visit_sched,
-        home_address_id: data.home_address_id,
-        fb_account: data.fb_account
-      }, config);
+        if (editScholarProfile) {
+            setLoading(true);
+            setLoadingMessage('Updating profile...');
+            const response = await axios.put(`/api/scholarsProfile/${selectedScholarProfile.id}`, {...data}, config);
+            setEditScholarProfile(false);
+            handleCloseScholarProfile();
+            setAlertOpen(true);
+            setAlertMessage('Profile Updated');
+            setLoading(false);
+        }   
 
-      setAlertOpen(true);
-      setAlertMessage('Profile Added');
-      setLoading(false);
-      handleCloseScholarProfile(); 
-      }
+        const response = await axios.get(`/api/scholarsProfile`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
 
-      const response = await axios.get('/api/scholarsProfile', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+        if (response.status === 200) {
+            setScholarProfiles(response.data.data);
+            setAlertOpen(true);
+            setAlertMessage('Users list has been updated');
+        } else {
+            setErrorOpen(true);
+            setAlertMessage('Failed to fetch data');
         }
-      });
-      if (response.status === 200) {
-        setScholarProfiles(response.data.data)
-        setAlertOpen(true);
-        setAlertMessage('Users list has been updated');
-      } else {
-        setErrorOpen(true);
-        setAlertMessage('Failed to fetch data');
-      }
-      form.reset(FormValues);
+
+        form.reset(FormValues);
     } catch (error) {
-      if (error.response?.status === 401) {
-        setErrorOpen(true);
-        setErrorMessage("You've been logout");
-        navigate('/login');
-      }
+        if (error.response?.status === 401) {
+            setErrorOpen(true);
+            setErrorMessage("You've been logout");
+            navigate('/login');
+        }
     }
-  }
+};
+
 
 
   //Change Password Form
@@ -229,60 +175,64 @@ export default function ScholarProfile() {
 
   //Get Value
 
-  //Update Scholar Profile
-  const updateProfile = async () => {
-    setLoading(true)
-    setLoadingMessage("Please wait opening edit profile")
-    setEditProfile(true);
-    try {
-      const authToken = useAuthStore.getState().getAuthToken();
-      const response = await axios.get(`/api/profile`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-  
-      const profileWithoutPassword = {
-        ...response.data.data,
-        password: undefined
-      };
-  
-      setSelectedProfile(profileWithoutPassword);
-      handleOpenProfile();
-      form.reset(profileWithoutPassword);
-      setLoading(false)
-    } catch (error) {
-      // Handle error, such as displaying an error message
-      console.error('Error fetching user data:', error);
-    }
-  };
-
   const updateScholarProfile = async () => {
-    setLoading(true)
-    setLoadingMessage("Please wait opening edit profile")
+    setLoading(true);
+    setLoadingMessage("Please wait opening edit profile");
     setEditScholarProfile(true);
+
     try {
-      const authToken = useAuthStore.getState().getAuthToken();
-      const response = await axios.get(`/api/scholarsProfile`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+        const authToken = useAuthStore.getState().getAuthToken();
+        const scholarId = selectedUser.id;
+
+        const response = await axios.get(`/api/scholarsProfile`, {
+          headers: {
+              'Authorization': `Bearer ${authToken}`
+          },
+          validateStatus: function (status) {
+            return status === 404  || (status >= 200 && status < 300); 
+          }
+        });
+
+        const profileData = response.data.data;
+        console.log(profileData);
+
+        if (response.status === 404 || !profileData || profileData.length === 0  ) {
+          setSelectedScholarProfile({
+            gender: '',
+            religion: '',
+            birthdate: '',
+            birthplace: '',
+            civil_status: '',
+            num_fam_mem: '',
+            school_yr_started: '',
+            school_yr_graduated: '',
+            school_id: '',
+            program: '',
+            home_visit_sched: '',
+            fb_account: ''
+          });
+
+          console.log(response)
+          handleOpenScholarProfile();
+          form.reset();
+          
+        }else {
+
+          const profileWithoutPassword = {
+            ...response.data.data,
+            password: undefined
+          };
+
+          setSelectedScholarProfile(profileWithoutPassword);
+          handleOpenScholarProfile();
+          form.reset(profileWithoutPassword);
         }
-      });
-  
-      const profileWithoutPassword = {
-        ...response.data.data,
-        password: undefined
-      };
-  
-      setSelectedScholarProfile(profileWithoutPassword);
-      handleOpenScholarProfile();
-      form.reset(profileWithoutPassword);
-      setLoading(false)
+        setLoading(false);
     } catch (error) {
-      // Handle error, such as displaying an error message
-      console.error('Error fetching user data:', error);
+        console.error('Error fetching scholar data:', error);
+        setLoading(false);
     }
-  }
+};
 
   //Update Scholar Password
   const updatePassword = async () => {
@@ -318,8 +268,9 @@ export default function ScholarProfile() {
       <MUI.ThemeProvider theme={theme}>
     <MUI.Grid item xs={12} md={8} lg={9}>
 
-        <MUI.Box mb={4}>
+        <MUI.Box mb={4} sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
             <MUI.Typography variant='h1' sx={{color: 'black', fontWeight: 'bold'}}>Profile</MUI.Typography>
+            <MUI.Button onClick={handleOpenScholarProfile}>Add Profile</MUI.Button>
         </MUI.Box>
 
         <MUI.Box mb={4}>
@@ -331,172 +282,17 @@ export default function ScholarProfile() {
         </MUI.Box>
 
       
-        <ProfileHeader handleOpenProfile={handleOpenProfile} updateProfile={updateProfile} updatePassword={updatePassword} updateScholarProfile={updateScholarProfile}/>
+        <ProfileHeader handleOpenProfile={handleOpenProfile} updatePassword={updatePassword} updateScholarProfile={updateScholarProfile}/>
       
         <ScholarProfileBox/>
 
     </MUI.Grid>
 
-      {/* Update Profile Dialog */}
-      {profile && (
-        <MUI.Dialog open={profile} onClose={handleCloseProfile} fullWidth maxWidth="xs" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitProfileForm)}>
-        {/* Content of the Dialog */}
-          <MUI.DialogTitle id="dialogTitle">Edit Profile</MUI.DialogTitle>
-            <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
-              <MUI.Grid sx={{marginLeft: 3}}>
-                <Suspense fallback="Scholarlink Loading...">
-                  <LazyErrMsg/>
-                </Suspense>
-              </MUI.Grid>
-
-              <MUI.DialogContent>
-                {/* Form Fields of New User*/}
-                <MUI.Grid id="userNameGrid">
-                  <MUI.InputLabel htmlFor="first_name" id="userNameLabel">First Name</MUI.InputLabel>
-                  <MUI.TextField 
-                    type='text'
-                    id='first_name'
-                    placeholder='Name' 
-                    fullWidth 
-
-                    {...register("first_name", {
-                      required: {
-                      value: true,
-                      message: 'First name is required',
-                      },
-                      pattern: {
-                      value: USER_REGEX,
-                      message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
-                      }
-                    })}
-                  
-                  />
-                    {errors.first_name && (
-                      <p id='errMsg'> 
-                      <MUI.InfoIcon className='infoErr'/> 
-                      {errors.first_name?.message}  
-                      </p>
-                    )}
-                  </MUI.Grid>
-
-                  <MUI.Grid id="userNameGrid">
-                    <MUI.InputLabel htmlFor="middle_name" id="middleNameLabel">Middle Name</MUI.InputLabel>
-                      <MUI.TextField 
-                      type='text'
-                      id='middle_name'
-                      placeholder='Name' 
-                      fullWidth 
-
-                      {...register("middle_name", {
-                        pattern: {
-                        value: USER_REGEX,
-                        message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
-                      }
-                      })}
-                    />
-                    {errors.middle_name && (
-                      <p id='errMsg'> 
-                      <MUI.InfoIcon className='infoErr'/> 
-                      {errors.middle_name?.message}  
-                      </p>
-                    )}
-                  </MUI.Grid>
-
-                  <MUI.Grid id="userNameGrid">
-                    <MUI.InputLabel htmlFor="last_name" id="userNameLabel">Last Name</MUI.InputLabel>
-                      <MUI.TextField 
-                        type='text'
-                        id='last_name'
-                        placeholder='Name' 
-                        fullWidth 
-
-                        {...register("last_name", {
-                          required: {
-                          value: true,
-                          message: 'Last name is required',
-                        },
-                          pattern: {
-                          value: USER_REGEX,
-                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.',
-                        }
-                        })}
-                      />
-                    {errors.last_name && (
-                      <p id='errMsg'> 
-                      <MUI.InfoIcon className='infoErr'/> 
-                      {errors.last_name?.message}  
-                      </p>
-                    )}
-                  </MUI.Grid>
-
-                  <MUI.Grid id="userMobileNumGrid">
-                    <MUI.InputLabel htmlFor="user_mobile_num" id="userMobileNumLabel">Mobile Number</MUI.InputLabel>
-                      <MUI.TextField 
-                        type='text'
-                        id='user_mobile_num'
-                        placeholder='63XXX-XXXX-XXX' 
-                        fullWidth 
-                          {...register("user_mobile_num", {
-                            required: {
-                              value: true,
-                              message: 'Mobile Number is required',
-                            },
-                            pattern: {
-                              value: CONTACT_REGEX,
-                              message: 'Enter your mobile number in 63 format with no spaces and symbol',
-                            }
-                          })}
-                      />
-                      {errors.user_mobile_num && (
-                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.user_mobile_num?.message}</p>
-                      )}
-                  </MUI.Grid>
-
-                  <MUI.Grid id="emailAddressGrid">
-                    <MUI.InputLabel htmlFor="email_address" id="emailAddressLabel">Email</MUI.InputLabel>
-                      <MUI.TextField 
-                        type='email'
-                        id='email_address'
-                        placeholder='Email Address' 
-                        fullWidth 
-                          {...register("email_address", {
-                              required: {
-                              value: true,
-                              message: 'Email Address is required',
-                            },
-                              pattern: {
-                              value: EMAIL_REGEX,
-                              message: 'Please enter a valid email address',
-                            }
-                          })}
-                      />
-                        {errors.email_address && (
-                        <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
-                        )}
-                  </MUI.Grid>
-
-              </MUI.DialogContent>
-
-              <MUI.DialogActions>
-                {/* Add action buttons, e.g., Save Changes and Cancel */}
-                <MUI.Button onClick={handleCloseProfile} color="primary" id='Button'>
-                  Cancel
-                </MUI.Button>
-                <MUI.Button
-                  color="primary" 
-                  type='submit' 
-                  variant='contained'
-                  id='addUserBtn'
-                >
-                  {editProfile ? 'Save Changes' : ''}
-                </MUI.Button>
-              </MUI.DialogActions>
-        </MUI.Dialog>
-      )}
+  
 
       {/* Update Scholar Profile Dialog */}
       <MUI.Dialog open={scholarProfile} onClose={handleCloseScholarProfile} fullWidth maxWidth="md" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitScholarProfileForm)}>         
-      <MUI.DialogTitle id="dialogTitle">Edit Profile</MUI.DialogTitle>
+      <MUI.DialogTitle id="dialogTitle">{editScholarProfile ? "Update Profile" : "Add Profile"}</MUI.DialogTitle>
       <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
         <MUI.Grid sx={{ marginLeft: 3 }}>
           <Suspense fallback="Scholarlink Loading...">
@@ -622,32 +418,6 @@ export default function ScholarProfile() {
               </p>
           )}
         </MUI.Grid>
-
-        <MUI.Grid id="fbAccountGrid">
-          <MUI.InputLabel htmlFor="fb_account" id="fbAccountLabel">Facebook Link</MUI.InputLabel>
-          <MUI.TextField
-              type='text'
-              id='fb_account'
-              placeholder='facebook.com/Username'
-              fullWidth
-              {...register("fb_account", {
-                  required: {
-                      value: true,
-                      message: 'Facebook Account is required',
-                  },
-                  pattern: {
-                    value: FBLINK_REGEX,
-                    message: 'Please enter a valid FB link (e.g., facebook.com/Username) ',
-                  }
-              })}
-          />
-          {errors.fb_account && (
-              <p id='errMsg'>
-                  <MUI.InfoIcon className='infoErr' />
-                  {errors.fb_account?.message}
-              </p>
-          )}
-      </MUI.Grid>
         </div>
 
         <div>
@@ -764,7 +534,69 @@ export default function ScholarProfile() {
 
       <div>
 
-      
+      <MUI.Grid id="schoolIdGrid">
+    <MUI.InputLabel htmlFor="school_id" id="schoolIdLabel">
+        School
+    </MUI.InputLabel>
+    <Controller
+        name="school_id"
+        control={control}
+        defaultValue=""
+        rules={{
+            required: 'School ID is required',
+        }}
+        render={({ field }) => (
+            <MUI.FormControl sx={{ borderRadius: '8px', width: '200px' }}>
+                <MUI.Select
+                    id="school_id"
+                    native
+                    {...field}
+                    MenuProps={{
+                        PaperProps: {
+                            style: {
+                                width: '200px',
+                            },
+                        },
+                    }}
+                >
+                  <option value="" disabled>Select School</option>
+                        <option value="1">Ateneo De Manila University</option>
+                        <option value="2">Assumption College – Makati City | Assumption college</option>
+                        <option value="3">Don Bosco Technical College – Mandaluyong | Don Bosco Technical College</option>
+                        <option value="4">Don Bosco Training Center Nueva Ecija</option>
+                        <option value="5">Don Bosco Technical College – Technical Vocational Educational Technology</option>
+                        <option value="6">Don Bosco Technical College – Mandaluyong – BATCH 18</option>
+                        <option value="7">Don Bosco Technical College – Technical Vocational Educational Technology – BATCH 19</option>
+                        <option value="8">Don Bosco Training Center Mandaluyong Technical Vocational Educational Technology</option>
+                        <option value="9">Don Bosco Training Center Nueva Ecija c/o Fr. Clarence (Sr. Elizabeth Tolentino, FDCC)</option>
+                        <option value="10">University of St. La Salle – Bacolod</option>
+                        <option value="11">La Consolacion College – Bacolod</option>
+                        <option value="12">La Consolacion College – Manila</option>
+                        <option value="13">La Consolacion College – Binan</option>
+                        <option value="14">University of Negros Occidental – Recoletos | University of Negros Occidental</option>
+                        <option value="15">University of Perpetual Help System Dalta – Laguna</option>
+                        <option value="16">Concordia College – Manila</option>
+                        <option value="17">Canossa College of San Pablo City</option>
+                        <option value="18">Iloilo Science and Technology University</option>
+                        <option value="19">West Visayas State University (Iloilo City) | West Visayas State University</option>
+                        <option value="20">ISAT-U, Colegio de Sagrado, U.I & Other State Colleges</option>
+                        <option value="21">University of Santo Tomas</option>
+                        <option value="22">Polytechnic University of the Philippines</option>
+                        <option value="23">Centro Escolar University</option>
+                        <option value="24">Makati Science Technological Institute of the Philippines</option>
+                        <option value="25">Saint Pedro Poveda College</option>
+                        <option value="26">Visayan Center for Hotel and Restaurant Services</option>
+                </MUI.Select>
+            </MUI.FormControl>
+        )}
+    />
+    {errors.school_id && (
+        <p id='errMsg'>
+            <MUI.InfoIcon className='infoErr' />
+            {errors.school_id?.message}
+        </p>
+    )}
+</MUI.Grid>
 
       <MUI.Grid id="programGrid">
           <MUI.InputLabel htmlFor="program" id="programLabel">Program</MUI.InputLabel>
@@ -789,53 +621,57 @@ export default function ScholarProfile() {
       </MUI.Grid>
 
       <MUI.Grid id="homeVisitSchedGrid">
-    <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
-    <MUI.TextField
-        type='date'  // Change the type to 'date'
-        id='home_visit_sched'
-        placeholder='Home Visit Schedule'
-        fullWidth
-        {...register("home_visit_sched", {
-            required: {
-                value: true,
-                message: 'Home Visit Schedule is required',
-            }
-        })}
-    />
-    {errors.home_visit_sched && (
-        <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.home_visit_sched?.message}
-        </p>
-    )}
-</MUI.Grid>
+        <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
+        <MUI.TextField
+            type='date'  // Change the type to 'date'
+            id='home_visit_sched'
+            placeholder='Home Visit Schedule'
+            fullWidth
+            {...register("home_visit_sched", {
+                required: {
+                    value: true,
+                    message: 'Home Visit Schedule is required',
+                }
+            })}
+        />
+        {errors.home_visit_sched && (
+            <p id='errMsg'>
+                <MUI.InfoIcon className='infoErr' />
+                {errors.home_visit_sched?.message}
+            </p>
+        )}
+      </MUI.Grid>
 
-      <MUI.Grid id="homeAddressIdGrid">
-          <MUI.InputLabel htmlFor="home_address_id" id="homeAddressIdLabel">Home Address ID</MUI.InputLabel>
-          <MUI.TextField
-              type='text'
-              id='home_address_id'
-              placeholder='Home Address ID'
-              fullWidth
-              {...register("home_address_id", {
-                  required: {
-                      value: true,
-                      message: 'Home Address ID is required',
-                  }
-              })}
-          />
-          {errors.home_address_id && (
-              <p id='errMsg'>
-                  <MUI.InfoIcon className='infoErr' />
-                  {errors.home_address_id?.message}
-              </p>
-          )}
+      <MUI.Grid id="fbAccountGrid">
+        <MUI.InputLabel htmlFor="fb_account" id="fbAccountLabel">Facebook Link</MUI.InputLabel>
+        <MUI.TextField
+            type='text'
+            id='fb_account'
+            placeholder='facebook.com/Username'
+            fullWidth
+            {...register("fb_account", {
+                required: {
+                    value: true,
+                    message: 'Facebook Account is required',
+                },
+                pattern: {
+                  value: FBLINK_REGEX,
+                  message: 'Please enter a valid FB link (e.g., facebook.com/Username) ',
+                }
+            })}
+        />
+        {errors.fb_account && (
+            <p id='errMsg'>
+                <MUI.InfoIcon className='infoErr' />
+                {errors.fb_account?.message}
+            </p>
+        )}
       </MUI.Grid>
 
       </div>
       </div>
 
-      <MUI.DialogActions>
+      <MUI.DialogActions sx={{mt: 5}}>
         {/* Add action buttons, e.g., Save Changes and Cancel */}
         <MUI.Button onClick={handleCloseScholarProfile} color="primary" id='Button'>
             Cancel
@@ -846,7 +682,7 @@ export default function ScholarProfile() {
             variant='contained'
             id='addUserBtn'
         >
-            {editScholarProfile ? 'Save Changes' : ''}
+            {editScholarProfile ? 'Save Changes' : 'Add Profile'}
         </MUI.Button>
     </MUI.DialogActions>
 

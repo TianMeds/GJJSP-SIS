@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Http\Resources\ScholarResource;
+use App\Http\Resources\ScholarCollection;
 use App\Mail\UserCredential;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -40,8 +43,17 @@ class AuthController extends Controller
             'role_id' => $fields['role_id'],
             'user_status' => $fields['user_status'],
         ]);
+
+
+        if ($user->role_id === "3") {
+            // Create Scholar profile separately
+            $scholar = Scholar::create([
+                'user_id' => $user->id,
+            ]);
+        }
         
         if ($user) {
+
             try {
                 Mail::mailer('smtp')->to($user->email_address)->send(new UserCredential($user, $plainPassword));
 

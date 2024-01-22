@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\City_MunicipalitiesResource;
+use App\Http\Resources\City_MunicipalitiesCollection;
 use App\Models\City_Municipalities;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class City_MunicipalitiesController extends Controller
 {

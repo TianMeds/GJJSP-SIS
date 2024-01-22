@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BarangayResource;
+use App\Http\Resources\BarangayCollection;
 use App\Models\Barangay;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class BarangayController extends Controller
 {

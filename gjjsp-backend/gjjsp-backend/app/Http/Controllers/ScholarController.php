@@ -94,12 +94,54 @@ class ScholarController extends Controller
     public function scholarProfile()
     {
         try {
-            $userId = Auth::id(); // Retrieve the authenticated user's ID
-            $user = User::findOrFail($userId);
-    
-            return new UserResource($user);
+            // Retrieve the authenticated user's ID
+            $userId = Auth::id();
+
+            // Find the scholar profile that belongs to the authenticated user
+            $scholar = Scholar::where('user_id', $userId)->first();
+
+            if ($scholar) {
+                // Scholar profile found, return as a resource
+                return new ScholarResource($scholar);
+            } else {
+                // Scholar profile not found for the authenticated user
+                return response()->json(['message' => 'Scholar profile not found for the authenticated user'], Response::HTTP_NOT_FOUND);
+            }
         } catch (\Exception $e) {
-            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+            // Log the exception for further investigation
+            \Log::error('Error in scholarProfile: ' . $e->getMessage());
+
+            return response()->json(['message' => 'Error processing scholar profile'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    public function updateScholarProfile(Request $request, $id)
+    {
+        try {
+            // Retrieve the authenticated user's ID
+            $userId = Auth::id();
+    
+            // Find the scholar by ID and make sure it belongs to the authenticated user
+            $scholar = Scholar::where('id', $id)
+                ->where('user_id', $userId)
+                ->firstOrFail();
+    
+            // Update the scholar with the request data
+            $scholar->update($request->only([
+                'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem',
+                'school_yr_started', 'school_yr_graduated', 'school_id', 'program',
+                'home_visit_sched', 'fb_account',
+            ]));
+    
+            // Return the updated scholar as a resource
+            return new ScholarResource($scholar);
+        } catch (\Exception $e) {
+            // Log the exception for further investigation
+            \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
+    
+            return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
         }
     }
 

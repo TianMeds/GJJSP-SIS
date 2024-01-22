@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AddressResource;
+use App\Http\Resources\AddressCollection;
 use App\Models\Address;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AddressController extends Controller
 {
@@ -12,7 +15,8 @@ class AddressController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new AddressCollection
+        (Address::all()), Response::HTTP_OK);
     }
 
     /**
@@ -20,7 +24,7 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**

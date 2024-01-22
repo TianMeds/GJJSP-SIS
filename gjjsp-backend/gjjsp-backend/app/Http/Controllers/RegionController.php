@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RegionResource;
+use App\Http\Resources\RegionCollection;
 use App\Models\Region;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RegionController extends Controller
 {

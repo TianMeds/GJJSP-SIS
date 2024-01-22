@@ -8,6 +8,8 @@ const useScholarStore = create((set) => ({
     scholar: false,
     setScholars: (scholars) => set({scholars}),
     setScholar: (newScholar) => set({scholar: newScholar}),
+    scholarsData: [],
+    setScholarsData: (scholarsData) => set({scholarsData}),
     
     scholarsWithIndex: [],
     editScholar: false,

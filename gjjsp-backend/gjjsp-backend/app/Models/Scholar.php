@@ -28,10 +28,10 @@ class Scholar extends Model
         'home_visit_sched',
         'program',
         'home_visit_sched',
-        'home_address_id',
         'fb_account',
         'scholar_status_id',
     ];
+
 
     public function scholarStatus()
     {
@@ -40,7 +40,7 @@ class Scholar extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function scholarship_categs()

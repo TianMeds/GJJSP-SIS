@@ -1,19 +1,19 @@
-// import { create } from "zustand";
+import { create } from "zustand";
 
-// const useScholarProfileStore = create((set) => ({
+const useScholarProfileStore = create((set) => ({
 
-//     scholarProfiles: [],
-//     scholarProfile: false,
-//     setScholarProfiles: (scholarProfiles) => set({ scholarProfiles }),
+    scholarProfiles: [],
+    scholarProfile: false,
+    setScholarProfiles: (scholarProfiles) => set({ scholarProfiles }),
 
-//     handleOpenScholarProfile: () => set({scholarProfile: true}),
-//     handleCloseScholarProfile: () => set({scholarProfile: false}),
+    handleOpenScholarProfile: () => set({scholarProfile: true}),
+    handleCloseScholarProfile: () => set({scholarProfile: false}),
 
 
-//     editScholarProfile: false,
-//     setEditScholarProfile: (newEditScholarProfile) => set({editScholarProfile: newEditScholarProfile}),
-//     selectedScholarProfile: null,
-//     setSelectedScholarProfile: (selectedScholarProfile) => set({selectedScholarProfile}),   
-// }));
+    editScholarProfile: false,
+    setEditScholarProfile: (newEditScholarProfile) => set({editScholarProfile: newEditScholarProfile}),
+    selectedScholarProfile: null,
+    setSelectedScholarProfile: (selectedScholarProfile) => set({selectedScholarProfile}),   
+}));
 
-// export default useScholarProfileStore;
+export default useScholarProfileStore;
