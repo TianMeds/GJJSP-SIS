@@ -14,6 +14,9 @@ class ZipCodeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'zip_code_value' => $this->zip_code_value,
+        ];
     }
 }

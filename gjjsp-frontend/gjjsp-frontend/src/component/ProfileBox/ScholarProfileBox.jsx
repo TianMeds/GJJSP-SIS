@@ -4,13 +4,10 @@ import useAuth from '../../hooks/useAuth';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/AuthStore';
 import useScholarStore from '../../store/ScholarStore';
+import useUserStore from '../../store/UserStore';
 
 export const ScholarProfileBox = () => {
     const {auth} = useAuth();
-    const first_name = auth?.user?.first_name || '';
-    const last_name = auth?.user?.last_name || '';
-    const email_address = auth?.user?.email_address || '';
-    const user_mobile_num = auth?.user?.user_mobile_num || '';
 
     //Variable Declaration for no data still in the backend
     let current_yr = '2nd';
@@ -30,6 +27,7 @@ export const ScholarProfileBox = () => {
     let program = 'Bacher of Science in Information Technology';
 
     const {scholars, setScholars, scholar, setScholar, scholarsData, setScholarsData} = useScholarStore();
+    const {selectedUser} = useUserStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
 
 
@@ -114,17 +112,28 @@ export const ScholarProfileBox = () => {
         
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5' fontWeight="bold">Name</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%', mb: 2 }}>{scholars.first_name + ' ' + scholars.last_name}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%', mb: 2 }}>{selectedUser.first_name + ' ' + selectedUser.last_name}</MUI.Typography>
           </MUI.Grid>
 
          <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Started</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%',mb: 2 }}>S.Y {`${scholarsData.school_yr_started} - ${parseInt(scholarsData.school_yr_started) + 1}`}</MUI.Typography>
+            {scholarsData.school_yr_started && (
+              <MUI.Typography sx={{ mt: 2 }}>
+                {`S.Y ${scholarsData.school_yr_started} - ${parseInt(scholarsData.school_yr_started) + 1}`}
+              </MUI.Typography>
+            )}
+
           </MUI.Grid>
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Graduated</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>Expected S.Y {`${scholarsData.school_yr_graduated} - ${parseInt(scholarsData.school_yr_graduated) + 1}`}</MUI.Typography>
+
+            {scholarsData.school_yr_graduated && (
+              <MUI.Typography sx={{ mt: 2 }}>
+                {`S.Y ${scholarsData.school_yr_graduated} - ${parseInt(scholarsData.school_yr_graduated) + 1}`}
+              </MUI.Typography>
+            
+            )}
           </MUI.Grid> 
 
           <MUI.Grid mr={3}>
@@ -248,17 +257,17 @@ export const ScholarProfileBox = () => {
           
              <MUI.Box>
                 <MUI.Typography variant='h5'>Last Name</MUI.Typography>
-                <MUI.Typography sx={{ mt: 2}}>{scholars.last_name}</MUI.Typography>
+                <MUI.Typography sx={{ mt: 2}}>{selectedUser.last_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>FirstName</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholars.first_name}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.first_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>MiddleName</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholars.middle_name}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.middle_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
@@ -310,12 +319,12 @@ export const ScholarProfileBox = () => {
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Email Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholars.email_address}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.email_address}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mobile Number</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{scholars.user_mobile_num}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{selectedUser.user_mobile_num}</MUI.Typography>
             </MUI.Box> 
             
           </MUI.Box>

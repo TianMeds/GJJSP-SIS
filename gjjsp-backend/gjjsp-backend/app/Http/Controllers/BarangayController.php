@@ -15,7 +15,8 @@ class BarangayController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new BarangayCollection
+        (Barangay::all()), Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +24,13 @@ class BarangayController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $barangay = Barangay::create($request->only([
+            'barangay_name',
+            'city_municipality_id',
+            'zip_code_id'
+        ]));
+
+        return new BarangayResource($barangay);
     }
 
     /**
@@ -31,15 +38,17 @@ class BarangayController extends Controller
      */
     public function show(Barangay $barangay)
     {
-        //
+        return new BarangayResource($barangay);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Barangay $barangay)
+    public function update(Request $request, Barangay $barangay, $id)
     {
-        //
+        $barangay = Barangay::find($id);
+        $barangay->update($request->all());
+        return new BarangayResource($barangay);
     }
 
     /**

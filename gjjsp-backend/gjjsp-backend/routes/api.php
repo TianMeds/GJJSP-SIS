@@ -11,6 +11,12 @@ use App\Http\Controllers\ProjectPartnerController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\ScholarStatusController;
 use App\Http\Controllers\PromptController;
+use App\Http\Controllers\AddressController;
+use App\Http\Controllers\BarangayController;
+use App\Http\Controllers\City_MunicipalitiesController;
+use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\RegionController;
+use App\Http\Controllers\ZipCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +74,36 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
     Route::apiResource('/scholar-status', ScholarStatusController::class)->only(['index', 'show']);
 
+    //Address Route
+    Route::post('/address', [AddressController::class, 'store']);
+    Route::put('/address/{id}', [AddressController::class, 'update']);
+    Route::apiResource('/address', AddressController::class)->only(['index', 'show']);
+
+    //Region Route
+    Route::post('/region', [RegionController::class, 'store']);
+    Route::put('/region/{id}', [RegionController::class, 'update']);
+    Route::apiResource('/region', RegionController::class)->only(['index', 'show']);
+
+    //Province Route
+    Route::post('/province', [ProvinceController::class, 'store']);
+    Route::put('/province/{id}', [ProvinceController::class, 'update']);
+    Route::apiResource('/province', ProvinceController::class)->only(['index', 'show']);
+    
+    //City/Municipalities Route
+    Route::post('/city', [City_MunicipalitiesController::class, 'store']);
+    Route::put('/city/{id}', [City_MunicipalitiesController::class, 'update']);
+    Route::apiResource('/city', City_MunicipalitiesController::class)->only(['index', 'show']);
+
+    //Barangay Route
+    Route::post('/barangay', [BarangayController::class, 'store']);
+    Route::put('/barangay/{id}', [BarangayController::class, 'update']);
+    Route::apiResource('/barangay', BarangayController::class)->only(['index', 'show']);
+
+    //ZipCode Route
+    Route::post('/zipcode', [ZipCodeController::class, 'store']);
+    Route::put('/zipcode/{id}', [ZipCodeController::class, 'update']);
+    Route::apiResource('/zipcode', ZipCodeController::class)->only(['index', 'show']);
+    
     //Submission Route
 });
 

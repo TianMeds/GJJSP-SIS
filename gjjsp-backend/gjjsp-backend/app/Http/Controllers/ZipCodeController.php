@@ -15,7 +15,7 @@ class ZipCodeController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new ZipCodeCollection(ZipCode::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +23,11 @@ class ZipCodeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $zipCode = ZipCode::create($request->only([
+            'zip_code_value'
+        ]));
+
+        return new ZipCodeResource($zipCode);
     }
 
     /**
@@ -31,15 +35,17 @@ class ZipCodeController extends Controller
      */
     public function show(ZipCode $zipCode)
     {
-        //
+        return new ZipCodeResource($zipCode);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ZipCode $zipCode)
+    public function update(Request $request, ZipCode $zipCode, $id)
     {
-        //
+        $zipCode = ZipCode::find($id);
+        $zipCode->update($request->all());
+        return new ZipCodeResource($zipCode);
     }
 
     /**

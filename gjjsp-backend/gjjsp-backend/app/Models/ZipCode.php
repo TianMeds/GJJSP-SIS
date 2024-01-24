@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class ZipCode extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'zip_code_value'
+    ];
+
+    public $timestamps = false;
 }

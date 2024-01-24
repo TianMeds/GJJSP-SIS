@@ -24,7 +24,12 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $address = Address::create($request->only([
+            'street',
+            'barangay_id',
+        ]));
+
+        return new AddressResource($address);
     }
 
     /**
@@ -32,15 +37,17 @@ class AddressController extends Controller
      */
     public function show(Address $address)
     {
-        //
+        return new AddressResource($address);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Address $address)
+    public function update(Request $request, Address $address, $id)
     {
-        //
+        $address = Address::find($id);
+        $address->update($request->all());
+        return new AddressResource($address);
     }
 
     /**

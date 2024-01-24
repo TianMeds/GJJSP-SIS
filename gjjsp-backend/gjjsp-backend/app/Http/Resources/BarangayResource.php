@@ -14,6 +14,10 @@ class BarangayResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'barangay_name' => $this->barangay_name,
+            'city_municipality_id' => $this->city_municipality_id,
+        ];
     }
 }

@@ -29,6 +29,7 @@ class Scholar extends Model
         'program',
         'home_visit_sched',
         'fb_account',
+        'home_address_id',
         'scholar_status_id',
     ];
 

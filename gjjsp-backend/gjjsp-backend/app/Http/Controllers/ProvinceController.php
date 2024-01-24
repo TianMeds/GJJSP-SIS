@@ -15,7 +15,7 @@ class ProvinceController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new ProvinceCollection(Province::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +23,12 @@ class ProvinceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $province = Province::create($request->only([
+            'province_name',
+            'region_id',
+        ]));
+
+        return new ProvinceResource($province);
     }
 
     /**
@@ -31,15 +36,17 @@ class ProvinceController extends Controller
      */
     public function show(Province $province)
     {
-        //
+        return new ProvinceResource($province);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Province $province)
+    public function update(Request $request, Province $province, $id)
     {
-        //
+        $province = Province::find($id);
+        $province->update($request->all());
+        return new ProvinceResource($province);
     }
 
     /**

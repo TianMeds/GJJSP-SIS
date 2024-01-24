@@ -15,7 +15,7 @@ class RegionController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new RegionCollection(Region::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +23,11 @@ class RegionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $region = Region::create($request->only([
+            'region_name',
+        ]));
+
+        return new RegionResource($region);
     }
 
     /**
@@ -31,15 +35,17 @@ class RegionController extends Controller
      */
     public function show(Region $region)
     {
-        //
+        return new RegionResource($region);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Region $region)
+    public function update(Request $request, Region $region, $id)
     {
-        //
+        $region = Region::find($id);
+        $region->update($request->all());
+        return new RegionResource($region);
     }
 
     /**
