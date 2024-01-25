@@ -77,7 +77,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     //Address Route
     Route::post('/address', [AddressController::class, 'store']);
     Route::put('/address/{id}', [AddressController::class, 'update']);
-    Route::apiResource('/address', AddressController::class)->only(['index', 'show']);
+    Route::apiResource('/address', AddressController::class)->only(['index', 'show']);  
+    Route::get('/scholarAddress', [AddressController::class, 'scholarAddress']);
 
     //Region Route
     Route::post('/region', [RegionController::class, 'store']);
@@ -103,7 +104,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/zipcode', [ZipCodeController::class, 'store']);
     Route::put('/zipcode/{id}', [ZipCodeController::class, 'update']);
     Route::apiResource('/zipcode', ZipCodeController::class)->only(['index', 'show']);
-    
+
     //Submission Route
 });
 

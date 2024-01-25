@@ -29,7 +29,12 @@ class Scholar extends Model
         'program',
         'home_visit_sched',
         'fb_account',
-        'home_address_id',
+        'street',
+        'zip_code',
+        'region_name',
+        'province_name',
+        'cities_municipalities_name',
+        'barangay_name',
         'scholar_status_id',
     ];
 

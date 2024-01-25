@@ -7,8 +7,10 @@ const useAddressStore = create((set) => ({
     setRegions: (regions) => set({ regions }),
     selectedRegion: '',
     setSelectedRegion: (newRegion) => set({ selectedRegion: newRegion }),
-    regionsName:[],
-    setRegionsName: (regionsName) => set({regionsName}),
+    regionsCode:[],
+    setRegionsCode: (regionsCode) => set({regionsCode}),
+    selectedRegionCode: '',
+    setSelectedRegionCode: (newRegionCode) => set({selectedRegionCode: newRegionCode}),
 
     //Hooks for Province Store
     provinces: [],
@@ -17,6 +19,8 @@ const useAddressStore = create((set) => ({
     setSelectedProvince: (newProvince) => set({ selectedProvince: newProvince }),
     provincesName: [],
     setProvincesName: (provincesName) => set({provincesName}),
+    selectedProvinceCode: '',
+    setSelectedProvinceCode: (newProvinceCode) => set({selectedProvinceCode: newProvinceCode}),
 
     //Hooks for City Store
     cities: [],
@@ -25,6 +29,8 @@ const useAddressStore = create((set) => ({
     setSelectedCity: (newCity) => set({ selectedCity: newCity }),
     citiesName: [],
     setCitiesName: (citiesName) => set({citiesName}),
+    selectedCityCode: '',
+    setSelectedCityCode: (newCityCode) => set({selectedCityCode: newCityCode}),
 
     //Hooks for Barangay Store
     barangays: [],

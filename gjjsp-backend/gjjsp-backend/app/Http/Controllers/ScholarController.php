@@ -132,7 +132,8 @@ class ScholarController extends Controller
             $scholar->update($request->only([
                 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem',
                 'school_yr_started', 'school_yr_graduated', 'school_id', 'program',
-                'home_visit_sched', 'fb_account',
+                'home_visit_sched', 'fb_account', 'street', 'zip_code', 'region_name', 'province_name',
+                'cities_municipalities_name', 'barangay_name',
             ]));
     
             // Return the updated scholar as a resource

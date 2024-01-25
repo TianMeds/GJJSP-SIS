@@ -1,35 +1,21 @@
-import React,{useEffect} from 'react'
+import React,{useEffect, useState} from 'react'
 import * as MUI from '../../import';
 import useAuth from '../../hooks/useAuth';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/AuthStore';
 import useScholarStore from '../../store/ScholarStore';
 import useUserStore from '../../store/UserStore';
+import useLoginStore from '../../store/LoginStore';
+import {useNavigate} from 'react-router-dom';
 
 export const ScholarProfileBox = () => {
-    const {auth} = useAuth();
-
-    //Variable Declaration for no data still in the backend
-    let current_yr = '2nd';
-    let gwa = '3.5';
-    let num_yrs_scholar = '3 years';
-    let school = 'South East Asia College';
-    let school_address = '11AA Paguig City';
-    let track = 'ICT';
-    let shs_graduated = 'S.Y 2011-2023';
-    let fathers_Name = 'Juanito DelaCruz';
-    let mothers_Name = 'Juana DelaCruz';
-    let mobile_Number = '044343434';
-    let permanent_Address = "11AA Paguig City";
-    let facebook = 'Juan DelaCruz';
-    let proj_partner = 'Gado and Jess Jalandoni Scholarship';
-    let scholarship_type = 'full scholarship';
-    let program = 'Bacher of Science in Information Technology';
+    const {auth, setAuth} = useAuth();
 
     const {scholars, setScholars, scholar, setScholar, scholarsData, setScholarsData} = useScholarStore();
     const {selectedUser} = useUserStore();
+    const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
-
+    const navigate = useNavigate();
 
     //Get Foreign Key Data to users
     useEffect(() => {
@@ -60,6 +46,8 @@ export const ScholarProfileBox = () => {
 
   useEffect(() => {
     const fetchScholar = async() => {
+      setLoading(true)
+      setLoadingMessage('Loading Scholar Data')
       try{
         const authToken = useAuthStore.getState().getAuthToken();
         const scholarResponse = await axios.get('/api/scholarsProfile', {
@@ -70,22 +58,37 @@ export const ScholarProfileBox = () => {
 
         if(scholarResponse.status === 200){
           setScholarsData(scholarResponse.data.data);
-          console.log(scholarResponse.data.data);
+        }
+        else if (scholarResponse.status === 404) {
+          setScholarsData([]);
+          console.log("Hello")
         }
         else{
           setErrorMessage('Something went wrong');
           setErrorOpen(true);
         }
+        setLoading(false)
       }
       catch(error){
-        setErrorMessage('Something went wrong');
-        setErrorOpen(true);
+        if (error.response.status === 401 ) {
+          setErrorMessage('Session Expired');
+          setErrorOpen(true);
+          useAuthStore.getState().resetAuthToken();
+          setAuth(null); // Update authentication state
+          navigate('/login')
+        }
+        else if(error.response.status === 404){
+          setScholarsData([]);
+        }
+        else{
+          setErrorMessage('Something went wrong');
+          setErrorOpen(true);
+        }
+        setLoading(false)
       }
     }
     fetchScholar();
   }, [])
-
-    
 
   return (
     <MUI.Grid container spacing={2} sx={{mt: 5}}>
@@ -342,15 +345,15 @@ export const ScholarProfileBox = () => {
                 borderRadius: '5px',
               }}
             > 
-                {/* <MUI.Box>
+                <MUI.Box>
                     <MUI.Typography variant='h5'>Present Address</MUI.Typography>
-                    <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
+                    <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholarsData.street}  {scholarsData.barangay_name} {scholarsData.cities_municipalities_name}</MUI.Typography>
                 </MUI.Box>
 
                 <MUI.Box sx={{mt: 3}}>
                     <MUI.Typography variant='h5'>Permanent Address</MUI.Typography>
-                    <MUI.Typography sx={{mt: 2}}>{permanent_Address}</MUI.Typography>
-                </MUI.Box> */}
+                    <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+                </MUI.Box> 
 
               </MUI.Box>
           </MUI.Grid>

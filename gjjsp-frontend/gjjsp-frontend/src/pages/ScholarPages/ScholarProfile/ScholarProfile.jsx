@@ -57,9 +57,9 @@ export default function ScholarProfile() {
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
 
   const {
-    regions, setRegions, selectedRegion, setSelectedRegion,setRegionsName, 
-    provinces, setProvinces, selectedProvince, setSelectedProvince, setProvincesName,
-    cities, setCities, selectedCity, setSelectedCity, setCitiesName, setBarangaysName,
+    regions, setRegions, selectedRegion, setSelectedRegion,setRegionsName, setSelectedRegionCode, selectedRegionCode,
+    provinces, setProvinces, selectedProvince, setSelectedProvince, setProvincesName, selectedProvinceCode, setSelectedProvinceCode,
+    cities, setCities, selectedCity, setSelectedCity, setCitiesName, setBarangaysName, selectedCityCode, setSelectedCityCode,
     barangays, setBarangays, selectedBarangay, setSelectedBarangay
   } = useAddressStore();
   
@@ -185,6 +185,38 @@ export default function ScholarProfile() {
   };
 
   // Fetch Scholar Data
+  useEffect(() => {
+    const fetchScholarProfile = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        
+        const response = await axios.get(`/api/scholarsProfile`, {
+          headers: {
+            'Authorization': 
+            `Bearer ${authToken}`
+          }
+        });
+
+      if (response.status === 200) {
+          setScholarProfiles(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Users list has been updated');
+      } else {
+          setErrorOpen(true);
+          setAlertMessage('Failed to fetch data');
+      }
+
+      form.reset(FormValues);
+      } catch (error) {
+          if (error.response?.status === 401) {
+              setErrorOpen(true);
+              setErrorMessage("You've been logout");
+              navigate('/login');
+          }
+      }
+    };
+    fetchScholarProfile();
+  }, []);
 
 // Fetch regions and provinces concurrently
 useEffect(() => {
@@ -192,7 +224,7 @@ useEffect(() => {
     try {
       const [regionsResponse, provincesResponse] = await Promise.all([
         fetch('https://psgc.gitlab.io/api/regions'),
-        selectedRegion ? fetch(`https://psgc.gitlab.io/api/regions/${selectedRegion}/provinces`) : null,
+        selectedRegionCode ? fetch(`https://psgc.gitlab.io/api/regions/${selectedRegionCode}/provinces`) : null,
       ]);
 
       // Handle regions response
@@ -210,18 +242,12 @@ useEffect(() => {
       const provincesData = provincesResponse ? await provincesResponse.json() : [];
       setProvinces(provincesData);
 
-      const selectedRegionData = regionsData.find(region => region.code === selectedRegion);
-      if (selectedRegionData) {
-        setSelectedRegion(selectedRegion);
-        setRegionsName(selectedRegionData.name);
-        console.log(selectedRegionData.name)
-      }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
   fetchRegionAndProvinces();
-}, [selectedRegion]);
+}, [selectedRegionCode]);
 
 // Fetch provinces when a region is selected
 useEffect(() => {
@@ -230,8 +256,8 @@ useEffect(() => {
       // Reset provinces state to an empty array
       setProvinces([]);
 
-      if (selectedRegion && selectedRegion !== '130000000') {
-        const provincesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegion}/provinces`;
+      if (selectedRegionCode && selectedRegionCode !== '130000000') {
+        const provincesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegionCode}/provinces`;
 
         const response = await fetch(provincesEndpoint);
 
@@ -242,12 +268,6 @@ useEffect(() => {
         const data = await response.json();
         setProvinces(data);
 
-        const selectedProvinceData = data.find(province => province.code === selectedProvince);
-        if (selectedProvinceData) {
-          setSelectedProvince(selectedProvince);
-          setProvincesName(selectedProvinceData.name);
-          console.log(selectedProvinceData.name);
-        }
       }
     } catch (error) {
       console.error('Error fetching provinces:', error);
@@ -255,7 +275,7 @@ useEffect(() => {
   };
 
   fetchProvinces();
-}, [selectedRegion, selectedProvince]);
+}, [selectedProvinceCode, selectedRegionCode]);
 
 // Fetch cities when a province is selected
 useEffect(() => {
@@ -264,14 +284,14 @@ useEffect(() => {
       // Reset cities state to an empty array
       setCities([]);
 
-      if (selectedProvince) {
+      if (selectedProvinceCode) {
         let citiesEndpoint = '';
 
         // Special case: Fetch cities for Metro Manila directly from the region
-        if (selectedRegion === '130000000') {
-          citiesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegion}/cities-municipalities/`;
+        if (selectedRegionCode === '130000000') {
+          citiesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegionCode}/cities-municipalities/`;
         } else {
-          citiesEndpoint = `https://psgc.gitlab.io/api/provinces/${selectedProvince}/cities-municipalities/`;
+          citiesEndpoint = `https://psgc.gitlab.io/api/provinces/${selectedProvinceCode}/cities-municipalities/`;
         }
 
         const response = await fetch(citiesEndpoint);
@@ -283,15 +303,9 @@ useEffect(() => {
         const data = await response.json();
         setCities(data);
 
-        const selectedCitiesData = data.find(city => city.code === selectedCity);
-        if (selectedCitiesData) {
-          setSelectedCity(selectedCity);
-          setCitiesName(selectedCitiesData.name);
-          console.log(selectedCitiesData.name);
-        }
-      } else if (selectedRegion === '130000000') {
+      } else if (selectedRegionCode === '130000000') {
         // Special case: Fetch cities for NCR when no province is selected
-        const ncrCitiesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegion}/cities-municipalities/`;
+        const ncrCitiesEndpoint = `https://psgc.gitlab.io/api/regions/${selectedRegionCode}/cities-municipalities/`;
 
         const response = await fetch(ncrCitiesEndpoint);
 
@@ -301,13 +315,6 @@ useEffect(() => {
 
         const data = await response.json();
         setCities(data);
-
-        const selectedCitiesData = data.find(city => city.code === selectedCity);
-        if (selectedCitiesData) {
-          setSelectedCity(selectedCity);
-          setCitiesName(selectedCitiesData.name);
-          console.log(selectedCitiesData.name);
-        }
       }
     } catch (error) {
       console.error('Error fetching cities:', error);
@@ -315,7 +322,7 @@ useEffect(() => {
   };
 
   fetchCities();
-}, [selectedProvince, selectedRegion, selectedCity]);
+}, [selectedProvinceCode, selectedRegionCode, selectedCityCode]);
 
 useEffect(() => {
   const fetchBarangays = async () => {
@@ -323,8 +330,8 @@ useEffect(() => {
       // Reset barangays state to an empty array
       setBarangays([]);
 
-      if (selectedCity) {
-        const barangaysEndpoint = `https://psgc.gitlab.io/api/cities-municipalities/${selectedCity}/barangays/`;
+      if (selectedCityCode) {
+        const barangaysEndpoint = `https://psgc.gitlab.io/api/cities-municipalities/${selectedCityCode}/barangays/`;
 
         const response = await fetch(barangaysEndpoint);
 
@@ -334,13 +341,6 @@ useEffect(() => {
 
         const data = await response.json();
         setBarangays(data);
-
-        const selectedBarangayData = data.find(barangay => barangay.code === selectedBarangay);
-        if (selectedBarangayData) {
-          setSelectedBarangay(selectedBarangay);
-          setBarangaysName(selectedBarangayData.name);
-          console.log(selectedBarangayData.name);
-        }
       }
     } catch (error) {
       console.error('Error fetching barangays:', error);
@@ -348,7 +348,7 @@ useEffect(() => {
   };
 
   fetchBarangays();
-}, [selectedCity, selectedBarangay]);
+}, [selectedCityCode, selectedBarangay]);
 
 
   //Put Scholar Data and Update
@@ -851,89 +851,96 @@ useEffect(() => {
       </MUI.Grid>
       
       <MUI.Grid id="regionGrid">
-        <MUI.InputLabel htmlFor="region" id="regionLabel">Region</MUI.InputLabel>
+        <MUI.InputLabel htmlFor="region_name" id="regionLabel">Region</MUI.InputLabel>
         <Controller
-        name='region'
-        control={control}
-        defaultValue=''
-        rules={{
-          required: 'Region is required',
-          validate: (value) => value !== '' || 'Please select a region'
-        }}
-        render={({ field }) => (
-          <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-            <MUI.Select
-              id="region"
-              native
-              {...field}
-              onChange={(e) => {
-                setValue('province', ''); // Clear province when region changes
-                setSelectedRegion(e.target.value);
-                field.onChange(e);
-              }}
-            >
-              <option value="" disabled>Select Region</option>
-              {regions.map((region) => (
-                <option key={region.name} value={region.code}>
-                  {region.name}
-                </option>
-              ))}
-            </MUI.Select>
-          </MUI.FormControl>
-        )}
-      />
-      {errors.region && (
-        <p id='errMsg'>
-          <MUI.InfoIcon className='infoErr' />
-          {errors.region?.message}
-        </p>
-      )}
-      </MUI.Grid>
-
-      <MUI.Grid id="provinceGrid">
-        <MUI.InputLabel htmlFor="province" id="provinceLabel">Province</MUI.InputLabel>
-        <Controller
-          name='province'
+          name='region_name'
           control={control}
           defaultValue=''
           rules={{
-            required: 'Province is required',
-            validate: (value) => value !== '' || 'Please select a province'
+            required: 'Region is required',
+            validate: (value) => value !== '' || 'Please select a region'
           }}
           render={({ field }) => (
             <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
               <MUI.Select
-                id="province"
+                id="region_name"
                 native
                 {...field}
                 onChange={(e) => {
-                  setValue('city', ''); // Clear province when region changes
-                  setSelectedProvince(e.target.value);
+                  setValue('province', ''); // Clear province when region changes
+                  const selectedRegionCode = e.target.options[e.target.selectedIndex].dataset.code;
+                  setSelectedRegionCode(selectedRegionCode);
                   field.onChange(e);
                 }}
               >
-                <option value="" disabled>Select Province</option>
-                {provinces.map((province) => (
-                  <option key={province.code} value={province.code}>
-                    {province.name}
+                <option value="">Select Region</option>
+                {regions.map((region) => (
+                  <option key={region.name} value={region.name} data-code={region.code}>
+                    {region.name}
                   </option>
                 ))}
               </MUI.Select>
             </MUI.FormControl>
           )}
         />
-        {errors.province && (
+        {errors.region_name && (
           <p id='errMsg'>
             <MUI.InfoIcon className='infoErr' />
-            {errors.province?.message}
+            {errors.region_name?.message}
           </p>
         )}
       </MUI.Grid>
 
-      <MUI.Grid id="cityGrid">
-        <MUI.InputLabel htmlFor="city" id="cityLabel">City</MUI.InputLabel>
+      <MUI.Grid id="provinceGrid">
+        <MUI.InputLabel htmlFor="province_name" id="provinceLabel">Province</MUI.InputLabel>
         <Controller
-          name='city'
+          name='province_name'
+          control={control}
+          defaultValue=''
+          render={({ field }) => (
+            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+             <MUI.Select
+                id="province_name"
+                native
+                {...field}
+                onChange={(e) => {
+                  setValue('city', ''); // Clear province when region changes
+                  const selectedProvinceCode = e.target.options[e.target.selectedIndex].dataset.code;
+                  setSelectedProvinceCode(selectedProvinceCode);
+                  field.onChange(e);
+                }}
+              >
+                <option value="">Select Province</option>
+                {selectedRegionCode === '130000000' ? (
+                  // Show only Metro Manila when NCR is selected
+                  <option key="Metro Manila" value="Metro Manila" data-code="MM">
+                    Metro Manila
+                  </option>
+                ) : (
+                  // Show all provinces for other regions
+                  provinces.map((province) => (
+                    <option key={province.name} value={province.name} data-code={province.code}>
+                      {province.name}
+                    </option>
+                  ))
+                )}
+              </MUI.Select>
+            </MUI.FormControl>
+          )}
+        />
+        {errors.province_name && (
+          <p id='errMsg'>
+            <MUI.InfoIcon className='infoErr' />
+            {errors.province_name?.message}
+          </p>
+        )}
+      </MUI.Grid>
+      
+
+      <MUI.Grid id="cityGrid">
+        <MUI.InputLabel htmlFor="cities-municipalities_name" id="cityLabel">City</MUI.InputLabel>
+        <Controller
+          name='cities_municipalities_name'
           control={control}
           defaultValue=''
           rules={{
@@ -943,18 +950,19 @@ useEffect(() => {
           render={({ field }) => (
             <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
               <MUI.Select
-                id="city"
+                id="cities-municipalities_name"
                 native
                 {...field}
                 onChange={(e) => {
                   setValue('barangay', '');
-                  setSelectedCity(e.target.value);
+                  const selectedCityCode = e.target.options[e.target.selectedIndex].dataset.code;
+                  setSelectedCityCode(selectedCityCode);
                   field.onChange(e);
                 }}
               >
-                <option value="" disabled>Select City</option>
+                <option value="">Select City</option>
                 {cities.map((city) => (
-                  <option key={city.name} value={city.code}>
+                  <option key={city.name} value={city.name} data-code={city.code}>
                     {city.name}
                   </option>
                 ))}
@@ -962,10 +970,10 @@ useEffect(() => {
             </MUI.FormControl>
           )}
         />
-        {errors.city && (
+        {errors.cities_municipalities_name && (
           <p id='errMsg'>
             <MUI.InfoIcon className='infoErr' />
-            {errors.city?.message}
+            {errors.cities_municipalities_name?.message}
           </p>
         )}
       </MUI.Grid>
@@ -974,9 +982,9 @@ useEffect(() => {
 
       <div>
       <MUI.Grid id="barangayGrid">
-        <MUI.InputLabel htmlFor="barangay" id="barangayLabel">Barangay</MUI.InputLabel>
+        <MUI.InputLabel htmlFor="barangay_name" id="barangayLabel">Barangay</MUI.InputLabel>
         <Controller
-          name='barangay'
+          name='barangay_name'
           control={control}
           defaultValue=''
           rules={{
@@ -986,7 +994,7 @@ useEffect(() => {
           render={({ field }) => (
             <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
               <MUI.Select
-                id="barangay"
+                id="barangay_name"
                 native
                 {...field}
                 onChange={(e) => {
@@ -994,9 +1002,9 @@ useEffect(() => {
                   field.onChange(e);
                 }}
               >
-                <option value="" disabled>Select Barangay</option>
+                <option value="">Select Barangay</option>
                 {barangays.map((barangay) => (
-                  <option key={barangay.code} value={barangay.code}>
+                  <option key={barangay.name} value={barangay.name}>
                     {barangay.name}
                   </option>
                 ))}
@@ -1004,10 +1012,10 @@ useEffect(() => {
             </MUI.FormControl>
           )}
         />
-        {errors.barangay && (
+        {errors.barangay_name && (
           <p id='errMsg'>
             <MUI.InfoIcon className='infoErr' />
-            {errors.barangay?.message}
+            {errors.barangay_name?.message}
           </p>
         )}
       </MUI.Grid>
