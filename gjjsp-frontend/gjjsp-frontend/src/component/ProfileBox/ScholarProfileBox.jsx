@@ -177,30 +177,30 @@ export const ScholarProfileBox = () => {
             borderRadius: '5px',
           }}
         >
-        {/* <MUI.Box>
+        <MUI.Box>
           <MUI.Typography variant='h5'>Scholarship Type</MUI.Typography>
-          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>{scholarship_type}</MUI.Typography>
+          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}></MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Project Partner</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{proj_partner}</MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>School</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{school}</MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>School Address</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{school_address}</MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Program</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}>{scholar.program}</MUI.Typography>
-        </MUI.Box> */}
+          <MUI.Typography sx={{mt: 2}}>{scholarsData.program}</MUI.Typography>
+        </MUI.Box>
 
         </MUI.Box>
       </MUI.Grid>
@@ -333,7 +333,7 @@ export const ScholarProfileBox = () => {
           </MUI.Box>
 
           <MUI.Grid item md={12}>
-            <MUI.Typography variant="h3" sx={{ mb: 5, mt: 4 }}>
+            <MUI.Typography variant="h3" sx={{ mb: 2, mt: 2 }}>
               Home Address
             </MUI.Typography>
             <MUI.Box
@@ -351,9 +351,19 @@ export const ScholarProfileBox = () => {
                 </MUI.Box>
 
                 <MUI.Box sx={{mt: 3}}>
-                    <MUI.Typography variant='h5'>Permanent Address</MUI.Typography>
-                    <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+                    <MUI.Typography variant='h5'>Region</MUI.Typography>
+                    <MUI.Typography sx={{mt: 2}}>{scholarsData.region_name}</MUI.Typography>
                 </MUI.Box> 
+
+                <MUI.Box sx={{mt: 3}}>
+                    <MUI.Typography variant='h5'>Province</MUI.Typography>
+                    <MUI.Typography sx={{mt: 2}}>{scholarsData.province_name}</MUI.Typography>
+                </MUI.Box> 
+
+                <MUI.Box sx={{mt: 3}}>
+                    <MUI.Typography variant='h5'>Zip Code</MUI.Typography>
+                    <MUI.Typography sx={{mt: 2}}>{scholarsData.zip_code}</MUI.Typography>
+                </MUI.Box>
 
               </MUI.Box>
           </MUI.Grid>
@@ -364,10 +374,10 @@ export const ScholarProfileBox = () => {
 
     
       
-      {/* Eight Box: Family Address */}
-<MUI.Grid item xs={12} md={6}>
+      {/* Eight Box: Family  */}
+<MUI.Grid item xs={12} md={6} mt={-2}>
       <MUI.Typography variant="h3" sx={{ marginBottom: 5 }}>
-            Family Address
+            Family
           </MUI.Typography>
         <MUI.Box
           sx={{
@@ -379,17 +389,17 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            {/* <MUI.Box>
+            <MUI.Box>
                 <MUI.Typography variant='h5'>Number of Family Members</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
+                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholarsData.num_fam_mem}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Mothers Name</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{mothers_Name}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
                 <MUI.Typography variant='h5'>Fathers Name</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{fathers_Name}</MUI.Typography>
-            </MUI.Box> */}
+                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+            </MUI.Box> 
 
             </MUI.Box>
       </MUI.Grid>

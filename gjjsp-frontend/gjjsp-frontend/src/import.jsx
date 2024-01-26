@@ -110,6 +110,9 @@
   import AccordionSummary from '@mui/material/AccordionSummary';
   import AccordionDetails from '@mui/material/AccordionDetails';
   import HttpsIcon from '@mui/icons-material/Https';
+  import Stepper from '@mui/material/Stepper';
+  import Step from '@mui/material/Step';
+  import StepLabel from '@mui/material/StepLabel';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -230,5 +233,8 @@
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    HttpsIcon
+    HttpsIcon,
+    Stepper,
+    Step,
+    StepLabel
   };

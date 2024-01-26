@@ -1,5 +1,6 @@
-import React, {lazy, Suspense, useEffect} from 'react';
+import React, {lazy, Suspense, useEffect, useState} from 'react';
 import axios from '../../../api/axios';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 //Material UI Components
@@ -48,6 +49,13 @@ export default function ScholarProfile() {
   changePassword, handleOpenChangePassword, 
   handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword} = useProfileStore();
 
+  const {
+    regions, setRegions, selectedRegion, setSelectedRegion,setRegionsName, setSelectedRegionCode, selectedRegionCode,
+    provinces, setProvinces, selectedProvince, setSelectedProvince, setProvincesName, selectedProvinceCode, setSelectedProvinceCode,
+    cities, setCities, selectedCity, setSelectedCity, setCitiesName, setBarangaysName, selectedCityCode, setSelectedCityCode,
+    barangays, setBarangays, selectedBarangay, setSelectedBarangay
+  } = useAddressStore();
+
   const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
 
   const {selectedUser, setSelectedUser} = useUserStore();
@@ -56,13 +64,17 @@ export default function ScholarProfile() {
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
 
-  const {
-    regions, setRegions, selectedRegion, setSelectedRegion,setRegionsName, setSelectedRegionCode, selectedRegionCode,
-    provinces, setProvinces, selectedProvince, setSelectedProvince, setProvincesName, selectedProvinceCode, setSelectedProvinceCode,
-    cities, setCities, selectedCity, setSelectedCity, setCitiesName, setBarangaysName, selectedCityCode, setSelectedCityCode,
-    barangays, setBarangays, selectedBarangay, setSelectedBarangay
-  } = useAddressStore();
+  const navigate = useNavigate();
   
+  const [activeStep, setActiveStep] = useState(0);
+
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
 
   //Reseting Form Values 
   const FormValues = {
@@ -145,6 +157,7 @@ export default function ScholarProfile() {
         }
     }
   };
+
   //Change Password Form
   const onSubmitPasswordForm = async (data, event) => {
     event.preventDefault();
@@ -440,49 +453,19 @@ useEffect(() => {
     }
   }
 
-  return (
-    <Layout>
-      <MUI.ThemeProvider theme={theme}>
-    <MUI.Grid item xs={12} md={8} lg={9}>
-
-        <MUI.Box mb={4} sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-            <MUI.Typography variant='h1' sx={{color: 'black', fontWeight: 'bold'}}>Profile</MUI.Typography>
-        </MUI.Box>
-
-        <MUI.Box mb={4}>
-          <MUI.Typography variant='h5'>Manage your personal information, and control which information other people see</MUI.Typography>
-        </MUI.Box>
-
-        <MUI.Box>
-          <MUI.Link>Learn more about our data privacy policy.</MUI.Link>
-        </MUI.Box>
-
-      
-        <ProfileHeader handleOpenProfile={handleOpenProfile} updatePassword={updatePassword} updateScholarProfile={updateScholarProfile}/>
-      
-        <ScholarProfileBox/>
-
-    </MUI.Grid>
-
-  
-
-      {/* Update Scholar Profile Dialog */}
-      <MUI.Dialog open={scholarProfile} onClose={handleCloseScholarProfile} fullWidth maxWidth="md" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitScholarProfileForm)}>         
-      <MUI.DialogTitle id="dialogTitle">{editScholarProfile ? "Update Profile" : "Add Profile"}</MUI.DialogTitle>
-      <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
-        <MUI.Grid sx={{ marginLeft: 3 }}>
-          <Suspense fallback="Scholarlink Loading...">
-              <LazyErrMsg />
-          </Suspense>
-        </MUI.Grid>
-
-        <MUI.DialogContent>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            {/* Form Fields of New User*/}
+  //Dialog
+  const steps = [
+    {
+      title: 'Personal Information',
+      label: 'Personal Information',
+      content: (
+        <div>
+          <MUI.Grid container spacing={2}>
+          {/* First Column */}
+          <MUI.Grid item xs={4}>
             <MUI.Grid id="genderGrid">
               <MUI.InputLabel htmlFor="gender" id="genderLabel">Gender</MUI.InputLabel>
-                <Controller
+              <Controller
                   name='gender'
                   defaultValue=""
                   control={control}
@@ -496,7 +479,8 @@ useEffect(() => {
                         id="gender"
                         native
                         {...field}
-                        value={field.value || ""} 
+                        value={field.value || ""}  // Use formData.religion instead of field.value
+                        onChange={field.onChange}
                       >
                         <option value="" disabled>Select Gender</option>
                         <option value="Male">Male</option>
@@ -511,6 +495,12 @@ useEffect(() => {
                       <MUI.InfoIcon className='infoErr' />
                       {errors.gender?.message}
                   </p>
+              )}
+              {errors.gender && (
+                <p id='errMsg'>
+                  <MUI.InfoIcon className='infoErr' />
+                  {errors.gender?.message}
+                </p>
               )}
             </MUI.Grid>
 
@@ -552,533 +542,775 @@ useEffect(() => {
                       {errors.religion?.message}
                   </p>
               )}
-          </MUI.Grid>
-
-          <MUI.Grid id="birthdateGrid">
-            <MUI.InputLabel htmlFor="birthdate" id="birthdateLabel">Birthdate</MUI.InputLabel>
-            <MUI.TextField
-                type='date'
-                id='birthdate'
-                fullWidth
-                {...register("birthdate", {
-                    required: {
-                        value: true,
-                        message: 'Birthdate is required',
-                    }
-                })}
-            />
-            {errors.birthdate && (
+              {errors.religion && (
                 <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr' />
-                    {errors.birthdate?.message}
+                  <MUI.InfoIcon className='infoErr' />
+                  {errors.religion?.message}
                 </p>
-            )}
-          </MUI.Grid>
+              )}
+            </MUI.Grid>
 
-          <MUI.Grid id="birthplaceGrid">
-            <MUI.InputLabel htmlFor="birthplace" id="birthplaceLabel">Birthplace</MUI.InputLabel>
-            <MUI.TextField
-                type='text'
-                id='birthplace'
-                placeholder='Birthplace'
-                fullWidth
-                {...register("birthplace", {
-                    required: {
-                        value: true,
-                        message: 'Birthplace is required',
-                    }
-                })}
-            />
-            {errors.birthplace && (
-                <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr' />
-                    {errors.birthplace?.message}
-                </p>
-            )}
-          </MUI.Grid>
-
-          <MUI.Grid id="civilStatusGrid">
-            <MUI.InputLabel htmlFor="civil_status" id="civilStatusLabel">Civil Status</MUI.InputLabel>
-            <Controller
-                name='civil_status'
-                control={control}
-                defaultValue=''
-                rules={{
-                    required: 'Civil Status is required',
-                    validate: (value) => value !== '' || 'Please select a civil status'
-                }}
-                render={({ field }) => (
-                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-                        <MUI.Select
-                            id="civil_status"
-                            native
-                            {...field}
-                            value={field.value || ""} 
-                        >
-                            <option value="" disabled>Select Civil Status</option>
-                            <option value="Single">Single</option>
-                            <option value="Married">Married</option>
-                            <option value="Separated">Separated</option>
-                            <option value="Divorced">Divorced</option>
-                            {/* Add more options if needed */}
-                        </MUI.Select>
-                    </MUI.FormControl>
-                )}
-            />
-            {errors.civil_status && (
-                <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr' />
-                    {errors.civil_status?.message}
-                </p>
-            )}
-          </MUI.Grid>
-          </div>
-
-          <div>
-          
-          <MUI.Grid id="numFamMemGrid">
-              <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+            <MUI.Grid id="birthdateGrid">
+              <MUI.InputLabel htmlFor="birthdate" id="birthdateLabel">Birthdate</MUI.InputLabel>
               <MUI.TextField
-                  type='number'
-                  id='num_fam_mem'
-                  placeholder='Number of Family Members'
+                  type='date'
+                  id='birthdate'
                   fullWidth
-                  {...register("num_fam_mem", {
+                  {...register("birthdate", {
                       required: {
                           value: true,
-                          message: 'Number of Family Members is required',
+                          message: 'Birthdate is required',
                       }
                   })}
               />
-              {errors.num_fam_mem && (
+              {errors.birthdate && (
                   <p id='errMsg'>
                       <MUI.InfoIcon className='infoErr' />
-                      {errors.num_fam_mem?.message}
+                      {errors.birthdate?.message}
                   </p>
               )}
-          </MUI.Grid>
+            </MUI.Grid>
 
-          <MUI.Grid id="schoolYrStartedGrid">
-            <MUI.InputLabel htmlFor="school_yr_started" id="schoolYrStartedLabel">School Year Started</MUI.InputLabel>
-            <MUI.TextField
-                type='text'
-                id='school_yr_started'
-                placeholder='School Year Started'
-                fullWidth
-                {...register("school_yr_started", {
-                    required: {
-                        value: true,
-                        message: 'School Year Started is required',
-                    },
-                    pattern: {
-                        value: /^(19|20)\d{2}$/,
-                        message: 'Please enter a valid year (e.g., 2000)',
-                    },
-                })}
-            />
-            {errors.school_yr_started && (
-                <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr' />
-                    {errors.school_yr_started?.message}
-                </p>
-            )}
-          </MUI.Grid>
-
-          <MUI.Grid id="schoolYrGraduatedGrid">
-            <MUI.InputLabel htmlFor="school_yr_graduated" id="schoolYrGraduatedLabel">School Year Graduated</MUI.InputLabel>
-            <MUI.TextField
-                type='text'
-                id='school_yr_graduated'
-                placeholder='School Year Graduated'
-                fullWidth
-                {...register("school_yr_graduated", {
-                    required: {
-                        value: true,
-                        message: 'School Year Graduated is required',
-                    },
-                    pattern: {
-                      value: /^(19|20)\d{2}$/,
-                      message: 'Please enter a valid year (e.g., 2000)',
-                    },
-                })}
-            />
-            {errors.school_yr_graduated && (
-                <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr' />
-                    {errors.school_yr_graduated?.message}
-                </p>
-            )}
-          </MUI.Grid>
-
-          <MUI.Grid id="schoolIdGrid">
-            <MUI.InputLabel htmlFor="school_id" id="schoolIdLabel">
-                School
-            </MUI.InputLabel>
+            <MUI.Grid id="birthplaceGrid">
+              <MUI.InputLabel htmlFor="birthplace" id="birthplaceLabel">Birthplace</MUI.InputLabel>
               <Controller
-                  name="school_id"
+                name='birthplace'
+                control={control}
+                defaultValue=''
+                rules={{
+                  required: 'Birthplace is required',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.TextField
+                      type='text'
+                      id='birthplace'
+                      placeholder='Birthplace'
+                      fullWidth
+                      {...field}
+                    />
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.birthplace && (
+                <p id='errMsg'>
+                  <MUI.InfoIcon className='infoErr' />
+                  {errors.birthplace?.message}
+                </p>
+              )}
+            </MUI.Grid>
+          </MUI.Grid>
+
+          {/* Second Column */}
+          <MUI.Grid item xs={4}>
+
+            <MUI.Grid id="civilStatusGrid">
+              <MUI.InputLabel htmlFor="civil_status" id="civilStatusLabel">Civil Status</MUI.InputLabel>
+              <Controller
+                  name='civil_status'
                   control={control}
-                  defaultValue=""
+                  defaultValue=''
                   rules={{
-                      required: 'School ID is required',
+                      required: 'Civil Status is required',
+                      validate: (value) => value !== '' || 'Please select a civil status'
                   }}
                   render={({ field }) => (
-                      <MUI.FormControl sx={{ borderRadius: '8px', width: '200px' }}>
+                      <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
                           <MUI.Select
-                              id="school_id"
+                              id="civil_status"
                               native
                               {...field}
                               value={field.value || ""} 
-                              MenuProps={{
-                                  PaperProps: {
-                                      style: {
-                                          width: '200px',
-                                      },
-                                  },
-                              }}
                           >
-                            <option value="" disabled>Select School</option>
-                            <option value="1">Ateneo De Manila University</option>
-                            <option value="2">Assumption College – Makati City | Assumption college</option>
-                            <option value="3">Don Bosco Technical College – Mandaluyong | Don Bosco Technical College</option>
-                            <option value="4">Don Bosco Training Center Nueva Ecija</option>
-                            <option value="5">Don Bosco Technical College – Technical Vocational Educational Technology</option>
-                            <option value="6">Don Bosco Technical College – Mandaluyong – BATCH 18</option>
-                            <option value="7">Don Bosco Technical College – Technical Vocational Educational Technology – BATCH 19</option>
-                            <option value="8">Don Bosco Training Center Mandaluyong Technical Vocational Educational Technology</option>
-                            <option value="9">Don Bosco Training Center Nueva Ecija c/o Fr. Clarence (Sr. Elizabeth Tolentino, FDCC)</option>
-                            <option value="10">University of St. La Salle – Bacolod</option>
-                            <option value="11">La Consolacion College – Bacolod</option>
-                            <option value="12">La Consolacion College – Manila</option>
-                            <option value="13">La Consolacion College – Binan</option>
-                            <option value="14">University of Negros Occidental – Recoletos | University of Negros Occidental</option>
-                            <option value="15">University of Perpetual Help System Dalta – Laguna</option>
-                            <option value="16">Concordia College – Manila</option>
-                            <option value="17">Canossa College of San Pablo City</option>
-                            <option value="18">Iloilo Science and Technology University</option>
-                            <option value="19">West Visayas State University (Iloilo City) | West Visayas State University</option>
-                            <option value="20">ISAT-U, Colegio de Sagrado, U.I & Other State Colleges</option>
-                            <option value="21">University of Santo Tomas</option>
-                            <option value="22">Polytechnic University of the Philippines</option>
-                            <option value="23">Centro Escolar University</option>
-                            <option value="24">Makati Science Technological Institute of the Philippines</option>
-                            <option value="25">Saint Pedro Poveda College</option>
-                            <option value="26">Visayan Center for Hotel and Restaurant Services</option>
+                              <option value="" disabled>Select Civil Status</option>
+                              <option value="Single">Single</option>
+                              <option value="Married">Married</option>
+                              <option value="Separated">Separated</option>
+                              <option value="Divorced">Divorced</option>
+                              {/* Add more options if needed */}
                           </MUI.Select>
                       </MUI.FormControl>
                   )}
               />
-              {errors.school_id && (
+              {errors.civil_status && (
                   <p id='errMsg'>
                       <MUI.InfoIcon className='infoErr' />
-                      {errors.school_id?.message}
+                      {errors.civil_status?.message}
                   </p>
               )}
-          </MUI.Grid>
-
-          <MUI.Grid id="programGrid">
-              <MUI.InputLabel htmlFor="program" id="programLabel">Program</MUI.InputLabel>
+            </MUI.Grid>
+            
+            <MUI.Grid id="schoolYrStartedGrid">
+              <MUI.InputLabel htmlFor="school_yr_started" id="schoolYrStartedLabel">School Year Started</MUI.InputLabel>
               <MUI.TextField
                   type='text'
-                  id='program'
-                  placeholder='Program'
+                  id='school_yr_started'
+                  placeholder='School Year Started'
                   fullWidth
-                  {...register("program", {
+                  {...register("school_yr_started", {
                       required: {
                           value: true,
-                          message: 'Program is required',
-                      }
+                          message: 'School Year Started is required',
+                      },
+                      pattern: {
+                          value: /^(19|20)\d{2}$/,
+                          message: 'Please enter a valid year (e.g., 2000)',
+                      },
                   })}
               />
-              {errors.program && (
+              {errors.school_yr_started && (
                   <p id='errMsg'>
                       <MUI.InfoIcon className='infoErr' />
-                      {errors.program?.message}
+                      {errors.school_yr_started?.message}
                   </p>
               )}
+            </MUI.Grid>
+
+            <MUI.Grid id="schoolYrGraduatedGrid">
+              <MUI.InputLabel htmlFor="school_yr_graduated" id="schoolYrGraduatedLabel">School Year Graduated</MUI.InputLabel>
+              <MUI.TextField
+                  type='text'
+                  id='school_yr_graduated'
+                  placeholder='School Year Graduated'
+                  fullWidth
+                  {...register("school_yr_graduated", {
+                      required: {
+                          value: true,
+                          message: 'School Year Graduated is required',
+                      },
+                      pattern: {
+                        value: /^(19|20)\d{2}$/,
+                        message: 'Please enter a valid year (e.g., 2000)',
+                      },
+                  })}
+              />
+              {errors.school_yr_graduated && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.school_yr_graduated?.message}
+                  </p>
+              )}
+            </MUI.Grid>
+
+            <MUI.Grid id="schoolIdGrid">
+              <MUI.InputLabel htmlFor="school_id" id="schoolIdLabel">
+                  School
+              </MUI.InputLabel>
+                <Controller
+                    name="school_id"
+                    control={control}
+                    defaultValue=""
+                    rules={{
+                        required: 'School ID is required',
+                    }}
+                    render={({ field }) => (
+                        <MUI.FormControl sx={{ borderRadius: '8px', width: '200px' }}>
+                            <MUI.Select
+                                id="school_id"
+                                native
+                                {...field}
+                                value={field.value || ""} 
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            width: '200px',
+                                        },
+                                    },
+                                }}
+                            >
+                              <option value="" disabled>Select School</option>
+                              <option value="1">Ateneo De Manila University</option>
+                              <option value="2">Assumption College – Makati City | Assumption college</option>
+                              <option value="3">Don Bosco Technical College – Mandaluyong | Don Bosco Technical College</option>
+                              <option value="4">Don Bosco Training Center Nueva Ecija</option>
+                              <option value="5">Don Bosco Technical College – Technical Vocational Educational Technology</option>
+                              <option value="6">Don Bosco Technical College – Mandaluyong – BATCH 18</option>
+                              <option value="7">Don Bosco Technical College – Technical Vocational Educational Technology – BATCH 19</option>
+                              <option value="8">Don Bosco Training Center Mandaluyong Technical Vocational Educational Technology</option>
+                              <option value="9">Don Bosco Training Center Nueva Ecija c/o Fr. Clarence (Sr. Elizabeth Tolentino, FDCC)</option>
+                              <option value="10">University of St. La Salle – Bacolod</option>
+                              <option value="11">La Consolacion College – Bacolod</option>
+                              <option value="12">La Consolacion College – Manila</option>
+                              <option value="13">La Consolacion College – Binan</option>
+                              <option value="14">University of Negros Occidental – Recoletos | University of Negros Occidental</option>
+                              <option value="15">University of Perpetual Help System Dalta – Laguna</option>
+                              <option value="16">Concordia College – Manila</option>
+                              <option value="17">Canossa College of San Pablo City</option>
+                              <option value="18">Iloilo Science and Technology University</option>
+                              <option value="19">West Visayas State University (Iloilo City) | West Visayas State University</option>
+                              <option value="20">ISAT-U, Colegio de Sagrado, U.I & Other State Colleges</option>
+                              <option value="21">University of Santo Tomas</option>
+                              <option value="22">Polytechnic University of the Philippines</option>
+                              <option value="23">Centro Escolar University</option>
+                              <option value="24">Makati Science Technological Institute of the Philippines</option>
+                              <option value="25">Saint Pedro Poveda College</option>
+                              <option value="26">Visayan Center for Hotel and Restaurant Services</option>
+                            </MUI.Select>
+                        </MUI.FormControl>
+                    )}
+                />
+                {errors.school_id && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.school_id?.message}
+                    </p>
+                )}
+            </MUI.Grid>
+          
+          </MUI.Grid>
+
+          {/* Third Column */}
+          <MUI.Grid item xs={4}>
+
+            <MUI.Grid id="programGrid">
+                <MUI.InputLabel htmlFor="program" id="programLabel">Program</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='program'
+                    placeholder='Program'
+                    fullWidth
+                    {...register("program", {
+                        required: {
+                            value: true,
+                            message: 'Program is required',
+                        }
+                    })}
+                />
+                {errors.program && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.program?.message}
+                    </p>
+                )}
+            </MUI.Grid>
+
+            <MUI.Grid id="homeVisitSchedGrid">
+            <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
+            <MUI.TextField
+                type='date'  // Change the type to 'date'
+                id='home_visit_sched'
+                placeholder='Home Visit Schedule'
+                fullWidth
+                {...register("home_visit_sched", {
+                    required: {
+                        value: true,
+                        message: 'Home Visit Schedule is required',
+                    }
+                })}
+            />
+            {errors.home_visit_sched && (
+                <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.home_visit_sched?.message}
+                </p>
+            )}
+          </MUI.Grid>
+
+          <MUI.Grid id="fbAccountGrid">
+            <MUI.InputLabel htmlFor="fb_account" id="fbAccountLabel">Facebook Link</MUI.InputLabel>
+            <MUI.TextField
+                type='text'
+                id='fb_account'
+                placeholder='facebook.com/Username'
+                fullWidth
+                {...register("fb_account", {
+                    required: {
+                        value: true,
+                        message: 'Facebook Account is required',
+                    },
+                    pattern: {
+                      value: FBLINK_REGEX,
+                      message: 'Please enter a valid FB link (e.g., facebook.com/Username) ',
+                    }
+                })}
+            />
+            {errors.fb_account && (
+                <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.fb_account?.message}
+                </p>
+            )}
           </MUI.Grid>
 
 
-          </div>
 
-      <div>
+          </MUI.Grid>
+        </MUI.Grid>  
+        </div>
+      ),
+    },
+    {
+      title: 'Address Information',
+      label: 'Address Information',
+      content: (
+        <div>
+          <MUI.Grid container spacing={6}>
+            {/* First Column */}
 
-      <MUI.Grid id="homeVisitSchedGrid">
-        <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
-        <MUI.TextField
-            type='date'  // Change the type to 'date'
-            id='home_visit_sched'
-            placeholder='Home Visit Schedule'
-            fullWidth
-            {...register("home_visit_sched", {
-                required: {
-                    value: true,
-                    message: 'Home Visit Schedule is required',
-                }
-            })}
-        />
-        {errors.home_visit_sched && (
-            <p id='errMsg'>
-                <MUI.InfoIcon className='infoErr' />
-                {errors.home_visit_sched?.message}
-            </p>
-        )}
-      </MUI.Grid>
+            <MUI.Grid item xs={4}>
 
-      <MUI.Grid id="fbAccountGrid">
-        <MUI.InputLabel htmlFor="fb_account" id="fbAccountLabel">Facebook Link</MUI.InputLabel>
-        <MUI.TextField
-            type='text'
-            id='fb_account'
-            placeholder='facebook.com/Username'
-            fullWidth
-            {...register("fb_account", {
-                required: {
-                    value: true,
-                    message: 'Facebook Account is required',
-                },
-                pattern: {
-                  value: FBLINK_REGEX,
-                  message: 'Please enter a valid FB link (e.g., facebook.com/Username) ',
-                }
-            })}
-        />
-        {errors.fb_account && (
-            <p id='errMsg'>
-                <MUI.InfoIcon className='infoErr' />
-                {errors.fb_account?.message}
-            </p>
-        )}
-      </MUI.Grid>
-      
-      <MUI.Grid id="regionGrid">
-        <MUI.InputLabel htmlFor="region_name" id="regionLabel">Region</MUI.InputLabel>
-        <Controller
-          name='region_name'
-          control={control}
-          defaultValue=''
-          rules={{
-            required: 'Region is required',
-            validate: (value) => value !== '' || 'Please select a region'
-          }}
-          render={({ field }) => (
-            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-              <MUI.Select
-                id="region_name"
-                native
-                {...field}
-                onChange={(e) => {
-                  setValue('province', ''); // Clear province when region changes
-                  const selectedRegionCode = e.target.options[e.target.selectedIndex].dataset.code;
-                  setSelectedRegionCode(selectedRegionCode);
-                  field.onChange(e);
+            <MUI.Grid id="regionGrid">
+              <MUI.InputLabel htmlFor="region_name" id="regionLabel">
+                Region
+              </MUI.InputLabel>
+              <Controller
+                name="region_name"
+                control={control}
+                defaultValue=""
+                rules={{
+                  required: 'Region is required',
+                  validate: (value) => value !== '' || 'Please select a region',
                 }}
-              >
-                <option value="">Select Region</option>
-                {regions.map((region) => (
-                  <option key={region.name} value={region.name} data-code={region.code}>
-                    {region.name}
-                  </option>
-                ))}
-              </MUI.Select>
-            </MUI.FormControl>
-          )}
-        />
-        {errors.region_name && (
-          <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.region_name?.message}
-          </p>
-        )}
-      </MUI.Grid>
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="region_name"
+                      native
+                      {...field}
+                      onChange={(e) => {
+                        setValue('province_name', ''); // Clear province when region changes
+                        setValue('cities_municipalities_name', ''); // Clear city when region changes
+                        setValue('barangay_name', ''); // Clear barangay when region changes
 
-      <MUI.Grid id="provinceGrid">
-        <MUI.InputLabel htmlFor="province_name" id="provinceLabel">Province</MUI.InputLabel>
-        <Controller
-          name='province_name'
-          control={control}
-          defaultValue=''
-          render={({ field }) => (
-            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-             <MUI.Select
-                id="province_name"
-                native
-                {...field}
-                onChange={(e) => {
-                  setValue('city', ''); // Clear province when region changes
-                  const selectedProvinceCode = e.target.options[e.target.selectedIndex].dataset.code;
-                  setSelectedProvinceCode(selectedProvinceCode);
-                  field.onChange(e);
-                }}
-              >
-                <option value="">Select Province</option>
-                {selectedRegionCode === '130000000' ? (
-                  // Show only Metro Manila when NCR is selected
-                  <option key="Metro Manila" value="Metro Manila" data-code="MM">
-                    Metro Manila
-                  </option>
-                ) : (
-                  // Show all provinces for other regions
-                  provinces.map((province) => (
-                    <option key={province.name} value={province.name} data-code={province.code}>
-                      {province.name}
-                    </option>
-                  ))
+                        const selectedRegionCode = e.target.options[e.target.selectedIndex].dataset.code;
+                        setSelectedRegionCode(selectedRegionCode);
+                        field.onChange(e);
+                      }}
+                    >
+                      <option value="">Select Region</option>
+                      {regions.map((region) => (
+                        <option key={region.name} value={region.name} data-code={region.code}>
+                          {region.name}
+                        </option>
+                      ))}
+                    </MUI.Select>
+                  </MUI.FormControl>
                 )}
-              </MUI.Select>
-            </MUI.FormControl>
-          )}
-        />
-        {errors.province_name && (
-          <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.province_name?.message}
-          </p>
-        )}
-      </MUI.Grid>
+              />
+              {errors.region_name && (
+                <p id="errMsg">
+                  <MUI.InfoIcon className="infoErr" />
+                  {errors.region_name?.message}
+                </p>
+              )}
+            </MUI.Grid>;
+
+              <MUI.Grid id="provinceGrid">
+                <MUI.InputLabel htmlFor="province_name" id="provinceLabel">
+                  Province
+                </MUI.InputLabel>
+                <Controller
+                  name="province_name"
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: selectedRegionCode === '130000000' ? false : 'Province is required',
+                    validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a province',
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="province_name"
+                        native
+                        {...field}
+                        onChange={(e) => {
+                          setValue('cities_municipalities_name', ''); // Clear city when province changes
+                          const selectedProvinceCode = e.target.options[e.target.selectedIndex].dataset.code;
+                          setSelectedProvinceCode(selectedProvinceCode);
+                          field.onChange(e);
+                        }}
+                      >
+                        <option value="">Select Province</option>
+                        {selectedRegionCode === '130000000' ? (
+                          // Show only Metro Manila when NCR is selected
+                          <option key="Metro Manila" value="Metro Manila" data-code="MM">
+                            Metro Manila
+                          </option>
+                        ) : (
+                          // Show all provinces for other regions
+                          provinces.map((province) => (
+                            <option key={province.name} value={province.name} data-code={province.code}>
+                              {province.name}
+                            </option>
+                          ))
+                        )}
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.province_name && (
+                  <p id="errMsg">
+                    <MUI.InfoIcon className="infoErr" />
+                    {errors.province_name?.message}
+                  </p>
+                )}
+              </MUI.Grid>;
+            </MUI.Grid>
+
+            {/* Second Column */}
+            <MUI.Grid item xs={4}>
+
+            <MUI.Grid id="cityGrid">
+              <MUI.InputLabel htmlFor="cities-municipalities_name" id="cityLabel">
+                City
+              </MUI.InputLabel>
+              <Controller
+                name="cities_municipalities_name"
+                control={control}
+                defaultValue=""
+                rules={{
+                  required: selectedRegionCode === '130000000' ? false : 'City is required',
+                  validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a city',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="cities-municipalities_name"
+                      native
+                      {...field}
+                      onChange={(e) => {
+                        setValue('barangay_name', ''); // Clear barangay when city changes
+                        const selectedCityCode = e.target.options[e.target.selectedIndex].dataset.code;
+                        setSelectedCityCode(selectedCityCode);
+                        field.onChange(e);
+                      }}
+                    >
+                      <option value="">Select City</option>
+                      {cities.map((city) => (
+                        <option key={city.name} value={city.name} data-code={city.code}>
+                          {city.name}
+                        </option>
+                      ))}
+                    </MUI.Select>
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.cities_municipalities_name && (
+                <p id="errMsg">
+                  <MUI.InfoIcon className="infoErr" />
+                  {errors.cities_municipalities_name?.message}
+                </p>
+              )}
+            </MUI.Grid>;
+
+            <MUI.Grid id="barangayGrid">
+              <MUI.InputLabel htmlFor="barangay_name" id="barangayLabel">
+                Barangay
+              </MUI.InputLabel>
+              <Controller
+                name="barangay_name"
+                control={control}
+                defaultValue=""
+                rules={{
+                  required: selectedRegionCode === '130000000' ? false : 'Barangay is required',
+                  validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a barangay',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="barangay_name"
+                      native
+                      {...field}
+                      onChange={(e) => {
+                        setSelectedBarangay(e.target.value);
+                        field.onChange(e);
+                      }}
+                    >
+                      <option value="">Select Barangay</option>
+                      {barangays.map((barangay) => (
+                        <option key={barangay.name} value={barangay.name}>
+                          {barangay.name}
+                        </option>
+                      ))}
+                    </MUI.Select>
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.barangay_name && (
+                <p id="errMsg">
+                  <MUI.InfoIcon className="infoErr" />
+                  {errors.barangay_name?.message}
+                </p>
+              )}
+            </MUI.Grid>;
+            </MUI.Grid>
+
+            {/* Third Column */}
+            <MUI.Grid item xs={4}>
+
+              <MUI.Grid id="streetGrid">
+                <MUI.InputLabel htmlFor="street" id="streetLabel">House No. & Street</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='street'
+                    placeholder='Street'
+                    fullWidth
+                    {...register("street", {
+                        required: {
+                            value: true,
+                            message: 'Street is required',
+                        }
+                    })}
+                />
+                {errors.street && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.street?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
+              <MUI.Grid id="zipCodeGrid">
+                <MUI.InputLabel htmlFor="zip_code" id="zipCodeLabel">Zip Code</MUI.InputLabel>
+                <Controller
+                  name='zip_code'
+                  control={control}
+                  defaultValue=''
+                  rules={{
+                    required: 'Zip Code is required',
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.TextField
+                        type='text'
+                        id='zip_code'
+                        placeholder='Zip Code'
+                        fullWidth
+                        {...field}
+                      />
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.zip_code && (
+                  <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.zip_code?.message}
+                  </p>
+                )}
+              </MUI.Grid>
+
+            </MUI.Grid>    
+
+          </MUI.Grid>
+
+        </div>
+      ),
+    },
+    {
+      title: 'Family Information',
+      label: 'Family Information',
+      content: (
+        <div>
+          <MUI.Grid container spacing={6}>
+            {/* First Column */}
+            <MUI.Grid item xs={4}>
+
+              <MUI.Grid id="numFamMemGrid">
+                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='num_fam_mem'
+                    placeholder='Number of Family Members'
+                    fullWidth
+                    {...register("num_fam_mem", {
+                        required: {
+                            value: true,
+                            message: 'Number of Family Members is required',
+                        }
+                    })}
+                />
+                {errors.num_fam_mem && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.num_fam_mem?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
+            </MUI.Grid>
+
+            {/* Second Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>
+
+            {/* Third Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>    
+
+          </MUI.Grid>
+
+        </div>
+      ),
+    },
+    {
+      title: 'High School Information',
+      label: 'High School Information',
+      content: (
+        <div>
+          <MUI.Grid container spacing={6}>
+            {/* First Column */}
+            <MUI.Grid item xs={4}>
+
+              <MUI.Grid id="numFamMemGrid">
+                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='num_fam_mem'
+                    placeholder='Number of Family Members'
+                    fullWidth
+                    {...register("num_fam_mem", {
+                        required: {
+                            value: true,
+                            message: 'Number of Family Members is required',
+                        }
+                    })}
+                />
+                {errors.num_fam_mem && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.num_fam_mem?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
+            </MUI.Grid>
+
+            {/* Second Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>
+
+            {/* Third Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>    
+
+          </MUI.Grid>
+
+        </div>
+      ),
+    },
+    {
+      title: 'Undergraduate Information',
+      label: 'Undergraduate Information',
+      content: (
+        <div>
+          <MUI.Grid container spacing={6}>
+            {/* First Column */}
+            <MUI.Grid item xs={4}>
+
+              <MUI.Grid id="numFamMemGrid">
+                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='num_fam_mem'
+                    placeholder='Number of Family Members'
+                    fullWidth
+                    {...register("num_fam_mem", {
+                        required: {
+                            value: true,
+                            message: 'Number of Family Members is required',
+                        }
+                    })}
+                />
+                {errors.num_fam_mem && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.num_fam_mem?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
+            </MUI.Grid>
+
+            {/* Second Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>
+
+            {/* Third Column */}
+            <MUI.Grid item xs={4}>
+
+            </MUI.Grid>    
+
+          </MUI.Grid>
+
+        </div>
+      ),
+    }
+  ];
+
+  return (
+    <Layout>
+      <MUI.ThemeProvider theme={theme}>
+    <MUI.Grid item xs={12} md={8} lg={9}>
+
+        <MUI.Box mb={4} sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+            <MUI.Typography variant='h1' sx={{color: 'black', fontWeight: 'bold'}}>Profile</MUI.Typography>
+        </MUI.Box>
+
+        <MUI.Box mb={4}>
+          <MUI.Typography variant='h5'>Manage your personal information, and control which information other people see</MUI.Typography>
+        </MUI.Box>
+
+        <MUI.Box>
+          <MUI.Link>Learn more about our data privacy policy.</MUI.Link>
+        </MUI.Box>
+
       
+        <ProfileHeader handleOpenProfile={handleOpenProfile} updatePassword={updatePassword} updateScholarProfile={updateScholarProfile}/>
+      
+        <ScholarProfileBox/>
 
-      <MUI.Grid id="cityGrid">
-        <MUI.InputLabel htmlFor="cities-municipalities_name" id="cityLabel">City</MUI.InputLabel>
-        <Controller
-          name='cities_municipalities_name'
-          control={control}
-          defaultValue=''
-          rules={{
-            required: 'City is required',
-            validate: (value) => value !== '' || 'Please select a city'
-          }}
-          render={({ field }) => (
-            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-              <MUI.Select
-                id="cities-municipalities_name"
-                native
-                {...field}
-                onChange={(e) => {
-                  setValue('barangay', '');
-                  const selectedCityCode = e.target.options[e.target.selectedIndex].dataset.code;
-                  setSelectedCityCode(selectedCityCode);
-                  field.onChange(e);
-                }}
-              >
-                <option value="">Select City</option>
-                {cities.map((city) => (
-                  <option key={city.name} value={city.name} data-code={city.code}>
-                    {city.name}
-                  </option>
-                ))}
-              </MUI.Select>
-            </MUI.FormControl>
-          )}
-        />
-        {errors.cities_municipalities_name && (
-          <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.cities_municipalities_name?.message}
-          </p>
-        )}
-      </MUI.Grid>
+    </MUI.Grid>
 
-      </div>
+  
+      <MUI.Dialog open={scholarProfile} onClose={handleCloseScholarProfile} fullWidth maxWidth="md" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitScholarProfileForm)}>         
+      <MUI.DialogTitle id="dialogTitle">{steps[activeStep].title}</MUI.DialogTitle>
+      <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
+      <MUI.Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((step) => (
+          <MUI.Step key={step.title}>
+            <MUI.StepLabel>{step.label}</MUI.StepLabel>
+          </MUI.Step>
+        ))}
+      </MUI.Stepper>
+        <MUI.Grid sx={{ marginLeft: 3 }}>
+          <Suspense fallback="Scholarlink Loading...">
+              <LazyErrMsg />
+          </Suspense>
+        </MUI.Grid>
 
-      <div>
-      <MUI.Grid id="barangayGrid">
-        <MUI.InputLabel htmlFor="barangay_name" id="barangayLabel">Barangay</MUI.InputLabel>
-        <Controller
-          name='barangay_name'
-          control={control}
-          defaultValue=''
-          rules={{
-            required: 'Barangay is required',
-            validate: (value) => value !== '' || 'Please select a barangay'
-          }}
-          render={({ field }) => (
-            <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-              <MUI.Select
-                id="barangay_name"
-                native
-                {...field}
-                onChange={(e) => {
-                  setSelectedBarangay(e.target.value);
-                  field.onChange(e);
-                }}
-              >
-                <option value="">Select Barangay</option>
-                {barangays.map((barangay) => (
-                  <option key={barangay.name} value={barangay.name}>
-                    {barangay.name}
-                  </option>
-                ))}
-              </MUI.Select>
-            </MUI.FormControl>
-          )}
-        />
-        {errors.barangay_name && (
-          <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.barangay_name?.message}
-          </p>
-        )}
-      </MUI.Grid>
-
-      <MUI.Grid id="streetGrid">
-        <MUI.InputLabel htmlFor="street" id="streetLabel">House No. & Street</MUI.InputLabel>
-        <MUI.TextField
-            type='text'
-            id='street'
-            placeholder='Street'
-            fullWidth
-            {...register("street", {
-                required: {
-                    value: true,
-                    message: 'Street is required',
-                }
-            })}
-        />
-        {errors.street && (
-            <p id='errMsg'>
-                <MUI.InfoIcon className='infoErr' />
-                {errors.street?.message}
-            </p>
-        )}
-      </MUI.Grid>
-
-      <MUI.Grid id="zipCodeGrid">
-        <MUI.InputLabel htmlFor="zip_code" id="zipCodeLabel">Zip Code</MUI.InputLabel>
-        <MUI.TextField
-            type='text'
-            id='zip_code'
-            placeholder='Zip Code'
-            fullWidth
-            {...register("zip_code", {
-                required: {
-                    value: true,
-                    message: 'Zip Code is required',
-                }
-            })}
-        />
-        {errors.zip_code && (
-          <p id='errMsg'>
-            <MUI.InfoIcon className='infoErr' />
-            {errors.zip_code?.message}
-          </p>
-        )}
-      </MUI.Grid>
-      </div>
-      </div>
+        <MUI.DialogContent>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {steps[activeStep].content}
+           
+        </div>
 
       <MUI.DialogActions sx={{mt: 5}}>
-        {/* Add action buttons, e.g., Save Changes and Cancel */}
-        <MUI.Button onClick={handleCloseScholarProfile} color="primary" id='Button'>
-            Cancel
-        </MUI.Button>
-        <MUI.Button
-            color="primary"
-            type='submit'
-            variant='contained'
-            id='addUserBtn'
-        >
-            {editScholarProfile ? 'Save Changes' : 'Add Profile'}
-        </MUI.Button>
+      <MUI.Button disabled={activeStep === 0} onClick={handleBack} color="primary">
+      Back
+    </MUI.Button>
+
+    <MUI.Button
+      color="primary"
+      variant="contained"
+      onClick={handleNext}
+      style={{ display: activeStep === steps.length - 1 ? 'none' : 'block' }}
+    >
+      Next
+    </MUI.Button>
+
+    <MUI.Button
+  type="submit"
+  color="primary"
+  variant="contained"
+  style={{ display: activeStep === steps.length - 1 ? 'block' : 'none' }}
+>
+  Submit
+</MUI.Button>
     </MUI.DialogActions>
 
 
