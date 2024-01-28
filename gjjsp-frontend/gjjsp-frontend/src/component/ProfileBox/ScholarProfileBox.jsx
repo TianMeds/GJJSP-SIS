@@ -6,6 +6,7 @@ import useAuthStore from '../../store/AuthStore';
 import useScholarStore from '../../store/ScholarStore';
 import useUserStore from '../../store/UserStore';
 import useLoginStore from '../../store/LoginStore';
+import useScholarProfileStore from '../../store/ScholarProfileStore';
 import {useNavigate} from 'react-router-dom';
 
 export const ScholarProfileBox = () => {
@@ -15,6 +16,7 @@ export const ScholarProfileBox = () => {
     const {selectedUser} = useUserStore();
     const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
+    const {scholarFamMembers, setScholarFamMembers} = useScholarProfileStore();
     const navigate = useNavigate();
 
     //Get Foreign Key Data to users
@@ -89,6 +91,38 @@ export const ScholarProfileBox = () => {
     }
     fetchScholar();
   }, [])
+
+  useEffect(() => {
+    const fetchScholarFamMember = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        
+        const response = await axios.get(`/api/scholarFam`, {
+          headers: {
+            'Authorization':
+            `Bearer ${authToken}`
+          }
+        });
+
+      if (response.status === 200) {
+          setScholarFamMembers(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Users list has been updated');
+      } else {
+          setErrorOpen(true);
+          setAlertMessage('Failed to fetch data');
+      } 
+      } catch (error) {
+          if (error.response?.status === 401) {
+              setErrorOpen(true);
+              setErrorMessage("You've been logout");
+              navigate('/login');
+          }
+      }
+    };
+    fetchScholarFamMember();
+  }, []);
+
 
   return (
     <MUI.Grid container spacing={2} sx={{mt: 5}}>
@@ -375,33 +409,64 @@ export const ScholarProfileBox = () => {
     
       
       {/* Eight Box: Family  */}
-<MUI.Grid item xs={12} md={6} mt={-2}>
+<MUI.Grid item xs={12} md={12} mt={-2}>
       <MUI.Typography variant="h3" sx={{ marginBottom: 5 }}>
             Family
           </MUI.Typography>
-        <MUI.Box
-          sx={{
-            height: 'auto',
-            border: '2px solid rgba(0,0,0,0.2)',
-            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            borderRadius: '5px',
-          }}
-        >
-          
-            <MUI.Box>
-                <MUI.Typography variant='h5'>Number of Family Members</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{scholarsData.num_fam_mem}</MUI.Typography>
-            </MUI.Box>
+          <MUI.Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: 'auto',
+              border: '2px solid rgba(0,0,0,0.2)',
+              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
+              padding: '20px',
+              borderRadius: '5px',
+            }}
+          >
+            <MUI.Grid container spacing={3}>
+              <MUI.Grid item xs={6}>
+                {/* Left column */}
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Mother's Name</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.mother_name}</MUI.Typography>
+                </MUI.Box>
 
-            <MUI.Box sx={{mt: 3}}>
-                <MUI.Typography variant='h5'>Mothers Name</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
-                <MUI.Typography variant='h5'>Fathers Name</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
-            </MUI.Box> 
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Father's Name</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.father_name}</MUI.Typography>
+                </MUI.Box>
 
-            </MUI.Box>
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Guardian's Name</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.fam_mem_name}</MUI.Typography>
+
+                  <MUI.Typography variant='h5'>Guardian's Occupation</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.occupation}</MUI.Typography>
+                </MUI.Box>
+              </MUI.Grid>
+
+              <MUI.Grid item xs={6}>
+                {/* Right column */}
+
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Guardian's Contact Number</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.fam_mem_mobile_num}</MUI.Typography>
+                </MUI.Box>
+
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Number of Family Members</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarsData.num_fam_mem}</MUI.Typography>
+                </MUI.Box>
+
+                <MUI.Box mt={2} mb={2}>
+                  <MUI.Typography variant='h5'>Monthly Income</MUI.Typography>
+                  <MUI.Typography sx={{ mt: 2, mb: 2 }}>{scholarFamMembers.income}</MUI.Typography>
+                </MUI.Box>
+
+              </MUI.Grid>
+            </MUI.Grid>
+          </MUI.Box>
       </MUI.Grid>
 
 

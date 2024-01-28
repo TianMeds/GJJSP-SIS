@@ -2,7 +2,6 @@ import React, {lazy, Suspense, useEffect, useState} from 'react';
 import axios from '../../../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 
-
 //Material UI Components
 import * as MUI from '../../../import';
 import Layout from '../../../component/Layout/SidebarNavbar/Layout';
@@ -47,7 +46,8 @@ export default function ScholarProfile() {
   {profile, setProfiles, handleOpenProfile, handleCloseProfile, 
   editProfile, setEditProfile,setSelectedProfile, 
   changePassword, handleOpenChangePassword, 
-  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword} = useProfileStore();
+  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword
+  } = useProfileStore();
 
   const {
     regions, setRegions, selectedRegion, setSelectedRegion,setRegionsName, setSelectedRegionCode, selectedRegionCode,
@@ -60,13 +60,19 @@ export default function ScholarProfile() {
 
   const {selectedUser, setSelectedUser} = useUserStore();
 
-  const {editScholarProfile, setEditScholarProfile, selectedScholarProfile, setSelectedScholarProfile, handleCloseScholarProfile, handleOpenScholarProfile, scholarProfiles, scholarProfile, setScholarProfiles} = useScholarProfileStore();
+  const {
+    editScholarProfile, setEditScholarProfile, selectedScholarProfile, setSelectedScholarProfile, 
+    handleCloseScholarProfile, handleOpenScholarProfile, scholarProfiles, scholarProfile, setScholarProfiles,
+    scholarFamMembers, scholarFamMember, setScholarFamMembers, selectedScholarFamMember,setSelectedScholarFamMember, editScholarFamMembers, setEditScholarFamMembers,
+  } = useScholarProfileStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
 
   const navigate = useNavigate();
   
   const [activeStep, setActiveStep] = useState(0);
+  const currentStep = activeStep;
+  const relevantStep = 1;
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -90,12 +96,19 @@ export default function ScholarProfile() {
     program: '',
     home_visit_sched: '',
     fb_account: '',
-    region: '',
+    region_name: '',
     province: '',
-    city: '',
-    barangay: '',
+    cities_municipalities_name: '',
+    barangay_name: '',
     street: '',
     zip_code: '',
+    father_name: '',
+    mother_name: '',
+    relation_to_scholar: '',
+    fam_mem_name: '',
+    occupation: '',
+    income: '',
+    fam_mem_mobile_num: '',
   }
 
   const formatDate = (dateString) => {
@@ -121,26 +134,35 @@ export default function ScholarProfile() {
         home_visit_sched: formatDate(data.home_visit_sched),
     };
 
+    const scholarFamMemData = {
+      father_name: data.father_name,
+      mother_name: data.mother_name,
+      relation_to_scholar: data.relation_to_scholar,
+      fam_mem_name: data.fam_mem_name,
+      occupation: data.occupation,
+      income: data.income,
+      fam_mem_mobile_num: data.fam_mem_mobile_num,
+  };
+
     try {
         if (editScholarProfile) {
+            // Update Scholar Profile
             setLoading(true);
             setLoadingMessage('Updating profile...');
-            const response = await axios.put(`/api/scholarsProfile/${selectedScholarProfile.id}`, {...data}, config);
+            const responseProfile = await axios.put(`/api/scholarsProfile/${selectedScholarProfile.id}`, formattedData, config);
             setEditScholarProfile(false);
             handleCloseScholarProfile();
             setAlertOpen(true);
             setAlertMessage('Profile Updated');
-            setLoading(false);
         }   
-
-        const response = await axios.get(`/api/scholarsProfile`, {
+        const responseProfiles = await axios.get(`/api/scholarsProfile`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
 
-        if (response.status === 200) {
-            setScholarProfiles(response.data.data);
+        if (responseProfiles.status === 200) {
+            setScholarProfiles(responseProfiles.data.data);
             setAlertOpen(true);
             setAlertMessage('Users list has been updated');
         } else {
@@ -148,15 +170,48 @@ export default function ScholarProfile() {
             setAlertMessage('Failed to fetch data');
         }
 
+        if (editScholarFamMembers) {
+            // Update Scholar Family Member
+            setLoading(true);
+            setLoadingMessage('Updating family member...');
+            const responseFam = await axios.put(`/api/scholarFam/${selectedScholarFamMember.id}`, scholarFamMemData, config);
+            setEditScholarFamMembers(false);
+            handleCloseScholarProfile();
+            setAlertOpen(true);
+            setAlertMessage('Family Member Updated');
+            setLoading(false);
+        }
+
+        const responseFamMembers = await axios.get(`/api/scholarFam`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (responseFamMembers.status === 200) {
+            setScholarFamMembers(responseFamMembers.data.data);
+            setAlertOpen(true);
+            setAlertMessage('Users list has been updated');
+        } else {
+            setErrorOpen(true);
+            setAlertMessage('Failed to fetch data');
+        }
+        
+
         form.reset(FormValues);
     } catch (error) {
         if (error.response?.status === 401) {
             setErrorOpen(true);
-            setErrorMessage("You've been logout");
+            setErrorMessage("You've been logged out");
             navigate('/login');
         }
+        else if(error.response?.status === 500) {
+            setErrorOpen(true);
+          setErrorMessage("Complete all fields");
+          setLoading(false);
+        }
     }
-  };
+};
 
   //Change Password Form
   const onSubmitPasswordForm = async (data, event) => {
@@ -229,6 +284,38 @@ export default function ScholarProfile() {
       }
     };
     fetchScholarProfile();
+  }, []);
+
+  // Fetch Scholar Family Member
+  useEffect(() => {
+    const fetchScholarFamMember = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        
+        const response = await axios.get(`/api/scholarFam`, {
+          headers: {
+            'Authorization':
+            `Bearer ${authToken}`
+          }
+        });
+
+      if (response.status === 200) {
+          setScholarFamMembers(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Users list has been updated');
+      } else {
+          setErrorOpen(true);
+          setAlertMessage('Failed to fetch data');
+      } 
+      } catch (error) {
+          if (error.response?.status === 401) {
+              setErrorOpen(true);
+              setErrorMessage("You've been logout");
+              navigate('/login');
+          }
+      }
+    };
+    fetchScholarFamMember();
   }, []);
 
 // Fetch regions and provinces concurrently
@@ -369,60 +456,96 @@ useEffect(() => {
     setLoading(true);
     setLoadingMessage("Please wait opening edit profile");
     setEditScholarProfile(true);
-
+    setEditScholarFamMembers(true);
+  
     try {
-        const authToken = useAuthStore.getState().getAuthToken();
-        const scholarId = selectedUser.id;
+      const authToken = useAuthStore.getState().getAuthToken();
+  
+      // Fetch Scholar Profile
+      const profileResponse = await axios.get(`/api/scholarsProfile`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+        validateStatus: function (status) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+      });
+  
+      const profileData = profileResponse.data.data;
+  
+      if (profileResponse.status === 404 || !profileData || profileData.length === 0) {
+        setSelectedScholarProfile({
+          gender: '',
+          religion: '',
+          birthdate: '',
+          birthplace: '',
+          civil_status: '',
+          num_fam_mem: '',
+          school_yr_started: '',
+          school_yr_graduated: '',
+          school_id: '',
+          program: '',
+          home_visit_sched: '',
+          fb_account: ''
+        });
+  
+        handleOpenScholarProfile();
+        form.reset();
+      } else {
+        const profileWithoutPassword = {
+          ...profileResponse.data.data,
+          password: undefined
+        };
+  
+        setSelectedScholarProfile(profileWithoutPassword);
+        setScholarProfiles(profileWithoutPassword);
+        form.reset(profileWithoutPassword);
+      }
+  
+      // Fetch Scholar Family Member
+      const scholarFamResponse = await axios.get(`/api/scholarFam`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+        validateStatus: function (status) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+      });
+  
+      const scholarFamData = scholarFamResponse.data.data;
 
-        const response = await axios.get(`/api/scholarsProfile`, {
-          headers: {
-              'Authorization': `Bearer ${authToken}`
-          },
-          validateStatus: function (status) {
-            return status === 404  || (status >= 200 && status < 300); 
-          }
+      if (scholarFamResponse.status === 404 || !scholarFamData || scholarFamData.length === 0) {
+        setSelectedScholarFamMember({
+          father_name: '',
+          mother_name: '',
+          relation_to_scholar: '',
+          fam_mem_name: '',
+          occupation: '',
+          income: '',
+          fam_mem_mobile_num: '',
         });
 
-        const profileData = response.data.data;
-        console.log(profileData);
+        handleOpenScholarProfile();
+        form.reset();
+      }
 
-        if (response.status === 404 || !profileData || profileData.length === 0  ) {
-          setSelectedScholarProfile({
-            gender: '',
-            religion: '',
-            birthdate: '',
-            birthplace: '',
-            civil_status: '',
-            num_fam_mem: '',
-            school_yr_started: '',
-            school_yr_graduated: '',
-            school_id: '',
-            program: '',
-            home_visit_sched: '',
-            fb_account: ''
-          });
+      if (scholarFamResponse.status === 200) {
+        setSelectedScholarFamMember(scholarFamResponse.data.data);
+        setScholarFamMembers(scholarFamResponse.data.data);
 
-          console.log(response)
-          handleOpenScholarProfile();
-          form.reset();
-          
-        }else {
-
-          const profileWithoutPassword = {
-            ...response.data.data,
-            password: undefined
-          };
-
-          setSelectedScholarProfile(profileWithoutPassword);
-          handleOpenScholarProfile();
-          form.reset(profileWithoutPassword);
-        }
-        setLoading(false);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+      } else {
+        setErrorOpen(true);
+        setAlertMessage('Failed to fetch data');
+      }
+      handleOpenScholarProfile();
+      setLoading(false);
     } catch (error) {
-        console.error('Error fetching scholar data:', error);
-        setLoading(false);
+      console.error('Error fetching scholar data:', error);
+      setLoading(false);
     }
-};
+  };
 
   //Update Scholar Password
   const updatePassword = async () => {
@@ -467,7 +590,7 @@ useEffect(() => {
               <MUI.InputLabel htmlFor="gender" id="genderLabel">Gender</MUI.InputLabel>
               <Controller
                   name='gender'
-                  defaultValue=""
+                  defaultValue={scholarProfiles.gender || ''}
                   control={control}
                   rules={{
                     required: 'Gender is required',
@@ -496,12 +619,6 @@ useEffect(() => {
                       {errors.gender?.message}
                   </p>
               )}
-              {errors.gender && (
-                <p id='errMsg'>
-                  <MUI.InfoIcon className='infoErr' />
-                  {errors.gender?.message}
-                </p>
-              )}
             </MUI.Grid>
 
             <MUI.Grid id="religionGrid">
@@ -509,7 +626,7 @@ useEffect(() => {
               <Controller
                 name='religion'
                 control={control}
-                defaultValue=''
+                defaultValue={scholarProfiles.religion || ""}
                 rules={{
                   required: 'Religion is required',
                   validate: (value) => value !== '' || 'Please select a religion'
@@ -556,6 +673,7 @@ useEffect(() => {
                   type='date'
                   id='birthdate'
                   fullWidth
+                  defaultValue={scholarProfiles.birthdate || ""}
                   {...register("birthdate", {
                       required: {
                           value: true,
@@ -576,7 +694,7 @@ useEffect(() => {
               <Controller
                 name='birthplace'
                 control={control}
-                defaultValue=''
+                defaultValue={scholarProfiles.birthplace || ""}
                 rules={{
                   required: 'Birthplace is required',
                 }}
@@ -599,6 +717,8 @@ useEffect(() => {
                 </p>
               )}
             </MUI.Grid>
+
+
           </MUI.Grid>
 
           {/* Second Column */}
@@ -609,7 +729,7 @@ useEffect(() => {
               <Controller
                   name='civil_status'
                   control={control}
-                  defaultValue=''
+                  defaultValue={scholarProfiles.civil_status || ""}
                   rules={{
                       required: 'Civil Status is required',
                       validate: (value) => value !== '' || 'Please select a civil status'
@@ -647,6 +767,7 @@ useEffect(() => {
                   id='school_yr_started'
                   placeholder='School Year Started'
                   fullWidth
+                  defaultValue={scholarProfiles.school_yr_started || ""}
                   {...register("school_yr_started", {
                       required: {
                           value: true,
@@ -673,6 +794,7 @@ useEffect(() => {
                   id='school_yr_graduated'
                   placeholder='School Year Graduated'
                   fullWidth
+                  defaultValue={scholarProfiles.school_yr_graduated || ""}
                   {...register("school_yr_graduated", {
                       required: {
                           value: true,
@@ -699,7 +821,7 @@ useEffect(() => {
                 <Controller
                     name="school_id"
                     control={control}
-                    defaultValue=""
+                    defaultValue={scholarProfiles.school_id || ""}
                     rules={{
                         required: 'School ID is required',
                     }}
@@ -769,6 +891,7 @@ useEffect(() => {
                     id='program'
                     placeholder='Program'
                     fullWidth
+                    defaultValue={scholarProfiles.program || ""}
                     {...register("program", {
                         required: {
                             value: true,
@@ -787,10 +910,11 @@ useEffect(() => {
             <MUI.Grid id="homeVisitSchedGrid">
             <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
             <MUI.TextField
-                type='date'  // Change the type to 'date'
+                type='date'  
                 id='home_visit_sched'
                 placeholder='Home Visit Schedule'
                 fullWidth
+                defaultValue={scholarProfiles.home_visit_sched || ""}
                 {...register("home_visit_sched", {
                     required: {
                         value: true,
@@ -813,6 +937,7 @@ useEffect(() => {
                 id='fb_account'
                 placeholder='facebook.com/Username'
                 fullWidth
+                defaultValue={scholarProfiles.fb_account || ""}
                 {...register("fb_account", {
                     required: {
                         value: true,
@@ -844,10 +969,10 @@ useEffect(() => {
       label: 'Address Information',
       content: (
         <div>
-          <MUI.Grid container spacing={6}>
+          <MUI.Grid container spacing={2}>
             {/* First Column */}
 
-            <MUI.Grid item xs={4}>
+            <MUI.Grid item xs={6}>
 
             <MUI.Grid id="regionGrid">
               <MUI.InputLabel htmlFor="region_name" id="regionLabel">
@@ -856,7 +981,7 @@ useEffect(() => {
               <Controller
                 name="region_name"
                 control={control}
-                defaultValue=""
+                defaultValue={scholarProfiles.region_name || ''}
                 rules={{
                   required: 'Region is required',
                   validate: (value) => value !== '' || 'Please select a region',
@@ -893,7 +1018,7 @@ useEffect(() => {
                   {errors.region_name?.message}
                 </p>
               )}
-            </MUI.Grid>;
+            </MUI.Grid>
 
               <MUI.Grid id="provinceGrid">
                 <MUI.InputLabel htmlFor="province_name" id="provinceLabel">
@@ -902,7 +1027,7 @@ useEffect(() => {
                 <Controller
                   name="province_name"
                   control={control}
-                  defaultValue=""
+                  defaultValue={scholarProfiles.province_name || ''}
                   rules={{
                     required: selectedRegionCode === '130000000' ? false : 'Province is required',
                     validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a province',
@@ -944,20 +1069,17 @@ useEffect(() => {
                     {errors.province_name?.message}
                   </p>
                 )}
-              </MUI.Grid>;
-            </MUI.Grid>
+              </MUI.Grid>
 
-            {/* Second Column */}
-            <MUI.Grid item xs={4}>
 
-            <MUI.Grid id="cityGrid">
+                          <MUI.Grid id="cityGrid">
               <MUI.InputLabel htmlFor="cities-municipalities_name" id="cityLabel">
                 City
               </MUI.InputLabel>
               <Controller
                 name="cities_municipalities_name"
                 control={control}
-                defaultValue=""
+                defaultValue={scholarProfiles.cities_municipalities_name || ''}
                 rules={{
                   required: selectedRegionCode === '130000000' ? false : 'City is required',
                   validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a city',
@@ -991,60 +1113,61 @@ useEffect(() => {
                   {errors.cities_municipalities_name?.message}
                 </p>
               )}
-            </MUI.Grid>;
-
-            <MUI.Grid id="barangayGrid">
-              <MUI.InputLabel htmlFor="barangay_name" id="barangayLabel">
-                Barangay
-              </MUI.InputLabel>
-              <Controller
-                name="barangay_name"
-                control={control}
-                defaultValue=""
-                rules={{
-                  required: selectedRegionCode === '130000000' ? false : 'Barangay is required',
-                  validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a barangay',
-                }}
-                render={({ field }) => (
-                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-                    <MUI.Select
-                      id="barangay_name"
-                      native
-                      {...field}
-                      onChange={(e) => {
-                        setSelectedBarangay(e.target.value);
-                        field.onChange(e);
-                      }}
-                    >
-                      <option value="">Select Barangay</option>
-                      {barangays.map((barangay) => (
-                        <option key={barangay.name} value={barangay.name}>
-                          {barangay.name}
-                        </option>
-                      ))}
-                    </MUI.Select>
-                  </MUI.FormControl>
-                )}
-              />
-              {errors.barangay_name && (
-                <p id="errMsg">
-                  <MUI.InfoIcon className="infoErr" />
-                  {errors.barangay_name?.message}
-                </p>
-              )}
-            </MUI.Grid>;
+            </MUI.Grid>
             </MUI.Grid>
 
-            {/* Third Column */}
-            <MUI.Grid item xs={4}>
+            {/* Second Column */}
+            <MUI.Grid item xs={6}>
 
-              <MUI.Grid id="streetGrid">
+            {console.log("currentStep:", currentStep, "relevantStep:", relevantStep)}
+
+            {currentStep === relevantStep && (
+              <MUI.Grid id="barangayGrid">
+                <MUI.InputLabel htmlFor="barangay_name" id="barangayLabel">
+                  Barangay
+                </MUI.InputLabel>
+                <Controller
+                  name="barangay_name"
+                  control={control}
+                  defaultValue={scholarProfiles.barangay_name || ''}
+                  rules={{
+                    required: selectedRegionCode === '130000000' ? false : 'Barangay is required',
+                    validate: (value) => (selectedRegionCode === '130000000' || value !== '') || 'Please select a barangay',
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="barangay_name"
+                        native
+                        {...field}
+                      >
+                        <option value="">Select Barangay</option>
+                        {barangays.map((barangay) => (
+                          <option key={barangay.name} value={barangay.name}>
+                            {barangay.name}
+                          </option>
+                        ))}
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.barangay_name && (
+                  <p id="errMsg">
+                    <MUI.InfoIcon className="infoErr" />
+                    {errors.barangay_name?.message}
+                  </p>
+                )}
+              </MUI.Grid>
+            )}  
+
+            <MUI.Grid id="streetGrid">
                 <MUI.InputLabel htmlFor="street" id="streetLabel">House No. & Street</MUI.InputLabel>
                 <MUI.TextField
                     type='text'
                     id='street'
                     placeholder='Street'
                     fullWidth
+                    defaultValue={scholarProfiles.street || ""}
                     {...register("street", {
                         required: {
                             value: true,
@@ -1065,7 +1188,7 @@ useEffect(() => {
                 <Controller
                   name='zip_code'
                   control={control}
-                  defaultValue=''
+                  defaultValue={scholarProfiles.zip_code || ''}
                   rules={{
                     required: 'Zip Code is required',
                   }}
@@ -1089,7 +1212,7 @@ useEffect(() => {
                 )}
               </MUI.Grid>
 
-            </MUI.Grid>    
+            </MUI.Grid>
 
           </MUI.Grid>
 
@@ -1101,7 +1224,7 @@ useEffect(() => {
       label: 'Family Information',
       content: (
         <div>
-          <MUI.Grid container spacing={6}>
+          <MUI.Grid container spacing={2}>
             {/* First Column */}
             <MUI.Grid item xs={4}>
 
@@ -1112,6 +1235,7 @@ useEffect(() => {
                     id='num_fam_mem'
                     placeholder='Number of Family Members'
                     fullWidth
+                    defaultValue={scholarProfiles.num_fam_mem || ""}
                     {...register("num_fam_mem", {
                         required: {
                             value: true,
@@ -1127,16 +1251,205 @@ useEffect(() => {
                 )}
               </MUI.Grid>
 
+              <MUI.Grid id="fatherNameGrid">
+                <MUI.InputLabel htmlFor="father_name" id="fatherNameLabel">Father's Name</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='father_name'
+                    placeholder='Father Name'
+                    fullWidth
+                    defaultValue={scholarFamMembers.father_name || ""}
+                    {...register("father_name", {
+                        required: {
+                            value: true,
+                            message: 'Father Name is required',
+                        }
+                    })}
+                />
+                {errors.father_name && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.father_name?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
+              <MUI.Grid id="motherNameGrid">
+                <MUI.InputLabel htmlFor="mother_name" id="motherNameLabel">Mother's Name</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='mother_name'
+                    placeholder='Mother Name'
+                    fullWidth
+                    defaultValue={scholarFamMembers.mother_name || ""}
+                    {...register("mother_name", {
+                        required: {
+                            value: true,
+                            message: 'Mother Name is required',
+                        }
+                    })}
+                />
+                {errors.mother_name && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.mother_name?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
             </MUI.Grid>
 
             {/* Second Column */}
             <MUI.Grid item xs={4}>
+              <MUI.Grid id="famMemberNameGrid">
+                <MUI.InputLabel htmlFor="fam_mem_name" id="famMemberNameLabel">Guardian's Name</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='fam_mem_name'
+                    placeholder='Family Member Name'
+                    fullWidth
+                    defaultValue={scholarFamMembers.fam_mem_name || ""}
+                    {...register("fam_mem_name", {
+                        required: {
+                            value: true,
+                            message: 'Family Member Name is required',
+                        }
+                    })}
+                />
+                {errors.fam_mem_name && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.fam_mem_name?.message}
+                    </p>
+                )}
+              </MUI.Grid>
 
+              <MUI.Grid id="relationToScholarGrid">
+              <MUI.InputLabel htmlFor="relation_to_scholar" id="relationToScholarLabel">Guarduan Relation</MUI.InputLabel>
+              <Controller
+                name='relation_to_scholar'
+                control={control}
+                defaultValue={scholarFamMembers.relation_to_scholar || ""}
+                rules={{
+                  required: 'Relation to scholar is required',
+                  validate: (value) => value !== '' || 'Please select a relation to scholar'
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="relation_to_scholar"
+                      native
+                      {...field}                    >
+                      <option value="">Select Relation</option>
+                      <option value="Father">Father</option>
+                      <option value="Mother">Mother</option>
+                      <option value="Guardian">Guardian</option>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.relation_to_scholar && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.relation_to_scholar?.message}
+                  </p>
+              )}
+            </MUI.Grid>
+
+            
+              <MUI.Grid id="occupationGrid">
+              <MUI.InputLabel htmlFor="occupation" id="occupationLabel">Guardian's Occupation</MUI.InputLabel>
+              <Controller
+                name='occupation'
+                control={control}
+                defaultValue={scholarFamMembers.occupation || ''}
+                rules={{
+                  required: 'Occupation is required',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.TextField
+                      type='text'
+                      id='occupation'
+                      placeholder='Occupation'
+                      fullWidth
+                      {...field}
+                    />
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.occupation && (
+                <p id='errMsg'>
+                  <MUI.InfoIcon className='infoErr' />
+                  {errors.occupation?.message}
+                </p>
+              )}
+            </MUI.Grid>
             </MUI.Grid>
 
             {/* Third Column */}
             <MUI.Grid item xs={4}>
 
+            <MUI.Grid id="incomeGrid">
+              <MUI.InputLabel htmlFor="income" id="incomeLabel">
+                Income (in Pesos)
+              </MUI.InputLabel>
+              <Controller
+                name="income"
+                control={control}
+                defaultValue={scholarFamMembers.income || ''}
+                rules={{
+                  required: 'Income is required',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="income"
+                      native
+                      {...field}
+                    >
+                      <option value="">Select Income</option>
+                      <option value="0-10,000">0 - ₱10,000</option>
+                      <option value="10,001-20,000">₱10,001 - ₱20,000</option>
+                      <option value="20,001-30,000">₱20,001 - ₱30,000</option>
+                      <option value="30,001-40,000">₱30,001 - ₱40,000</option>
+                      <option value="40,001-50,000">₱40,001 - ₱50,000</option>
+                      <option value="50,001-More">₱50,001 - More</option>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.income && (
+                <p id="errMsg">
+                  <MUI.InfoIcon className="infoErr" />
+                  {errors.income?.message}
+                </p>
+              )}
+            </MUI.Grid>
+
+            <MUI.Grid id="famMemberContactGrid">
+                <MUI.InputLabel htmlFor="fam_mem_contact" id="famMemberContactLabel">Guardian's Contact Number</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='fam_mem_mobile_num'
+                    placeholder='Guardian Contact Number'
+                    fullWidth
+                    defaultValue={scholarFamMembers.fam_mem_mobile_num || ""}
+                    {...register("fam_mem_mobile_num", {
+                        required: {
+                            value: true,
+                            message: 'Guardian Contact Number is required',
+                        }
+                    })}
+                />
+                {errors.fam_mem_mobile_num && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.fam_mem_mobile_num?.message}
+                    </p>
+                )}
+            </MUI.Grid>
+                  
             </MUI.Grid>    
 
           </MUI.Grid>
@@ -1263,7 +1576,7 @@ useEffect(() => {
         <ProfileHeader handleOpenProfile={handleOpenProfile} updatePassword={updatePassword} updateScholarProfile={updateScholarProfile}/>
       
         <ScholarProfileBox/>
-
+    
     </MUI.Grid>
 
   
@@ -1289,29 +1602,29 @@ useEffect(() => {
            
         </div>
 
-      <MUI.DialogActions sx={{mt: 5}}>
-      <MUI.Button disabled={activeStep === 0} onClick={handleBack} color="primary">
-      Back
-    </MUI.Button>
+          <MUI.DialogActions sx={{mt: 5}}>
+          <MUI.Button onClick={activeStep === 0 ? handleCloseScholarProfile : handleBack} color="primary">
+            {activeStep === 0 ? 'Cancel' : 'Back'}
+          </MUI.Button>
 
-    <MUI.Button
-      color="primary"
-      variant="contained"
-      onClick={handleNext}
-      style={{ display: activeStep === steps.length - 1 ? 'none' : 'block' }}
-    >
-      Next
-    </MUI.Button>
+            <MUI.Button
+              color="primary"
+              variant="contained"
+              onClick={handleNext}
+              style={{ display: activeStep === steps.length - 1 ? 'none' : 'block' }}
+            >
+              Next
+            </MUI.Button>
 
-    <MUI.Button
-  type="submit"
-  color="primary"
-  variant="contained"
-  style={{ display: activeStep === steps.length - 1 ? 'block' : 'none' }}
->
-  Submit
-</MUI.Button>
-    </MUI.DialogActions>
+            <MUI.Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              style={{ display: activeStep === steps.length - 1 ? 'block' : 'none' }}
+            >
+              Submit
+            </MUI.Button>
+          </MUI.DialogActions>
 
 
         </MUI.DialogContent>
@@ -1416,6 +1729,29 @@ useEffect(() => {
           </MUI.DialogActions>
           </MUI.Dialog>
     )}
+
+
+<MUI.Snackbar
+            open={alertOpen}
+            autoHideDuration={5000}
+            onClose={() => setAlertOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+              {alertMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
+
+          <MUI.Snackbar
+            open={errorOpen}
+            autoHideDuration={5000}
+            onClose={() => setErrorOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+              {errorMessage}
+            </MUI.MuiAlert>
+          </MUI.Snackbar>
 
     <DevTool control={control} />
     </MUI.ThemeProvider>

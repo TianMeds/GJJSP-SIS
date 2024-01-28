@@ -11,12 +11,7 @@ use App\Http\Controllers\ProjectPartnerController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\ScholarStatusController;
 use App\Http\Controllers\PromptController;
-use App\Http\Controllers\AddressController;
-use App\Http\Controllers\BarangayController;
-use App\Http\Controllers\City_MunicipalitiesController;
-use App\Http\Controllers\ProvinceController;
-use App\Http\Controllers\RegionController;
-use App\Http\Controllers\ZipCodeController;
+use App\Http\Controllers\ScholarFamMemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,7 +37,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
-    Route::post('/scholars', [ScholarController::class, 'store']);
+    Route::get('/userScholar', [UserController::class, 'getUserRoles']);
     Route::put('/scholars/{user_id}', [ScholarController::class, 'update']);
     Route::delete('/scholars/{user_id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
@@ -80,30 +75,10 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::apiResource('/address', AddressController::class)->only(['index', 'show']);  
     Route::get('/scholarAddress', [AddressController::class, 'scholarAddress']);
 
-    //Region Route
-    Route::post('/region', [RegionController::class, 'store']);
-    Route::put('/region/{id}', [RegionController::class, 'update']);
-    Route::apiResource('/region', RegionController::class)->only(['index', 'show']);
+    //Scholar Fam Member Route
+    Route::put('/scholarFam/{id}', [ScholarFamMemberController::class, 'update']);
+    Route::get('/scholarFam', [ScholarFamMemberController::class, 'getScholarFam']);
 
-    //Province Route
-    Route::post('/province', [ProvinceController::class, 'store']);
-    Route::put('/province/{id}', [ProvinceController::class, 'update']);
-    Route::apiResource('/province', ProvinceController::class)->only(['index', 'show']);
-    
-    //City/Municipalities Route
-    Route::post('/city', [City_MunicipalitiesController::class, 'store']);
-    Route::put('/city/{id}', [City_MunicipalitiesController::class, 'update']);
-    Route::apiResource('/city', City_MunicipalitiesController::class)->only(['index', 'show']);
-
-    //Barangay Route
-    Route::post('/barangay', [BarangayController::class, 'store']);
-    Route::put('/barangay/{id}', [BarangayController::class, 'update']);
-    Route::apiResource('/barangay', BarangayController::class)->only(['index', 'show']);
-
-    //ZipCode Route
-    Route::post('/zipcode', [ZipCodeController::class, 'store']);
-    Route::put('/zipcode/{id}', [ZipCodeController::class, 'update']);
-    Route::apiResource('/zipcode', ZipCodeController::class)->only(['index', 'show']);
 
     //Submission Route
 });

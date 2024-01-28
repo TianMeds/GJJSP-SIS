@@ -42,7 +42,7 @@ export default function User({state}) {
   const { errors } = formState;
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
-    selectedUser, setSelectedUser, avatarInitial, setAvatarInitial
+    selectedUser, setSelectedUser, setAvatarInitial
   } = useUserStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Role;
+use App\Models\ScholarFamMember;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -50,7 +51,13 @@ class AuthController extends Controller
             $scholar = Scholar::create([
                 'user_id' => $user->id,
             ]);
+
+            // Create Scholar Family Member profile separately
+            $scholarFamMember = ScholarFamMember::create([
+                'scholar_id' => $scholar->id,
+            ]);
         }
+
         
         if ($user) {
 

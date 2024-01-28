@@ -99,6 +99,21 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully'], 200);
 
     }
+
+    // Get users based on RoleId 
+    public function getUserRoles(Request $request)
+    {
+        $users = User::where('role_id', 3)->get();
+    
+        return response()->json([
+            'status' => true,
+            'data' => $users,
+            'message' => 'Users with role_id 3 retrieved successfully',
+            'method' => 'POST',
+        ], 200);
+    }
+
+    // Get Users profile based on the auth users
     public function profile()
     {
         try {

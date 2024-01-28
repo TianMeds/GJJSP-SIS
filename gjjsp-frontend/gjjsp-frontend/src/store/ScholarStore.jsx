@@ -5,11 +5,12 @@ const useScholarStore = create((set) => ({
 
     //Hook for get function
     scholars: [],
+    setScholars: (newScholars) => set({scholars: newScholars}),
+
     scholar: false,
-    setScholars: (scholars) => set({scholars}),
     setScholar: (newScholar) => set({scholar: newScholar}),
     scholarsData: [],
-    setScholarsData: (scholarsData) => set({scholarsData}),
+    setScholarsData: (newScholarsData) => set({scholarsData: newScholarsData}),
     
     scholarsWithIndex: [],
     editScholar: false,

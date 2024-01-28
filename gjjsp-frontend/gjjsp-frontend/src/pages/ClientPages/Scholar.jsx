@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import theme from '../../context/theme';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 import useScholarStore from '../../store/ScholarStore';
+import useUserStore from '../../store/UserStore';
 import { DevTool } from "@hookform/devtools";
 import {useForm, Controller } from 'react-hook-form';
 import axios from '../../api/axios';
@@ -28,63 +29,100 @@ export default function Scholar({state}) {
   
   //Zustand hooks 
   const {getAuthToken, setAlertOpen, setErrorOpen, setAlertMessage, setErrorMessage} = useAuthStore();
-  const {scholars, scholar, setScholars} = useScholarStore();
+  const {scholars, setScholars,setSelectedScholar, scholarsData, setScholarsData} = useScholarStore();
+  const {setAvatarInitial, users, setUsers, setSelectedUser} = useUserStore();
 
   const onSubmit = (data) => {
     console.log("Form submitted", data)
   }
 
-  // Get Scholar Data 
-  useEffect(() => {
-    setAlertOpen(true);
-    setErrorOpen(false);
-    setAlertMessage('Please wait updating scholar list');
-
-    const fetchScholars = async () => {
-      try {
-        const authToken = useAuthStore.getState().getAuthToken();
-        const response = await axios.get('/api/scholars', {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
-        });
-
-        if (response.status === 200) {
-          setScholars(response.data.data);
-          setAlertOpen(false);
-          setAlertMessage("Updated Scholars List")
+// Fetch Scholar
+useEffect(() => {
+  setAlertOpen(true);
+  setErrorOpen(false);
+  setAlertMessage('Please wait updating scholar list');
+  
+  const fetchScholarList = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+      const response = await axios.get('/api/userScholar', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
         }
-        else{
-          setErrorOpen(true);
-          setErrorMessage("Error updating scholars list")
-        }
+      });
+
+      if (response.status === 200) {
+        setScholars(response.data.data); // Make sure this line is updating the scholars state
+        setAlertOpen(false);
+        setAlertMessage("Updated Scholars List")
+      } else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating scholars list")
       }
-      catch (err) {
-        if(response?.status === 401) {
-          setErrorOpen(true);
-          setErrorMessage("Session expired. Please login again.")
-          navigate('/login')
-        }
+    } catch (err) {
+      if (response && response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
       }
-    };
-    fetchScholars();
-  }, []);
+    }
+  }
 
+  fetchScholarList();
+}, []);
+
+useEffect(() => {
+  setAlertOpen(true);
+  setErrorOpen(false);
+  setAlertMessage('Please wait updating scholar list');
+  
+  const fetchScholarData = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+      const response = await axios.get('/api/scholars', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setScholarsData(response.data.data); // Make sure this line is updating the scholars state
+        setAlertOpen(false);
+        setAlertMessage("Updated Scholars List")
+        console.log(response.data.data)
+      } else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating scholars list")
+      }
+    } catch (err) {
+      if (response && response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+    }
+  }
+
+  fetchScholarData();
+}, []);
   // View Profile Scholar 
-  // const viewScholarProfile = (scholarId) => {
-  //   const selectedScholar = scholars.find((scholar) => scholar.id === scholarId);
-  
-  //   if (selectedScholar) {
-  //     const { user_id } = selectedScholar; // Accessing user_id from selectedScholar
-  
-  //     setSelectedScholar(selectedScholar);
-  //     const scholarPath  = user_id === 4 ? '/scholar-profile' : '*';
-  //     navigate(scholarPath);
-  //   } else {
-  //     // Handle the case when selectedScholar is not found
-  //     console.error('Scholar not found');
-  //   }
-  // };
+  const viewScholarProfile = (scholarId) => {
+    const selectedUser = scholars.find((scholar) => scholar.id === scholarId);
+    
+    if (selectedUser) {
+      const { role_id, first_name, last_name } = selectedUser; // Accessing role_id from selectedUser 
+    
+      setSelectedUser(selectedUser)
+      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`);
+
+      const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
+      navigate(rolePath);
+    } else {
+      // Handle the case when selectedUser is not found
+      // For example, show an error message or handle the navigation differently
+      console.error('User not found');
+    }
+  };
 
   const {
     handleOpenScholar,
@@ -95,11 +133,6 @@ export default function Scholar({state}) {
     handleSearch,
     editScholar,
     setEditScholar,
-    updateScholar,
-    selectedScholar,
-    setSelectedScholar,
-    addScholar = ((store) => store.addScholar),
-    deleteScholar = ((store) => store.deleteScholar),
   } = useScholarStore();
 
   const handleCancelScholar = () => {
@@ -195,11 +228,10 @@ export default function Scholar({state}) {
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
-                  {scholars
-                    .map((scholar, index) => (
+                  {scholars.map((scholar, index) => (
                     <MUI.TableRow  key={index} className='scholar' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarName'>{`${scholar.user_first_name} ${scholar.user_middle_name} ${scholar.user_last_name}`}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='scholarEmail'>{scholar.user_email_address}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarName'>{`${scholar.first_name} ${scholar.middle_name || ""} ${scholar.last_name}`}</MUI.TableCell>
+                      <MUI.TableCell sx={{border: 'none'}}  className='scholarEmail'>{scholar.email_address}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarCatergory'>{scholar.scholarship_categ_name}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}}  className='scholarStatus'>{scholar.scholar_status_name}</MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
