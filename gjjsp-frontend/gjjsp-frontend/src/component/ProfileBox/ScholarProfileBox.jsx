@@ -16,112 +16,135 @@ export const ScholarProfileBox = () => {
     const {selectedUser} = useUserStore();
     const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
-    const {scholarFamMembers, setScholarFamMembers} = useScholarProfileStore();
+    const {scholarFamMembers, setScholarFamMembers, yearsInProgram, setYearsInProgram} = useScholarProfileStore();
     const navigate = useNavigate();
 
-    //Get Foreign Key Data to users
-    useEffect(() => {
-      const fetchUser = async() => {
-        try{
-          const authToken = useAuthStore.getState().getAuthToken();
-          const response = await axios.get('/api/profile', {
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-          });
-
-          if (response.status === 200) {
-            setScholars(response.data.data);
-          }
-          else{
-            setErrorMessage('Something went wrong');
-            setErrorOpen(true);
-          }
+//Fetch the Users Profiles
+useEffect(() => {
+  const fetchUser = async() => {
+    try{
+      const authToken = useAuthStore.getState().getAuthToken();
+      const response = await axios.get('/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
         }
-        catch(error){
-          setErrorMessage('Something went wrong');
-          setErrorOpen(true);
-        }
-      };
-      fetchUser();
-    },[])
-
-  useEffect(() => {
-    const fetchScholar = async() => {
-      setLoading(true)
-      setLoadingMessage('Loading Scholar Data')
-      try{
-        const authToken = useAuthStore.getState().getAuthToken();
-        const scholarResponse = await axios.get('/api/scholarsProfile', {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-
-        if(scholarResponse.status === 200){
-          setScholarsData(scholarResponse.data.data);
-        }
-        else if (scholarResponse.status === 404) {
-          setScholarsData([]);
-          console.log("Hello")
-        }
-        else{
-          setErrorMessage('Something went wrong');
-          setErrorOpen(true);
-        }
-        setLoading(false)
-      }
-      catch(error){
-        if (error.response.status === 401 ) {
-          setErrorMessage('Session Expired');
-          setErrorOpen(true);
-          useAuthStore.getState().resetAuthToken();
-          setAuth(null); // Update authentication state
-          navigate('/login')
-        }
-        else if(error.response.status === 404){
-          setScholarsData([]);
-        }
-        else{
-          setErrorMessage('Something went wrong');
-          setErrorOpen(true);
-        }
-        setLoading(false)
-      }
-    }
-    fetchScholar();
-  }, [])
-
-  useEffect(() => {
-    const fetchScholarFamMember = async () => {
-      try {
-        const authToken = useAuthStore.getState().getAuthToken();
-        
-        const response = await axios.get(`/api/scholarFam`, {
-          headers: {
-            'Authorization':
-            `Bearer ${authToken}`
-          }
-        });
+      });
 
       if (response.status === 200) {
-          setScholarFamMembers(response.data.data);
-          setAlertOpen(true);
-          setAlertMessage('Users list has been updated');
-      } else {
-          setErrorOpen(true);
-          setAlertMessage('Failed to fetch data');
-      } 
-      } catch (error) {
-          if (error.response?.status === 401) {
-              setErrorOpen(true);
-              setErrorMessage("You've been logout");
-              navigate('/login');
-          }
+        setScholars(response.data.data);
       }
-    };
-    fetchScholarFamMember();
-  }, []);
+      else{
+        setErrorMessage('Something went wrong');
+        setErrorOpen(true);
+      }
+    }
+    catch(error){
+      setErrorMessage('Something went wrong');
+      setErrorOpen(true);
+    }
+  };
+  fetchUser();
+},[])
+
+//Fetch Data of the Scholars Profile
+useEffect(() => {
+  const fetchScholar = async() => {
+    setLoading(true)
+    setLoadingMessage('Loading Scholar Data')
+    try{
+      const authToken = useAuthStore.getState().getAuthToken();
+      const scholarResponse = await axios.get('/api/scholarsProfile', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      if(scholarResponse.status === 200){
+        setScholarsData(scholarResponse.data.data);
+      }
+      else if (scholarResponse.status === 404) {
+        setScholarsData([]);
+        console.log("Hello")
+      }
+      else{
+        setErrorMessage('Something went wrong');
+        setErrorOpen(true);
+      }
+      setLoading(false)
+    }
+    catch(error){
+      if (error.response.status === 401 ) {
+        setErrorMessage('Session Expired');
+        setErrorOpen(true);
+        useAuthStore.getState().resetAuthToken();
+        setAuth(null); // Update authentication state
+        navigate('/login')
+      }
+      else if(error.response.status === 404){
+        setScholarsData([]);
+      }
+      else{
+        setErrorMessage('Something went wrong');
+        setErrorOpen(true);
+      }
+      setLoading(false)
+    }
+  }
+  fetchScholar();
+}, [])
+
+//Fetch the Scholar Family Members
+useEffect(() => {
+  const fetchScholarFamMember = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+      
+      const response = await axios.get(`/api/scholarFam`, {
+        headers: {
+          'Authorization':
+          `Bearer ${authToken}`
+        }
+      });
+
+    if (response.status === 200) {
+        setScholarFamMembers(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+    } else {
+        setErrorOpen(true);
+        setAlertMessage('Failed to fetch data');
+    } 
+    } catch (error) {
+        if (error.response?.status === 401) {
+            setErrorOpen(true);
+            setErrorMessage("You've been logout");
+            navigate('/login');
+        }
+    }
+  };
+  fetchScholarFamMember();
+}, []);
+
+//Function to calculate the Year of scholar here
+useEffect(() => {
+  // Call your function to calculate the years
+  const calculateYearInProgram = () => {
+    const currentYear = new Date().getFullYear();
+    const yearStarted = parseInt(scholarsData.school_yr_started);
+
+    if (!isNaN(yearStarted)) {
+      const yearsInSystem = currentYear - yearStarted;
+      setYearsInProgram(yearsInSystem);
+    } else {
+      setYearsInProgram(0); // or handle invalid input as needed
+    }
+  };
+
+  // Execute the function
+  calculateYearInProgram();
+
+  // You may want to re-run this effect when scholarsData changes
+}, [scholarsData]);
 
 
   return (
@@ -175,23 +198,23 @@ export const ScholarProfileBox = () => {
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Status</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{scholars.scholar_status_name}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
           </MUI.Grid>
-  {/*
+
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">GWA</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{gwa}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Year Level</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{current_yr}</MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Years as Scholar</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{num_yrs_scholar}</MUI.Typography>
-          </MUI.Grid> */}
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{yearsInProgram}</MUI.Typography>
+          </MUI.Grid>
         </MUI.Box>
 
      </MUI.Grid>
@@ -254,25 +277,25 @@ export const ScholarProfileBox = () => {
           }}
         >
           
-            {/* <MUI.Box>
+            <MUI.Box>
                 <MUI.Typography variant='h5'>School</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{school}</MUI.Typography>
+                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}></MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>School Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{school_address}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Track</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{track}</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Graduated</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}>{shs_graduated}</MUI.Typography>
-            </MUI.Box> */}
+                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+            </MUI.Box>
           
         </MUI.Box>
       </MUI.Grid>

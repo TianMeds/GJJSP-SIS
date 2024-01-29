@@ -12,6 +12,9 @@ const useScholarProfileStore = create((set) => ({
     editScholarFamMembers: false,
     setEditScholarFamMembers: (newEditScholarFamMembers) => set({editScholarFamMembers: newEditScholarFamMembers}),
 
+    yearsInProgram: 0,
+    setYearsInProgram: (newYearsInProgram) => set({yearsInProgram: newYearsInProgram}),
+
     handleOpenScholarProfile: () => set({scholarProfile: true}),
     handleCloseScholarProfile: () => set({scholarProfile: false}),
 

@@ -1392,7 +1392,7 @@ useEffect(() => {
 
             <MUI.Grid id="incomeGrid">
               <MUI.InputLabel htmlFor="income" id="incomeLabel">
-                Income (in Pesos)
+                Monthly Income 
               </MUI.InputLabel>
               <Controller
                 name="income"
