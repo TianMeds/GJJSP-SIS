@@ -1466,39 +1466,178 @@ useEffect(() => {
             {/* First Column */}
             <MUI.Grid item xs={4}>
 
-              <MUI.Grid id="numFamMemGrid">
-                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+              <MUI.Grid id="trackNameGrid">
+                <MUI.InputLabel htmlFor="track_name" id="trackNameLabel">SHS Track</MUI.InputLabel>
+                <Controller
+                  name='track_name'
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: 'SHS Track is required',
+                    validate: (value) => value !== '' || 'Please select a SHS Track'
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="track_name"
+                        native
+                        {...field}
+                      >
+                        <option value="" disabled>Select SHS Track</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Technical-Vocational-Livelihood">Technical-Vocational-Livelihood</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Arts and Design">Arts and Design</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.track_name && (
+                  <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.track_name?.message}
+                  </p>
+                )}
+              </MUI.Grid>
+
+              <MUI.Grid id="strandNameGrid">
+                <MUI.InputLabel htmlFor="strand_name" id="strandNameLabel">SHS Strand</MUI.InputLabel>
+                <Controller
+                  name='strand_name'
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: 'SHS Strand is required',
+                    validate: (value) => value !== '' || 'Please select a SHS Strand'
+                  }}
+                  
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="strand_name"
+                        native
+                        {...field}
+                      >
+                        <option value="" disabled>Select SHS Strand</option>
+                        <option value="Accountancy, Business and Management (ABM)">Accountancy, Business and Management (ABM)</option>
+                        <option value="General Academic Strand (GAS)">General Academic Strand (GAS)</option>
+                        <option value="Humanities and Social Sciences (HUMSS)">Humanities and Social Sciences (HUMSS)</option>
+                        <option value="Science, Technology, Engineering and Mathematics (STEM)">Science, Technology, Engineering and Mathematics (STEM)</option>
+                        <option value="Information and Communications Technology">Information and Communications Technology (ICT)</option>
+                        <option value="Home Economics">Home Economics (HE)</option>
+                        <option value="Arts and Design">Arts and Design (AD)</option>
+                        <option value="Sports">Sports (SP)</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.strand_name && (
+                  <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.strand_name?.message}
+                  </p>
+                )}
+              </MUI.Grid>
+
+              <MUI.Grid id="HSGwaGrid">
+
+                <MUI.InputLabel htmlFor="gwa_school_yr_graduated" id="HSGwaLabel">High School GWA</MUI.InputLabel>
                 <MUI.TextField
                     type='text'
-                    id='num_fam_mem'
-                    placeholder='Number of Family Members'
+                    id='gwa_school_yr_graduated'
+                    placeholder='High School GWA'
                     fullWidth
-                    {...register("num_fam_mem", {
+                    defaultValue=""
+                    {...register("gwa_school_yr_graduated", {
                         required: {
                             value: true,
-                            message: 'Number of Family Members is required',
+                            message: 'High School GWA is required',
                         }
                     })}
                 />
-                {errors.num_fam_mem && (
+                {errors.hs_gwa && (
                     <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr' />
-                        {errors.num_fam_mem?.message}
+                        {errors.hs_gwa?.message}
                     </p>
                 )}
               </MUI.Grid>
 
-            </MUI.Grid>
-
+          </MUI.Grid>
             {/* Second Column */}
-            <MUI.Grid item xs={4}>
+            <MUI.Grid item xs={6}>
+
+                <MUI.Grid id="HsSchoolNameGrid">
+                  <MUI.InputLabel htmlFor="school_name" id="HsSchoolNameLabel">High School Name</MUI.InputLabel>
+                    <MUI.TextField
+                      type='text'
+                      id='school_name'
+                      placeholder='High School Name'
+                      fullWidth
+                      defaultValue=""
+                      {...register("school_name", {
+                          required: {
+                              value: true,
+                              message: 'High School Name is required',
+                          }
+                      })}
+                  />
+                  {errors.school_name && (
+                      <p id='errMsg'>
+                          <MUI.InfoIcon className='infoErr' />
+                          {errors.school_name?.message}
+                      </p>
+                  )}
+                </MUI.Grid>
+
+                <MUI.Grid id="HsSchoolAddressGrid">
+
+                  <MUI.InputLabel htmlFor="school_address" id="HsSchoolAddressLabel">High School Address</MUI.InputLabel>
+                  <MUI.TextField
+                      type='text'
+                      id='school_address'
+                      placeholder='High School Address'
+                      fullWidth
+                      defaultValue=""
+                      {...register("school_address", {
+                          required: {
+                              value: true,
+                              message: 'High School Address is required',
+                          }
+                      })}
+                  />
+                  {errors.school_address && (
+                      <p id='errMsg'>
+                          <MUI.InfoIcon className='infoErr' />
+                          {errors.school_address?.message}
+                      </p>
+                  )}
+                </MUI.Grid>
+
+                <MUI.Grid id="schoolYrGraduatedHsGrid">
+                  <MUI.InputLabel htmlFor="school_yr_graduated_hs" id="schoolYrGraduatedHsLabel">High School Year Graduated</MUI.InputLabel>
+                  <MUI.TextField
+                      type='text'
+                      id='school_yr_graduated_hs'
+                      placeholder='High School Year Graduated'
+                      fullWidth
+                      defaultValue=""
+                      {...register("school_yr_graduated_hs", {
+                          required: {
+                              value: true,
+                              message: 'High School Year Graduated is required',
+                          }
+                      })}
+                  />
+                  {errors.school_yr_graduated_hs && (
+                      <p id='errMsg'>
+                          <MUI.InfoIcon className='infoErr' />
+                          {errors.school_yr_graduated_hs?.message}
+                      </p>
+                  )}
+                </MUI.Grid>
 
             </MUI.Grid>
-
-            {/* Third Column */}
-            <MUI.Grid item xs={4}>
-
-            </MUI.Grid>    
 
           </MUI.Grid>
 
@@ -1514,39 +1653,94 @@ useEffect(() => {
             {/* First Column */}
             <MUI.Grid item xs={4}>
 
-              <MUI.Grid id="numFamMemGrid">
-                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+             <MUI.Grid id="undegradSyGrid">
+                <MUI.InputLabel htmlFor="undergrad_sy" id="undegradSyLabel">School Year</MUI.InputLabel>
                 <MUI.TextField
                     type='text'
-                    id='num_fam_mem'
-                    placeholder='Number of Family Members'
+                    id='undergrad_sy'
+                    placeholder='Current School Year'
                     fullWidth
-                    {...register("num_fam_mem", {
+                    defaultValue=""
+                    {...register("undergrad_sy", {
                         required: {
                             value: true,
-                            message: 'Number of Family Members is required',
+                            message: 'Current School Year is required',
                         }
                     })}
                 />
-                {errors.num_fam_mem && (
+                {errors.undergrad_sy && (
                     <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr' />
-                        {errors.num_fam_mem?.message}
+                        {errors.undergrad_sy?.message}  
                     </p>
                 )}
+             </MUI.Grid>
+            
+            </MUI.Grid>
+
+            <MUI.Grid item xs={4}>
+
+              <MUI.Grid id="currentYrLevelGrid">
+                <MUI.InputLabel htmlFor="current_yr_level" id="currentYrLevelLabel">Current Year Level</MUI.InputLabel>
+                <Controller
+                  name='current_yr_level'
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: 'Current Year Level is required',
+                    validate: (value) => value !== '' || 'Please select a Current Year Level'
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="current_yr_level"
+                        native
+                        {...field}
+                      >
+                        <option value="" disabled>Select Current Year Level</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                        <option value="5th Year">5th Year</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.current_yr_level && (
+                  <p id='errMsg'>
+                    <MUI.InfoIcon className='infoErr' />
+                    {errors.current_yr_level?.message}
+                  </p>
+                )}
               </MUI.Grid>
-
             </MUI.Grid>
 
-            {/* Second Column */}
             <MUI.Grid item xs={4}>
+              <MUI.Grid id="undergradGwaGrid">
+                <MUI.InputLabel htmlFor="gwa_current_school_yr" id="undergradGwaLabel">GWA Current School year</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='gwa_current_school_yr'
+                    placeholder='GWA Current School year'
+                    fullWidth
+                    defaultValue=""
+                    {...register("gwa_current_school_yr", {
+                        required: {
+                            value: true,
+                            message: 'GWA Current School year is required',
+                        }
+                    })}
+                />
+                {errors.gwa_current_school_yr && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.gwa_current_school_yr?.message}
+                    </p>
+                )}
+              </MUI.Grid> 
 
             </MUI.Grid>
-
-            {/* Third Column */}
-            <MUI.Grid item xs={4}>
-
-            </MUI.Grid>    
 
           </MUI.Grid>
 

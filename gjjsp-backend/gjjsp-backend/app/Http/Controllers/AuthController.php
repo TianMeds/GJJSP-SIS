@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Role;
 use App\Models\ScholarFamMember;
+use App\Models\HighschoolAcadDetails;   
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -54,6 +55,11 @@ class AuthController extends Controller
 
             // Create Scholar Family Member profile separately
             $scholarFamMember = ScholarFamMember::create([
+                'scholar_id' => $scholar->id,
+            ]);
+
+            // Create Scholar Highschool Academic Details profile separately
+            $highschoolAcadDetails = HighschoolAcadDetails::create([
                 'scholar_id' => $scholar->id,
             ]);
         }

@@ -74,7 +74,13 @@
 #occupationGrid,
 #incomeGrid,
 #famMemberContactGrid,
-#relationToScholarGrid
+#relationToScholarGrid,
+#trackNameGrid,
+#strandNameGrid,
+#HSGwaGrid,
+#HsSchoolNameGrid,
+#HsSchoolAddressGrid,
+#schoolYrGraduatedHsGrid
 {
    margin: 5px;
 }
@@ -129,7 +135,13 @@
 #occupationLabel,
 #incomeLabel,
 #famMemberContactLabel,
-#relationToScholarLabel{
+#relationToScholarLabel,
+#trackNameLabel,
+#strandNameLabel,
+#HSGwaLabel,
+#HsSchoolNameLabel,
+#HsSchoolAddressLabel,
+#schoolYrGraduatedHsLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -182,7 +194,13 @@
 #relationToScholarLabel::after,
 #occupationLabel::after,
 #incomeLabel::after,
-#famMemberContactLabel::after {
+#famMemberContactLabel::after,
+#trackNameLabel::after,
+#strandNameLabel::after,
+#HSGwaLabel::after,
+#HsSchoolNameLabel::after,
+#HsSchoolAddressLabel::after,
+#schoolYrGraduatedHsLabel::after {
     content: " *";
     color: red; 
 }   

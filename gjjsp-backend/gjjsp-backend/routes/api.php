@@ -12,6 +12,7 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\ScholarStatusController;
 use App\Http\Controllers\PromptController;
 use App\Http\Controllers\ScholarFamMemberController;
+use App\Http\Controllers\HighschoolAcadDetailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,20 +71,19 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::put('/project-partners/{id}', [ProjectPartnerController::class, 'update']);
     Route::delete('/project-partners/{id}', [ProjectPartnerController::class, 'destroy']);
     Route::get('/restoreProjectPartners/{id}', [ProjectPartnerController::class, 'restoreProjectPartner']);
-
     Route::apiResource('/scholar-status', ScholarStatusController::class)->only(['index', 'show']);
-
-    //Address Route
-    Route::post('/address', [AddressController::class, 'store']);
-    Route::put('/address/{id}', [AddressController::class, 'update']);
-    Route::apiResource('/address', AddressController::class)->only(['index', 'show']);  
-    Route::get('/scholarAddress', [AddressController::class, 'scholarAddress']);
 
     //Scholar Fam Member Route
     Route::put('/scholarFam/{id}', [ScholarFamMemberController::class, 'update']);
     Route::get('/scholarFam', [ScholarFamMemberController::class, 'getScholarFam']);
 
-
+    //High School Acad Detail Route
+    Route::apiResource('/highschool-acad-detail', HighschoolAcadDetailController::class)->only(['index', 'show']);
+    Route::post('/highschool-acad-detail', [HighschoolAcadDetailController::class, 'store']);
+    Route::put('/highschool-acad-detail/{id}', [HighschoolAcadDetailController::class, 'update']);
+    Route::delete('/highschool-acad-detail/{id}', [HighschoolAcadDetailController::class, 'destroy']);
+    Route::get('/restoreHighschoolAcadDetail/{id}', [HighschoolAcadDetailController::class, 'restoreHighschoolAcadDetail']);
+    
     //Submission Route
 });
 
