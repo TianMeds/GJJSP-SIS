@@ -66,4 +66,17 @@ class ProjectPartnerController extends Controller
 
         return response()->json(['message' => 'Project Partner deleted'], 200);
     }
+
+    public function restoreProjectPartner(ProjectPartner $projectPartner, $id)
+    {
+        $restored = ProjectPartner::withTrashed()->where('id', $id)->restore();
+
+        if($restored === 0) {
+            return response()->json(['message' => 'Project Partner not found'], 404);
+        } elseif ($restored === null) {
+           return response()->json(['message' => 'Error restoring project partner'], 500);
+        }
+
+        return response()->json(['message' => 'Project Partner restored'], 200);
+    }
 }

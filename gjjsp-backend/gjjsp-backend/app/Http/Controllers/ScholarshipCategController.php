@@ -66,4 +66,18 @@ class ScholarshipCategController extends Controller
     
         return response()->json(['message' => 'User deleted successfully'], 200);
     }
+
+
+    public function restoreScholarship(ScholarshipCateg $scholarshipCateg, $id)
+    {
+        $restored = ScholarshipCateg::withTrashed()->where('id', $id)->restore();
+
+        if ($restored === 0) {
+            return response()->json(['message' => 'Scholarship Category not found or already restored'], 404);
+        } elseif ($restored === null) {
+            return response()->json(['message' => 'Error restoring Scholarship Category '], 500);
+        }
+    
+        return response()->json(['message' => 'Scholarship Category  restored successfully'], 200);
+    }
 }

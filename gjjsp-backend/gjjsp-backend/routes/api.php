@@ -34,13 +34,15 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::get('/profile', [UserController::class, 'profile']);
     Route::put('/profile/{id}', [UserController::class, 'updateProfile']);
+    Route::get('/userScholar', [UserController::class, 'getUserRoles']);
+    Route::get('/restore/{id}', [UserController::class, 'restore']);
 
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
-    Route::get('/userScholar', [UserController::class, 'getUserRoles']);
     Route::put('/scholars/{user_id}', [ScholarController::class, 'update']);
-    Route::delete('/scholars/{user_id}', [ScholarController::class, 'destroy']);
+    Route::delete('/scholars/{id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
+    Route::get('/restore/{id}', [ScholarController::class, 'restoreScholar']);
 
     //Scholars Profile Route
     Route::post('/scholarsProfile', [ScholarController::class, 'storeScholarProfile']);
@@ -60,12 +62,14 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/scholarships', [ScholarshipCategController::class, 'store']);
     Route::put('/scholarships/{id}', [ScholarshipCategController::class, 'update']);
     Route::delete('/scholarships/{id}', [ScholarshipCategController::class, 'destroy']);
+    Route::get('/restoreScholarships/{id}', [ScholarshipCategController::class, 'restoreScholarship']);
 
     //ProjectPartner Route
     Route::apiResource('/project-partners', ProjectPartnerController::class)->only(['index', 'show']);
     Route::post('/project-partners', [ProjectPartnerController::class, 'store']);
     Route::put('/project-partners/{id}', [ProjectPartnerController::class, 'update']);
     Route::delete('/project-partners/{id}', [ProjectPartnerController::class, 'destroy']);
+    Route::get('/restoreProjectPartners/{id}', [ProjectPartnerController::class, 'restoreProjectPartner']);
 
     Route::apiResource('/scholar-status', ScholarStatusController::class)->only(['index', 'show']);
 

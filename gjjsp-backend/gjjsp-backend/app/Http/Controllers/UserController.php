@@ -100,6 +100,21 @@ class UserController extends Controller
 
     }
 
+    public function restore(User $user, $id)
+    {
+        $restored = User::withTrashed()->where('id', $id)->restore();
+
+        if ($restored === 0) {
+            return response()->json(['message' => 'User not found or already restored'], 404);
+        } elseif ($restored === null) {
+            return response()->json(['message' => 'Error restoring user'], 500);
+        }
+    
+        return response()->json(['message' => 'User restored successfully'], 200);
+    }
+
+
+
     // Get users based on RoleId 
     public function getUserRoles(Request $request)
     {

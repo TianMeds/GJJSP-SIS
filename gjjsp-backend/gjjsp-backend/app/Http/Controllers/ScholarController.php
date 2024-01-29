@@ -84,9 +84,21 @@ class ScholarController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Scholar $scholar)
+    public function destroy(Scholar $scholar, $id)
     {
-        $scholar->delete();
+        $deleted = Scholar::destroy($id);
+
+        if ($deleted === 0) {
+            return response()->json(['message' => 'Scholar not found or already deleted'], 404);
+        } elseif ($deleted === null) {
+            return response()->json(['message' => 'Error deleting scholar'], 500);
+        }
+    }
+    
+    public function restoreScholar($id)
+    {
+        $scholar = Scholar::onlyTrashed()->findOrFail($id);
+        $scholar->restore();
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }
