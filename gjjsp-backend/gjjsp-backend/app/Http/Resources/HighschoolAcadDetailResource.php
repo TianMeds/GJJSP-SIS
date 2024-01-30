@@ -16,7 +16,9 @@ class HighschoolAcadDetailResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'scholar_id' => $this->scholar_id,
             'track_name' => $this->track_name,
+            'strand_name' => $this->strand_name,
             'gwa_school_yr_graduated' => $this->gwa_school_yr_graduated,
             'school_name' => $this->school_name,
             'school_address' => $this->school_address,

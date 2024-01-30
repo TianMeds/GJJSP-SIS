@@ -6,18 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class HighschoolAcadDetails extends Model
+class UndergradAcadDetails extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory , SoftDeletes;
 
     protected $fillable = [
         'scholar_id',
-        'track_name',
-        'strand_name',
-        'gwa_school_yr_graduated',
-        'school_name',
-        'school_address',
-        'school_yr_graduated_hs',
+        'undergrad_sy',
+        'current_yr_level',
+        'gwa_current_school_yr',
     ];
 
     public $timestamps = false;
