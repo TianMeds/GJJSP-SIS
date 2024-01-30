@@ -70,8 +70,6 @@ class ScholarFamMemberController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            // Log the exception for further investigation
-            \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
     
             return response([
                 'status' => false,
@@ -79,11 +77,6 @@ class ScholarFamMemberController extends Controller
                 'error' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    
-        return response([
-            'status' => false,
-            'message' => 'Scholar Family Information not found',
-        ], Response::HTTP_NOT_FOUND);
     }
 
     /**

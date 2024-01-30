@@ -11,6 +11,7 @@ use App\Models\Scholar;
 use App\Models\Role;
 use App\Models\ScholarFamMember;
 use App\Models\HighschoolAcadDetails;   
+use App\Models\UndergradAcadDetails;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -60,6 +61,11 @@ class AuthController extends Controller
 
             // Create Scholar Highschool Academic Details profile separately
             $highschoolAcadDetails = HighschoolAcadDetails::create([
+                'scholar_id' => $scholar->id,
+            ]);
+
+            // Create Scholar Undergrad Academic Details profile separately
+            $undergradAcadDetails = UndergradAcadDetails::create([
                 'scholar_id' => $scholar->id,
             ]);
         }

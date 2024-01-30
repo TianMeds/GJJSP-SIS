@@ -13,6 +13,7 @@ use App\Http\Controllers\ScholarStatusController;
 use App\Http\Controllers\PromptController;
 use App\Http\Controllers\ScholarFamMemberController;
 use App\Http\Controllers\HighschoolAcadDetailController;
+use App\Http\Controllers\UndergradAcadDetailsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,14 +79,19 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/scholarFam', [ScholarFamMemberController::class, 'getScholarFam']);
 
     //High School Acad Detail Route
-    Route::apiResource('/highschool-acad-detail', HighschoolAcadDetailController::class)->only(['index', 'show']);
-    Route::post('/highschool-acad-detail', [HighschoolAcadDetailController::class, 'store']);
+    Route::get('/highschool-acad-detail', [HighschoolAcadDetailController::class, 'getHighschoolAcadDetail']);
     Route::put('/highschool-acad-detail/{id}', [HighschoolAcadDetailController::class, 'update']);
     Route::delete('/highschool-acad-detail/{id}', [HighschoolAcadDetailController::class, 'destroy']);
-    Route::get('/restoreHighschoolAcadDetail/{id}', [HighschoolAcadDetailController::class, 'restoreHighschoolAcadDetail']);
+    Route::get('/restore-highschool/{id}', [HighschoolAcadDetailController::class, 'restoreHighschoolAcadDetail']);
+
+    //Undergrad Acad Detail Route
+    Route::put('/undergrad-acad-detail/{id}', [UndergradAcadDetailsController::class, 'update']);
+    Route::delete('/undergrad-acad-detail/{id}', [UndergradAcadDetailsController::class, 'destroy']);
+    Route::get('/restore-undergrad/{id}', [UndergradAcadDetailsController::class, 'restoreUndergradAcadDetail']);
+    Route::get('/undergrad-acad-detail', [UndergradAcadDetailsController::class, 'getUndergradAcadDetail']);
     
     //Submission Route
-});
+}); 
 
 
 //Public Route

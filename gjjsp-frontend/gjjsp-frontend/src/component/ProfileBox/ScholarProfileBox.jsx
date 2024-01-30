@@ -16,7 +16,7 @@ export const ScholarProfileBox = () => {
     const {selectedUser} = useUserStore();
     const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
-    const {scholarFamMembers, setScholarFamMembers, yearsInProgram, setYearsInProgram} = useScholarProfileStore();
+    const {scholarFamMembers, setScholarFamMembers, yearsInProgram, setYearsInProgram, highschoolAcadDetails, setHighschoolAcadDetails, undergradAcadDetails, setUndergradAcadDetails  } = useScholarProfileStore();
     const navigate = useNavigate();
 
 //Fetch the Users Profiles
@@ -123,6 +123,66 @@ useEffect(() => {
     }
   };
   fetchScholarFamMember();
+}, []);
+
+//Fetch the High School Academic Details
+useEffect(() => {
+  const fetchHighSchoolAcademicDetails = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+
+      const response = await axios.get(`/api/highschool-acad-detail`, {
+        headers: {
+          'Authorization':
+          `Bearer ${authToken}`
+        }
+      });
+
+    if (response.status === 200) {
+        setHighschoolAcadDetails(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+    } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+    }
+    } catch (error) {
+        if (error.response?.status === 401) {
+            navigate('/login');
+        }
+    }
+  };
+  fetchHighSchoolAcademicDetails();
+}, []);
+
+//Fetch the Undergrad Academic Details
+useEffect(() => {
+  const fetchUndergradAcademicDetails = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+
+      const response = await axios.get(`/api/undergrad-acad-detail`, {
+        headers: {
+          'Authorization':
+          `Bearer ${authToken}`
+        }
+      });
+
+    if (response.status === 200) {
+        setUndergradAcadDetails(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+    } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+    }
+    } catch (error) {
+        if (error.response?.status === 401) {
+            navigate('/login');
+        }
+    } 
+  };
+  fetchUndergradAcademicDetails();
 }, []);
 
 //Function to calculate the Year of scholar here
@@ -279,22 +339,27 @@ useEffect(() => {
           
             <MUI.Box>
                 <MUI.Typography variant='h5'>School</MUI.Typography>
-                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}></MUI.Typography>
+                <MUI.Typography sx={{textTransform: 'uppercase', mt: 2}}>{highschoolAcadDetails.school_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>School Address</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{highschoolAcadDetails.school_address}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Track</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{highschoolAcadDetails.track_name}</MUI.Typography>
+            </MUI.Box>
+
+            <MUI.Box sx={{mt: 3}}>
+                <MUI.Typography variant='h5'>Strand</MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{highschoolAcadDetails.strand_name}</MUI.Typography>
             </MUI.Box>
 
             <MUI.Box sx={{mt: 3}}>
                 <MUI.Typography variant='h5'>Graduated</MUI.Typography>
-                <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+                <MUI.Typography sx={{mt: 2}}>{highschoolAcadDetails.school_yr_graduated_hs}</MUI.Typography>
             </MUI.Box>
           
         </MUI.Box>

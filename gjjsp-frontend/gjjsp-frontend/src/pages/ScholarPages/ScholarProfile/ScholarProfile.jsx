@@ -63,7 +63,9 @@ export default function ScholarProfile() {
   const {
     editScholarProfile, setEditScholarProfile, selectedScholarProfile, setSelectedScholarProfile, 
     handleCloseScholarProfile, handleOpenScholarProfile, scholarProfiles, scholarProfile, setScholarProfiles,
-    scholarFamMembers, scholarFamMember, setScholarFamMembers, selectedScholarFamMember,setSelectedScholarFamMember, editScholarFamMembers, setEditScholarFamMembers,
+    scholarFamMembers,setScholarFamMembers, selectedScholarFamMember,setSelectedScholarFamMember, editScholarFamMembers, setEditScholarFamMembers,
+    highschoolAcadDetails, setHighschoolAcadDetails, undergradAcadDetails, setUndergradAcadDetails, selectedHighschoolAcadDetail, setSelectedHighschoolAcadDetail,
+    selectedUndergradAcadDetail, setSelectedUndergradAcadDetail, editHighschoolAcadDetails, setEditHighschoolAcadDetails, editUndergradAcadDetails, setEditUndergradAcadDetails,
   } = useScholarProfileStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
@@ -144,12 +146,28 @@ export default function ScholarProfile() {
       fam_mem_mobile_num: data.fam_mem_mobile_num,
   };
 
+    const highschoolData = {
+      track_name: data.track_name,
+      strand_name: data.strand_name,
+      gwa_school_yr_graduated: data.gwa_school_yr_graduated,
+      school_name: data.school_name,
+      school_address: data.school_address,
+      school_yr_graduated_hs: data.school_yr_graduated_hs,
+    };
+
+    const undergradData = {
+      undergrad_sy: data.undergrad_sy,
+      current_yr_level: data.current_yr_level,
+      gwa_current_school_yr: data.gwa_current_school_yr,
+    };
+    
     try {
         if (editScholarProfile) {
             // Update Scholar Profile
             setLoading(true);
-            setLoadingMessage('Updating profile...');
+            setLoadingMessage('Updating personal information...');
             const responseProfile = await axios.put(`/api/scholarsProfile/${selectedScholarProfile.id}`, formattedData, config);
+            console.log(selectedScholarProfile.id)
             setEditScholarProfile(false);
             handleCloseScholarProfile();
             setAlertOpen(true);
@@ -164,7 +182,7 @@ export default function ScholarProfile() {
         if (responseProfiles.status === 200) {
             setScholarProfiles(responseProfiles.data.data);
             setAlertOpen(true);
-            setAlertMessage('Users list has been updated');
+            setAlertMessage('Profiled has been updated');
         } else {
             setErrorOpen(true);
             setAlertMessage('Failed to fetch data');
@@ -173,13 +191,13 @@ export default function ScholarProfile() {
         if (editScholarFamMembers) {
             // Update Scholar Family Member
             setLoading(true);
-            setLoadingMessage('Updating family member...');
+            setLoadingMessage('Updating family member data...');
             const responseFam = await axios.put(`/api/scholarFam/${selectedScholarFamMember.id}`, scholarFamMemData, config);
+            console.log(selectedScholarFamMember.id)
             setEditScholarFamMembers(false);
             handleCloseScholarProfile();
             setAlertOpen(true);
             setAlertMessage('Family Member Updated');
-            setLoading(false);
         }
 
         const responseFamMembers = await axios.get(`/api/scholarFam`, {
@@ -191,12 +209,66 @@ export default function ScholarProfile() {
         if (responseFamMembers.status === 200) {
             setScholarFamMembers(responseFamMembers.data.data);
             setAlertOpen(true);
-            setAlertMessage('Users list has been updated');
+            setAlertMessage('Family data has been updated');
         } else {
             setErrorOpen(true);
-            setAlertMessage('Failed to fetch data');
+            setErrorMessage('Failed to fetch data');
         }
-        
+
+        if (editHighschoolAcadDetails) {
+            // Update High School Data
+            setLoading(true);
+            setLoadingMessage('Updating high school data...');
+            const responseHighschool = await axios.put(`/api/highschool-acad-detail/${selectedHighschoolAcadDetail.id}`, highschoolData, config);
+            setEditHighschoolAcadDetails(false);
+            handleCloseScholarProfile();
+            setAlertOpen(true);
+            setAlertMessage('High School Data Updated');
+        }
+
+        const responseHighschool = await axios.get(`/api/highschool-acad-detail`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (responseHighschool.status === 200) {
+          setHighschoolAcadDetails(responseHighschool.data.data);
+          setAlertOpen(true);
+          setAlertMessage('High School data has been updated');
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage("Failed to fetch data")
+        }
+
+        if (editUndergradAcadDetails) {
+          //Update Undergrad Data
+          setLoading(true);
+          setLoadingMessage('Updating Undergrad data...');
+          const responseUndergrad = await axios.put(`/api/undergrad-acad-detail/${selectedUndergradAcadDetail.id}`, undergradData, config);
+          setEditUndergradAcadDetails(false);
+          handleCloseScholarProfile();
+          setAlertOpen(true);
+          setAlertMessage('Undergraduate Data Updated');
+          setLoading(false);
+        }
+
+        const responseUndergrad = await axios.get(`/api/undergrad-acad-detail`, {
+          headers: {
+            'Authorization' : `Bearer ${authToken}`
+          }
+        });
+
+        if (responseUndergrad.status === 200) {
+          setUndergradAcadDetails(responseUndergrad.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Undergraduate data has been updated');
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage("Failed to fetch data")
+        }
 
         form.reset(FormValues);
     } catch (error) {
@@ -317,6 +389,67 @@ export default function ScholarProfile() {
     };
     fetchScholarFamMember();
   }, []);
+
+  // Fetch High School Data
+  useEffect(() => {
+    const fetchHighSchool = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+      
+        const response = await axios.get(`/api/highschool-acad-detail`, {
+          headers: {
+            'Authorization':
+            `Bearer ${authToken}`
+          }
+        });
+
+      if (response.status === 200) {
+          setHighschoolAcadDetails(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Users list has been updated');
+      } else {
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch data');
+      }
+      } catch (error) {
+          if (error.response?.status === 401) {
+              navigate('/login');
+          }
+      }
+    };
+    fetchHighSchool();
+  }, []);
+
+  // Fetch Undergrad Data
+  useEffect(() => {
+    const fetchUndergrad = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+
+        const response = await axios.get(`/api/undergrad-acad-detail`, {
+          headers: {
+            'Authorization':
+            `Bearer ${authToken}`
+          }
+        });
+      
+      if (response.status === 200) {
+          setUndergradAcadDetails(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Users list has been updated');
+      } else {
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch data');
+      }
+      } catch (error) {
+          if (error.response?.status === 401) {
+              navigate('/login');
+          }
+      }
+    };
+    fetchUndergrad();
+  }, []);
+    
 
 // Fetch regions and provinces concurrently
 useEffect(() => {
@@ -457,6 +590,8 @@ useEffect(() => {
     setLoadingMessage("Please wait opening edit profile");
     setEditScholarProfile(true);
     setEditScholarFamMembers(true);
+    setEditHighschoolAcadDetails(true);
+    setEditUndergradAcadDetails(true);
   
     try {
       const authToken = useAuthStore.getState().getAuthToken();
@@ -489,7 +624,6 @@ useEffect(() => {
           fb_account: ''
         });
   
-        handleOpenScholarProfile();
         form.reset();
       } else {
         const profileWithoutPassword = {
@@ -525,7 +659,6 @@ useEffect(() => {
           fam_mem_mobile_num: '',
         });
 
-        handleOpenScholarProfile();
         form.reset();
       }
 
@@ -534,11 +667,82 @@ useEffect(() => {
         setScholarFamMembers(scholarFamResponse.data.data);
 
         setAlertOpen(true);
-        setAlertMessage('Users list has been updated');
+        setAlertMessage('Family Members data has been updated');
       } else {
         setErrorOpen(true);
         setAlertMessage('Failed to fetch data');
       }
+
+      // Fetch High School Data
+      const highschoolResponse = await axios.get(`/api/highschool-acad-detail`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+        validateStatus: function (status) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+      });
+
+      const highschoolData = highschoolResponse.data.data;
+
+      if (highschoolResponse.status === 404 || !highschoolData || highschoolData.length === 0) {
+        setSelectedHighschoolAcadDetail({
+          track_name: '',
+          strand_name: '',
+          gwa_school_yr_graduated: '',
+          school_name: '',
+          school_address: '',
+          school_yr_graduated_hs: '',
+        });
+
+        form.reset();
+      }
+
+      if (highschoolResponse.status === 200) {
+        setSelectedHighschoolAcadDetail(highschoolResponse.data.data);
+        setHighschoolAcadDetails(highschoolResponse.data.data);
+
+        setAlertOpen(true);
+        setAlertMessage('High School Data has been updated');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+
+      // Fetch Undergrad Data
+      const undergradResponse = await axios.get(`/api/undergrad-acad-detail`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+        validateStatus: function (status) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+      });
+
+      const undergradData = undergradResponse.data.data;
+      
+      if (undergradResponse.status === 404 || !undergradData || undergradData.length === 0) {
+        setSelectedUndergradAcadDetail({
+          undergrad_sy: '',
+          current_yr_level: '',
+          gwa_current_school_yr: '',
+        });
+
+        handleOpenScholarProfile();
+        form.reset();
+      }
+
+      if (undergradResponse.status === 200) {
+        setSelectedUndergradAcadDetail(undergradResponse.data.data);
+        setUndergradAcadDetails(undergradResponse.data.data);
+        
+        setAlertOpen(true);
+        setAlertMessage('Undergrad Data has been updated');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+
       handleOpenScholarProfile();
       setLoading(false);
     } catch (error) {
@@ -1471,7 +1675,7 @@ useEffect(() => {
                 <Controller
                   name='track_name'
                   control={control}
-                  defaultValue=""
+                  defaultValue={highschoolAcadDetails.track_name}
                   rules={{
                     required: 'SHS Track is required',
                     validate: (value) => value !== '' || 'Please select a SHS Track'
@@ -1505,7 +1709,7 @@ useEffect(() => {
                 <Controller
                   name='strand_name'
                   control={control}
-                  defaultValue=""
+                  defaultValue={highschoolAcadDetails.strand_name}
                   rules={{
                     required: 'SHS Strand is required',
                     validate: (value) => value !== '' || 'Please select a SHS Strand'
@@ -1547,7 +1751,7 @@ useEffect(() => {
                     id='gwa_school_yr_graduated'
                     placeholder='High School GWA'
                     fullWidth
-                    defaultValue=""
+                    defaultValue={highschoolAcadDetails.gwa_school_yr_graduated}
                     {...register("gwa_school_yr_graduated", {
                         required: {
                             value: true,
@@ -1574,7 +1778,7 @@ useEffect(() => {
                       id='school_name'
                       placeholder='High School Name'
                       fullWidth
-                      defaultValue=""
+                      defaultValue={highschoolAcadDetails.school_name}
                       {...register("school_name", {
                           required: {
                               value: true,
@@ -1598,7 +1802,7 @@ useEffect(() => {
                       id='school_address'
                       placeholder='High School Address'
                       fullWidth
-                      defaultValue=""
+                      defaultValue={highschoolAcadDetails.school_address}
                       {...register("school_address", {
                           required: {
                               value: true,
@@ -1621,7 +1825,7 @@ useEffect(() => {
                       id='school_yr_graduated_hs'
                       placeholder='High School Year Graduated'
                       fullWidth
-                      defaultValue=""
+                      defaultValue={highschoolAcadDetails.school_yr_graduated_hs}
                       {...register("school_yr_graduated_hs", {
                           required: {
                               value: true,

@@ -12,6 +12,16 @@ const useScholarProfileStore = create((set) => ({
     editScholarFamMembers: false,
     setEditScholarFamMembers: (newEditScholarFamMembers) => set({editScholarFamMembers: newEditScholarFamMembers}),
 
+    highschoolAcadDetails: [],
+    setHighschoolAcadDetails: (highschoolAcadDetails) => set({highschoolAcadDetails}),
+    editHighschoolAcadDetails: false,
+    setEditHighschoolAcadDetails: (newEditHighschoolAcadDetails) => set({editHighschoolAcadDetails: newEditHighschoolAcadDetails}),
+
+    undergradAcadDetails: [],
+    setUndergradAcadDetails: (undergradAcadDetails) => set({undergradAcadDetails}),
+    editUndergradAcadDetails: false,
+    setEditUndergradAcadDetails: (newEditUndergradAcadDetails) => set({editUndergradAcadDetails: newEditUndergradAcadDetails}),
+
     yearsInProgram: 0,
     setYearsInProgram: (newYearsInProgram) => set({yearsInProgram: newYearsInProgram}),
 
@@ -21,11 +31,15 @@ const useScholarProfileStore = create((set) => ({
 
     editScholarProfile: false,
     setEditScholarProfile: (newEditScholarProfile) => set({editScholarProfile: newEditScholarProfile}),
+
     selectedScholarProfile: null,
     setSelectedScholarProfile: (selectedScholarProfile) => set({selectedScholarProfile}),   
-
     selectedScholarFamMember: null,
     setSelectedScholarFamMember: (selectedScholarFamMember) => set({selectedScholarFamMember}),
+    selectedHighschoolAcadDetail: null,
+    setSelectedHighschoolAcadDetail: (selectedHighschoolAcadDetail) => set({selectedHighschoolAcadDetail}),
+    selectedUndergradAcadDetail: null,
+    setSelectedUndergradAcadDetail: (selectedUndergradAcadDetail) => set({selectedUndergradAcadDetail}),
 }));
 
 export default useScholarProfileStore;
