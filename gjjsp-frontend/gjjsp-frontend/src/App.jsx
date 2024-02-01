@@ -26,7 +26,6 @@ const LazyViewSubmission = lazy(() => import('./pages/ClientPages/ViewSubmission
 
 //Scholar Imports
 const LazyScholarDashboard = lazy(() => import('./pages/ScholarPages/ScholarDashboard/ScholarDashboard'));
-const LazyScholarSubmission = lazy(() => import('./pages/ScholarPages/ScholarSubmission/ScholarSubmission'));
 const LazyScholarProfile = lazy(() => import('./pages/ScholarPages/ScholarProfile/ScholarProfile'));
 const LazyScholarSubmissionRenewal = lazy(() => import('./pages/ScholarPages/ScholarSubmission/RenewalSubmission'));
 const LazyScholarSubmissionGraduating = lazy(() => import('./pages/ScholarPages/ScholarSubmission/GraduatingSubmission'));
@@ -100,15 +99,6 @@ function App() {
           element={
             <Suspense fallback="Scholarlink Loading...">
               <LazyScholarDashboard/>
-            </Suspense>
-          }
-        />
-
-        <Route 
-          path="scholar-submission" 
-          element={
-            <Suspense fallback="Scholarlink Loading...">
-              <LazyScholarSubmission/>
             </Suspense>
           }
         />
