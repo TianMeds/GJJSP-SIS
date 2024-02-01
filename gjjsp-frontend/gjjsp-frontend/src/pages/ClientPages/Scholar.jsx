@@ -30,7 +30,8 @@ export default function Scholar({state}) {
   
   //Zustand hooks 
   const {getAuthToken,alertOpen, setAlertOpen, errorOpen, setErrorOpen,alertMessage, setAlertMessage, errorMessage, setErrorMessage} = useAuthStore();
-  const {scholars, setScholars,setSelectedScholar, scholarsData, setScholarsData} = useScholarStore();
+  const {scholars, setScholars,setSelectedScholar} = useScholarStore();
+  const [scholarsData, setScholarsData] = useState([]);
   const { setLoading, setLoadingMessage} = useLoginStore();
   const {setAvatarInitial, users, setUsers, setSelectedUser} = useUserStore();
 

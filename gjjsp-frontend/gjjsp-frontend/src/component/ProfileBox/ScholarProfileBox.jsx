@@ -268,7 +268,7 @@ useEffect(() => {
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Year Level</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{undergradAcadDetails.current_yr_level}</MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid mr={3}>

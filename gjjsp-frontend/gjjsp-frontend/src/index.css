@@ -141,7 +141,9 @@
 #HSGwaLabel,
 #HsSchoolNameLabel,
 #HsSchoolAddressLabel,
-#schoolYrGraduatedHsLabel{
+#schoolYrGraduatedHsLabel,
+#gwaLabel,
+#remarksLabel{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;

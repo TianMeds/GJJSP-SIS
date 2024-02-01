@@ -1,8 +1,5 @@
 import React from 'react'
 import * as MUI from '../../import'
-import { Box, Grid, Typography } from '@mui/material';
-import { Carousel } from 'react-responsive-carousel';
-import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import the required styles
 
 import BGIMG1 from '../../../src/assets/BGIMG1.jpg';
 import BGIMG2 from '../../../src/assets/BGIMG2.jpg';

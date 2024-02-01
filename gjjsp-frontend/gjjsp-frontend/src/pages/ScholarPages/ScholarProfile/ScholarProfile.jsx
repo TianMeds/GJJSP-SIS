@@ -1529,7 +1529,7 @@ useEffect(() => {
               </MUI.Grid>
 
               <MUI.Grid id="relationToScholarGrid">
-              <MUI.InputLabel htmlFor="relation_to_scholar" id="relationToScholarLabel">Guarduan Relation</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="relation_to_scholar" id="relationToScholarLabel">Guardian Relation</MUI.InputLabel>
               <Controller
                 name='relation_to_scholar'
                 control={control}
@@ -1687,7 +1687,7 @@ useEffect(() => {
                         native
                         {...field}
                       >
-                        <option value="" disabled>Select SHS Track</option>
+                        <option value="">Select SHS Track</option>
                         <option value="Academic">Academic</option>
                         <option value="Technical-Vocational-Livelihood">Technical-Vocational-Livelihood</option>
                         <option value="Sports">Sports</option>
@@ -1722,7 +1722,7 @@ useEffect(() => {
                         native
                         {...field}
                       >
-                        <option value="" disabled>Select SHS Strand</option>
+                        <option value="" >Select SHS Strand</option>
                         <option value="Accountancy, Business and Management (ABM)">Accountancy, Business and Management (ABM)</option>
                         <option value="General Academic Strand (GAS)">General Academic Strand (GAS)</option>
                         <option value="Humanities and Social Sciences (HUMSS)">Humanities and Social Sciences (HUMSS)</option>

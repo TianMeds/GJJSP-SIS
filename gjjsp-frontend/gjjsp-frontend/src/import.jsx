@@ -113,6 +113,8 @@
   import Stepper from '@mui/material/Stepper';
   import Step from '@mui/material/Step';
   import StepLabel from '@mui/material/StepLabel';
+  import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+  import AddIcon from '@mui/icons-material/Add';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -236,5 +238,7 @@
     HttpsIcon,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    ErrorOutlineOutlinedIcon,
+    AddIcon
   };

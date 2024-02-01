@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as MUI from '../../import'
 import { Link } from 'react-router-dom';
-import { DropdownMenu } from '../../component/Layout/DropdownMenu/DropdownMenu';
+import { DropdownMenu, DropdownMenu2 } from '../../component/Layout/DropdownMenu/DropdownMenu';
 
 const listItemStyles = {
   paddingLeft: '16px',
@@ -119,7 +119,7 @@ export const SP_ListItems = (
   </MUI.ListSubheader>
 
     <CustomListItem to="/scholar-dashboard" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
-    <CustomListItem to="/scholar-submission" icon={<MUI.AppRegistrationIcon />} secondary="Submissions" />
+    <DropdownMenu2/>
   
   {/* -------------------- Quick Actions Drawer Option --------------------*/}
   <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>

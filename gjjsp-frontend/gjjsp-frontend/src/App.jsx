@@ -28,6 +28,9 @@ const LazyViewSubmission = lazy(() => import('./pages/ClientPages/ViewSubmission
 const LazyScholarDashboard = lazy(() => import('./pages/ScholarPages/ScholarDashboard/ScholarDashboard'));
 const LazyScholarSubmission = lazy(() => import('./pages/ScholarPages/ScholarSubmission/ScholarSubmission'));
 const LazyScholarProfile = lazy(() => import('./pages/ScholarPages/ScholarProfile/ScholarProfile'));
+const LazyScholarSubmissionRenewal = lazy(() => import('./pages/ScholarPages/ScholarSubmission/RenewalSubmission'));
+const LazyScholarSubmissionGraduating = lazy(() => import('./pages/ScholarPages/ScholarSubmission/GraduatingSubmission'));
+const LazySholarSubmissionAlumni = lazy(() => import('./pages/ScholarPages/ScholarSubmission/AlumniSubmission'));
 
 const ROLES = {
   'Admin': 1,
@@ -106,6 +109,33 @@ function App() {
           element={
             <Suspense fallback="Scholarlink Loading...">
               <LazyScholarSubmission/>
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="submission-renewal"
+          element={
+            <Suspense fallback="Scholarlink Loading...">
+              <LazyScholarSubmissionRenewal/>
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="submission-graduating"
+          element={
+            <Suspense fallback="Scholarlink Loading...">
+              <LazyScholarSubmissionGraduating/>
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="submission-alumni"
+          element={
+            <Suspense fallback="Scholarlink Loading...">
+              <LazySholarSubmissionAlumni/>
             </Suspense>
           }
         />
