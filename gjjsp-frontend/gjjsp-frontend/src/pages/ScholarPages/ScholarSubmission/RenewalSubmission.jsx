@@ -7,7 +7,15 @@ import useSubmissionStore from '../../../store/SubmissionStore';
 import HistoryIcon from '@mui/icons-material/History';
 import axios from '../../../api/axios';
 
+import {useForm, Controller } from 'react-hook-form';
+import { DevTool } from "@hookform/devtools";
+
 export default function RenewalSubmission() {
+
+  //React Hook form 
+  const form  = useForm();
+  const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
+  const { errors } = formState;
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -80,9 +88,10 @@ export default function RenewalSubmission() {
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
                 <MUI.Grid item xs={12}>
-                  <MUI.InputLabel id="gwaLabel">1. General Weighted Average</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="gwa_value" id="gwaLabel">1. General Weighted Average</MUI.InputLabel>
                   
                   <MUI.TextField
+                    id="gwa_value"
                     placeholder="Enter GWA this term"
                     fullWidth // Make the text field take up the full width
                     margin="normal" // Adjust spacing as needed
@@ -93,13 +102,28 @@ export default function RenewalSubmission() {
                       height: 'auto',
                       marginBottom: 2,
                     }}
+                    {...register("gwa_value", {
+                      required: {
+                          value: true,
+                          message: 'GWA is required',
+                      }
+                    })}
                   />
+
+                  {errors.gwa_value && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.gwa_value?.message}
+                    </p>
+                  )}
+                    
                 </MUI.Grid>
 
                 <MUI.Grid item xs={12}>
-                  <MUI.InputLabel id="remarksLabel">2. Add remarks about GWA</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="remarks_message" id="remarksLabel">2. Add remarks about GWA</MUI.InputLabel>
                   
                   <MUI.TextField
+                    id="remarks_message"
                     placeholder="Add remark"
                     fullWidth // Make the text field take up the full width
                     margin="normal" // Adjust spacing as needed
@@ -110,7 +134,20 @@ export default function RenewalSubmission() {
                       height: 'auto',
                       marginBottom: 2,
                     }}
+                    {...register("remarks_message", {
+                      required: {
+                          value: true,
+                          message: 'Remarks is required',
+                      }
+                    })}
                   />
+
+                  {errors.remarks_message && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.remarks_message?.message}
+                    </p>
+                  )}
                 </MUI.Grid>
               </MUI.Grid>
 

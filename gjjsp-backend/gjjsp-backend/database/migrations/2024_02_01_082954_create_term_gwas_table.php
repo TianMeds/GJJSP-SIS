@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('term_gwas', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('submission_id')->constrained('submissions');
+            $table->string('gwa_value');
+            $table->softDeletes();
         });
     }
 

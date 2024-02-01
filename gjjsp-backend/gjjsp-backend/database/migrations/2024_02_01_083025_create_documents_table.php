@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('submission_id')->constrained('submissions');
+            $table->string('document_name');
+            $table->string('filepath');
+            $table->softDeletes();
         });
     }
 

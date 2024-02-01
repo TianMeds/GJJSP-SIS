@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('graduating_forms', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('submission_id')->constrained('submissions');
+            $table->string('future_company_name');
+            $table->string('future_company_location');
+            $table->string('future_position');
+            $table->string('meeting_benefactor_sched');
+            $table->softDeletes();
         });
     }
 

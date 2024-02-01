@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GraduatingFormResource;
+use App\Http\Resources\GraduatingFormCollection;
 use App\Models\GraduatingForm;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class GraduatingFormController extends Controller
 {

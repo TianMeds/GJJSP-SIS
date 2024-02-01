@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->string('submitted_by');
+            $table->foreignId('submitted_by')->constrained('scholars');
             $table->string('submission_type')->nullable();
-            $table->string('due_datetime');
-            $table->dateTime('submitted_datetime');
-            $table->string('submission_status');
-            $table->string('updated_by');
-            $table->timestamps();
+            $table->string('school_yr_submitted')->nullable();
+            $table->string('term_submitted')->nullable();
+            $table->string('due_datetime')->nullable();
+            $table->dateTime('submitted_datetime')->nullable()->default(now());
+            $table->string('submission_status')->nullable();
+            $table->string('updated_by')->nullable();
+            $table->softDeletes();
         });
     }
 

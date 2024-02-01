@@ -5,7 +5,15 @@ import { Link } from 'react-router-dom';
 import theme from '../../../context/theme';
 import HistoryIcon from '@mui/icons-material/History';
 
+import {useForm, Controller } from 'react-hook-form';
+import { DevTool } from "@hookform/devtools";
+
 export default function GraduatingSubmission() {
+
+      //React Hook form 
+      const form  = useForm();
+      const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
+      const { errors } = formState;
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -76,10 +84,11 @@ export default function GraduatingSubmission() {
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
               <MUI.Grid item xs={12}>
-                <MUI.InputLabel id="gwaLabel">1. Future Company Name</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="future_company_name" id="futureCompanyNameLabel">1. Future Company Name</MUI.InputLabel>
                 
                 <MUI.TextField
-                  placeholder="Enter GWA this term"
+                  id="future_company_name"
+                  placeholder="Future Company Name"
                   fullWidth // Make the text field take up the full width
                   margin="normal" // Adjust spacing as needed
                   sx={{
@@ -89,14 +98,28 @@ export default function GraduatingSubmission() {
                     height: 'auto',
                     marginBottom: 2,
                   }}
+                  {...register("future_company_name", {
+                    required: {
+                        value: true,
+                        message: 'Future Company Name is required',
+                    }
+                  })}
                 />
+
+                  {errors.future_company_name && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.company_name?.message}
+                    </p>
+                  )}
               </MUI.Grid>
 
             <MUI.Grid item xs={12}>
-              <MUI.InputLabel id="remarksLabel">2. Future Company Location</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="future_company_location" id="futureCompanyLocationLabel">2. Future Company Location</MUI.InputLabel>
               
               <MUI.TextField
-                placeholder="Add remark"
+                id="future_company_location"
+                placeholder="Future Company Location"
                 fullWidth // Make the text field take up the full width
                 margin="normal" // Adjust spacing as needed
                 sx={{
@@ -106,14 +129,28 @@ export default function GraduatingSubmission() {
                   height: 'auto',
                   marginBottom: 2,
                 }}
+                {...register("future_company_location", {
+                  required: {
+                      value: true,
+                      message: 'Future Company Location is required',
+                  }
+                })}
               />
+
+                {errors.future_company_location && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.future_company_location?.message}
+                  </p>
+                )}
             </MUI.Grid>
 
             <MUI.Grid item xs={12}>
-              <MUI.InputLabel id="remarksLabel">3. Future Job Position</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="future_position" id="futureJobLabel">3. Future Job Position</MUI.InputLabel>
               
               <MUI.TextField
-                placeholder="Add remark"
+                id="future_position"
+                placeholder="Future Job Position"
                 fullWidth // Make the text field take up the full width
                 margin="normal" // Adjust spacing as needed
                 sx={{
@@ -123,16 +160,29 @@ export default function GraduatingSubmission() {
                   height: 'auto',
                   marginBottom: 2,
                 }}
+                {...register("future_position", {
+                  required: {
+                      value: true,
+                      message: 'Future Job Position is required',
+                  }
+                })}
               />
+
+                {errors.future_position && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.future_position?.message}
+                  </p>
+                )}
             </MUI.Grid>
 
 
             <MUI.Grid item xs={4}>
-              <MUI.InputLabel id="remarksLabel">4. Meeting with benefactor schedule</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="meeting_benefactor_sched" id="meetingDateLabel">4. Meeting with benefactor schedule</MUI.InputLabel>
               
               <MUI.TextField
+                  id="meeting_benefactor_sched"
                   type='date'
-                  id='birthdate'
                   defaultValue=""
                   fullWidth // Make the text field take up the full width
                   sx={{
@@ -142,7 +192,21 @@ export default function GraduatingSubmission() {
                     height: 'auto',
                     marginBottom: 2,
                   }}
+                  {...register("meeting_benefactor_sched", {
+                    required: {
+                        value: true,
+                        message: 'Meeting with benefactor schedule is required',
+                    }
+                  })}
               />
+
+                {errors.meeting_benefactor_sched && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.meeting_benefactor_sched?.message}
+                  </p>
+                )}
+
             </MUI.Grid>
 
             </MUI.Grid>
@@ -371,9 +435,11 @@ export default function GraduatingSubmission() {
 
               <MUI.Box sx={{ ml: 1 }}>  
 
-              <MUI.Button variant='contained' sx={{ mb: { xs: 1, sm: 0 } }}>
-                  Submit
-                </MUI.Button>
+              <MUI.Button variant='contained' sx={{ mb: { xs: 1, sm: 0 } }}
+                type='submit'
+              >
+                Submit
+              </MUI.Button>
 
 
                 <MUI.Button variant='text' sx={{color: '#091E42', ml: { xs: 2, sm: 2 }, mb: { xs: 1, sm: 0 } }}>
@@ -384,6 +450,8 @@ export default function GraduatingSubmission() {
               </MUI.Grid>
           </MUI.Grid>
         </MUI.Grid>
+
+        <DevTool control={control} />
       </MUI.Container>
     </MUI.ThemeProvider>
   </Layout>

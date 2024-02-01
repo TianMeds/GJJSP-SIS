@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('alumni_forms', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('submission_id')->constrained('submissions');
+            $table->string('company_name')->nullable();
+            $table->string('position_in_company')->nullable();
+            $table->string('company_location')->nullable();
+            $table->string('licensure_exam_type')->nullable();
+            $table->string('exam_passed_date')->nullable();
+            $table->string('volunteer_group_name')->nullable();
+            $table->string('yr_volunteered')->nullable();
+            $table->softDeletes();
         });
     }
 

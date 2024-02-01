@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TermGwaResource;
+use App\Http\Resources\TermGwaCollection;
 use App\Models\TermGwa;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class TermGwaController extends Controller
 {

@@ -13,11 +13,14 @@ class Submission extends Model
     protected $fillable = [
         'submitted_by',
         'submission_type',
-        'due_datetime',
+        'school_yr_submitted',
         'term_submitted',
+        'due_datetime',
         'school_yr_submitted',
         'submitted_datetime',
         'submission_status',
         'updated_by',
     ];
+
+    public $timestamps = false;
 }

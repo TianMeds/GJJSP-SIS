@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AlumniFormResource;
+use App\Http\Resources\AlumniFormCollection;
 use App\Models\AlumniForm;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AlumniFormController extends Controller
 {
@@ -12,7 +15,8 @@ class AlumniFormController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new AlumniFormCollection
+        (AlumniForm::all()), Response::HTTP_OK);
     }
 
     /**
@@ -28,7 +32,7 @@ class AlumniFormController extends Controller
      */
     public function show(AlumniForm $alumniForm)
     {
-        //
+        return new AlumniFormResource($alumniForm);
     }
 
     /**

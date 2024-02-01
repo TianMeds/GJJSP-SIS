@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RemarksResource;
+use App\Http\Resources\RemarksCollection;
 use App\Models\Remarks;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RemarksController extends Controller
 {
