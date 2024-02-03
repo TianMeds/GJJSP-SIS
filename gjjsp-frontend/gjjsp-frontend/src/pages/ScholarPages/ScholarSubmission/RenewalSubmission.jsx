@@ -1,27 +1,77 @@
 import React, {useState} from 'react';
 import * as MUI from '../../../import';
 import Layout from '../../../component/Layout/SidebarNavbar/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import theme from '../../../context/theme';
 import useSubmissionStore from '../../../store/SubmissionStore';
 import HistoryIcon from '@mui/icons-material/History';
 import axios from '../../../api/axios';
 
+import useLoginStore from '../../../store/LoginStore';
+import useAuthStore from '../../../store/AuthStore';
+
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 
+const FormValues = {
+  gwa_value: '',
+  gwa_remarks: '',
+}
+
 export default function RenewalSubmission() {
+
+
+  
+  // Zustand Store
+  const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
+  const {setLoading, setLoadingMessage} = useLoginStore();
 
   //React Hook form 
   const form  = useForm();
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
+  const navigate = useNavigate();
+
   const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
+  };
+
+  const onSubmitRenewalForm = async (data, event) => {
+    event.preventDefault();
+    setLoading(true);
+    setLoadingMessage('Submitting renewal form...');
+    const authToken = getAuthToken();
+
+    try{
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      };
+
+      const renewalFormData = {
+        gwa_value: data.gwa_value,
+        gwa_remarks: data.gwa_remarks,
+      };
+
+      const renewalResponse = await axios.post(
+        '/api/term-gwa',
+        JSON.stringify(renewalFormData),
+        config
+      );
+
+      setLoading(false);
+      form.reset(FormValues);
+      }
+      catch(error){
+        setLoading(false);
+        navigate('/login')
+      }
   };
 
 
@@ -37,7 +87,7 @@ export default function RenewalSubmission() {
                     Renewal Submission
                   </MUI.Typography>
                   
-                  <MUI.Grid sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
+                  <MUI.Grid item sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
                     <MUI.FormControl>
                       <MUI.Select
                         native
@@ -83,7 +133,8 @@ export default function RenewalSubmission() {
               </MUI.Grid>
 
 
-            <MUI.Grid component="form">
+            <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
+            onSubmit={handleSubmit(onSubmitRenewalForm)}>
 
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
@@ -120,10 +171,10 @@ export default function RenewalSubmission() {
                 </MUI.Grid>
 
                 <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="remarks_message" id="remarksLabel">2. Add remarks about GWA</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="gwa_remarks" id="remarksLabel">2. Add remarks about GWA</MUI.InputLabel>
                   
                   <MUI.TextField
-                    id="remarks_message"
+                    id="gwa_remarks"
                     placeholder="Add remark"
                     fullWidth // Make the text field take up the full width
                     margin="normal" // Adjust spacing as needed
@@ -134,7 +185,7 @@ export default function RenewalSubmission() {
                       height: 'auto',
                       marginBottom: 2,
                     }}
-                    {...register("remarks_message", {
+                    {...register("gwa_remarks", {
                       required: {
                           value: true,
                           message: 'Remarks is required',
@@ -142,10 +193,10 @@ export default function RenewalSubmission() {
                     })}
                   />
 
-                  {errors.remarks_message && (
+                  {errors.gwa_remarks && (
                     <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr' />
-                        {errors.remarks_message?.message}
+                        {errors.gwa_remarks?.message}
                     </p>
                   )}
                 </MUI.Grid>
@@ -290,9 +341,14 @@ export default function RenewalSubmission() {
 
                 <MUI.Box sx={{ ml: 1 }}>  
 
-                <MUI.Button variant='contained' sx={{ mb: { xs: 1, sm: 0 } }}>
-                    Submit
-                  </MUI.Button>
+                <MUI.Button 
+                variant='contained' 
+                sx={{ mb: { xs: 1, sm: 0 } }}
+                type='submit'
+                >
+                  
+                  Submit
+                </MUI.Button>
 
 
                   <MUI.Button variant='text' sx={{color: '#091E42', ml: { xs: 2, sm: 2 }, mb: { xs: 1, sm: 0 } }}>
@@ -305,6 +361,8 @@ export default function RenewalSubmission() {
             </MUI.Grid>
               
           </MUI.Grid>
+
+          <DevTool control={control} />
         </MUI.Container>
       </MUI.ThemeProvider>
     </Layout>

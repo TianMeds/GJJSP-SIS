@@ -4,16 +4,31 @@ import Layout from '../../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
 import theme from '../../../context/theme';
 import HistoryIcon from '@mui/icons-material/History';
+import axios from '../../../api/axios';
+
+import useLoginStore from '../../../store/LoginStore';
+import useAuthStore from '../../../store/AuthStore';
 
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 
+const FormValues = {
+  future_company_name: '',
+  future_company_location: '',
+  future_position: '',
+  meeting_benefactor_sched: '',
+}
+
 export default function GraduatingSubmission() {
 
-      //React Hook form 
-      const form  = useForm();
-      const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
-      const { errors } = formState;
+  // Zustand Store
+  const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
+  const {setLoading, setLoadingMessage} = useLoginStore();
+  
+  //React Hook form 
+  const form  = useForm();
+  const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
+  const { errors } = formState;
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -21,6 +36,43 @@ export default function GraduatingSubmission() {
     const file = event.target.files[0];
     setSelectedFile(file);
   };
+
+    const onSubmit = async (data, event) => {
+      event.preventDefault();
+      setLoading(true);
+      setLoadingMessage('Submitting Graduating form...');
+      const authToken = getAuthToken();
+
+      try{
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        }
+
+        const graduatingFormData = {
+          future_company_name: data.future_company_name,
+          future_company_location: data.future_company_location,
+          future_position: data.future_position,
+          meeting_benefactor_sched: data.meeting_benefactor_sched,
+        };
+
+        const graduatingResponse = await axios.post(
+          '/api/graduating-form',
+          JSON.stringify(graduatingFormData),
+          config
+        );
+
+        setLoading(false);
+        form.reset(FormValues)
+      }
+      catch (error) {
+        setLoading(false);
+        console.log(error)
+      }
+    }
+
 
   return (
     <Layout>
@@ -79,7 +131,7 @@ export default function GraduatingSubmission() {
                 </MUI.Typography>
               </MUI.Grid>
 
-            <MUI.Grid component="form">
+            <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} onSubmit={handleSubmit(onSubmit)}>
            
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 

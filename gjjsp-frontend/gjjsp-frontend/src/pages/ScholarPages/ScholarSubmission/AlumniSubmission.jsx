@@ -4,12 +4,32 @@ import Layout from '../../../component/Layout/SidebarNavbar/Layout';
 import { Link } from 'react-router-dom';
 import theme from '../../../context/theme';
 import HistoryIcon from '@mui/icons-material/History';
+import axios from '../../../api/axios';
+
+import useLoginStore from '../../../store/LoginStore';
+import useAuthStore from '../../../store/AuthStore';
 
 //React Hook Form
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 
+
+const FormValues = {
+  company_name: '',
+  company_location: '',
+  position_in_company: '',
+  licensure_exam_type: '',
+  exam_passed_date: '',
+  volunteer_group_name: '',
+  yr_volunteered: ''
+}
+
 export default function AlumniSubmission() {
+
+
+    // Zustand Store
+    const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
+    const {setLoading, setLoadingMessage} = useLoginStore();
 
     //React Hook form 
     const form  = useForm();
@@ -23,6 +43,45 @@ export default function AlumniSubmission() {
       setSelectedFile(file);
     };
 
+    const onSubmit = async (data, event) => {
+      event.preventDefault();
+      setLoading(true);
+      setLoadingMessage('Submitting Alumni Form...');
+      const authToken = getAuthToken();
+      
+      try{
+        const config = {
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        };
+
+        const alumniFormData = {
+          company_name: data.company_name,
+          company_location: data.company_location,
+          position_in_company: data.position_in_company,
+          licensure_exam_type: data.licensure_exam_type,
+          exam_passed_date: data.exam_passed_date,
+          volunteer_group_name: data.volunteer_group_name,
+          yr_volunteered: data.yr_volunteered
+        };
+  
+        const alumniResponse = await axios.post(
+          '/api/alumni-form',
+          JSON.stringify(alumniFormData),
+          config
+        );
+
+        setLoading(false);
+        form.reset(FormValues);
+      }
+
+      catch(error){
+        console.log(error);
+      }
+
+    }
 
   return (
     <Layout>
@@ -67,7 +126,7 @@ export default function AlumniSubmission() {
               </MUI.Grid>
 
 
-              <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }}> 
+              <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} onSubmit={handleSubmit(onSubmit)}> 
            
               <MUI.Grid item xs={12} md={4} mt={5}>
 

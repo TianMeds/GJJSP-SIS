@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\AlumniFormResource;
 use App\Http\Resources\AlumniFormCollection;
 use App\Models\AlumniForm;
+use App\Models\Scholar;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class AlumniFormController extends Controller
 {
@@ -24,7 +27,26 @@ class AlumniFormController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        try {
+            $alumniForm = AlumniForm::create($request->only([
+                'company_name',
+                'position_in_company',
+                'company_location',
+                'licensure_exam_type',
+                'exam_passed_date',
+                'volunteer_group_name',
+                'yr_volunteered',
+            ]));
+
+            return new AlumniFormResource($alumniForm);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error in creating alumni form',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     /**
@@ -38,9 +60,36 @@ class AlumniFormController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, AlumniForm $alumniForm)
+    public function update(Request $request, AlumniForm $alumniForm, )
     {
-        //
+        // try {
+        //     // Retrieve the authenticated user's ID
+        //     $userId = Auth::id();
+    
+        //     // Find the scholar by ID and make sure it belongs to the authenticated user
+        //     $scholar = Scholar::where('id', $id)
+        //         ->where('user_id', $userId)
+        //         ->firstOrFail();
+    
+        //     // Update the scholar with the request data
+        //     $scholar->update($request->only([
+        //         'company_name',
+        //         'position_in_company',
+        //         'company_location',
+        //         'licensure_exam_type',
+        //         'exam_passed_date',
+        //         'volunteer_group_name',
+        //         'yr_volunteered',
+        //     ]));
+    
+        //     // Return the updated scholar as a resource
+        //     return new ScholarResource($scholar);
+        // } catch (\Exception $e) {
+        //     // Log the exception for further investigation
+        //     \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
+    
+        //     return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
+        // }
     }
 
     /**

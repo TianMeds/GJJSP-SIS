@@ -13,6 +13,7 @@ class TermGwa extends Model
     protected $fillable = [
         'submission_id',
         'gwa_value',
+        'gwa_remarks',
     ];
 
     public $timestamps = false;

@@ -14,6 +14,10 @@ use App\Http\Controllers\PromptController;
 use App\Http\Controllers\ScholarFamMemberController;
 use App\Http\Controllers\HighschoolAcadDetailController;
 use App\Http\Controllers\UndergradAcadDetailsController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\TermGwaController;
+use App\Http\Controllers\AlumniFormController;
+use App\Http\Controllers\GraduatingFormController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,13 +95,32 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/undergrad-acad-detail', [UndergradAcadDetailsController::class, 'getUndergradAcadDetail']);
     
     //Submission Route
+    Route::get('/submissions', [SubmissionController::class, 'index'])->name('submission');
+    Route::post('/submissions', [SubmissionController::class, 'store']);
+
+    //Alumni Form Route
+    Route::get('/alumni-form', [AlumniFormController::class, 'index'])->name('alumni-form');
+    Route::post('/alumni-form', [AlumniFormController::class, 'store']);
+
+
+    //Graduating Form Route
+    Route::get('/graduating-form', [GraduatingFormController::class, 'index'])->name('graduating-form');
+    Route::post('/graduating-form', [GraduatingFormController::class, 'store']);
+
+    //Renewal Form Route
+    Route::get('/term-gwa', [TermGwaController::class, 'index'])->name('term-gwa');
+    Route::post('/term-gwa', [TermGwaController::class, 'store']);
+
+    //Document Route
+    Route::get('/documents', [DocumentController::class, 'index'])->name('document');
+    Route::post('/documents', [DocumentController::class, 'store']);
+    
 }); 
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('submissions', [SubmissionController::class, 'index'])->name('submission');
-Route::post('submissions', [SubmissionController::class, 'submission']);
+
 Route::post('/generate-prompt', [PromptController::class, 'generate']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){

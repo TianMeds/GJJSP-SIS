@@ -14,6 +14,11 @@ class TermGwaResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'submission_id' => $this->submission_id,
+            'gwa_value' => $this->gwa_value,
+            'gwa_remarks' => $this->gwa_remarks,
+        ];
     }
 }

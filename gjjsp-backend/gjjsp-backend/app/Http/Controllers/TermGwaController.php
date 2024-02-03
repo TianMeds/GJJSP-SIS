@@ -15,7 +15,7 @@ class TermGwaController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new TermGwaCollection(TermGwa::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +23,18 @@ class TermGwaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try{
+            $termGwa = TermGwa::create($request->only([
+                'gwa_value', 'gwa_remarks'
+            ]));
+            
+            return new TermGwaResource($termGwa);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error in creating term GWA',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -31,7 +42,7 @@ class TermGwaController extends Controller
      */
     public function show(TermGwa $termGwa)
     {
-        //
+        return new TermGwaResource($termGwa);
     }
 
     /**

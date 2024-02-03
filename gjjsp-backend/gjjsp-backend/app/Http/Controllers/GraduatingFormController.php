@@ -15,7 +15,7 @@ class GraduatingFormController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(new GraduatingFormCollection(GraduatingForm::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,7 +23,18 @@ class GraduatingFormController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $graduatingForm = GraduatingForm::create($request->only([
+                'user_id', 'future_company_name', 'future_company_location', 'future_position', 'meeting_benefactor_sched'
+            ]));
+            
+            return new GraduatingFormResource($graduatingForm);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error in creating graduating form',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -31,7 +42,7 @@ class GraduatingFormController extends Controller
      */
     public function show(GraduatingForm $graduatingForm)
     {
-        //
+        return new GraduatingFormResource($graduatingForm);
     }
 
     /**
