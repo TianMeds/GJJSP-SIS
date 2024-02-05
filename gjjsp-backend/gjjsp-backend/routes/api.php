@@ -18,6 +18,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TermGwaController;
 use App\Http\Controllers\AlumniFormController;
 use App\Http\Controllers\GraduatingFormController;
+use App\Http\Controllers\RenewalDocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,6 +121,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
+Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
+
+Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
+Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
 
 Route::post('/generate-prompt', [PromptController::class, 'generate']);
 

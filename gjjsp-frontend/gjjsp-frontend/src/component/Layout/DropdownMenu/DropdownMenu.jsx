@@ -118,3 +118,48 @@ return (
       </MUI.List>
 )
 }
+
+
+export const DropdownMenu3 = () =>  {
+
+  const [isCollapse, setIsCollapse] = useState(false);      
+
+  const handleCollapse = () => {
+      setIsCollapse(!isCollapse);
+  }
+
+return (
+      <MUI.List>
+        <MUI.ListItem
+          disablePadding
+          sx={{ display: "block" }}
+          onClick={handleCollapse}
+        >
+          <MUI.ListItemButton
+            sx={{
+              minHeight: 48,
+              justifyContent: open ? "initial" : "center",
+              px:2,
+            }}
+          >
+            <MUI.ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: open ? 4 : "auto",
+                justifyContent: "center",
+              }}
+            >
+              <MUI.DescriptionOutlinedIcon/>
+            </MUI.ListItemIcon>
+            <MUI.ListItemText secondary="Submissions" sx={{ opacity: open ? 1 : 0 }} />
+            {isCollapse ? <MUI.ExpandLessIcon /> : <MUI.ExpandMoreIcon/>}
+          </MUI.ListItemButton>
+        </MUI.ListItem>
+        <MUI.Collapse in={isCollapse}  unmountOnExit>
+        <CustomListItem to="/submitted-renewal" icon={<MUI.DescriptionOutlinedIcon />} secondary="Renewal Forms" />
+        <CustomListItem to="/submitted-graduating" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Graduating Forms" />
+        <CustomListItem to="/submitted-alumni" icon={<MUI.DescriptionOutlinedIcon />} secondary="Alumni Forms" />
+        </MUI.Collapse>
+      </MUI.List>
+)
+}

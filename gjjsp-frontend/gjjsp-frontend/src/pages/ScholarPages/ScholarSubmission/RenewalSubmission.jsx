@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import * as MUI from '../../../import';
 import Layout from '../../../component/Layout/SidebarNavbar/Layout';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import theme from '../../../context/theme';
 import useSubmissionStore from '../../../store/SubmissionStore';
 import HistoryIcon from '@mui/icons-material/History';
@@ -16,6 +16,10 @@ import { DevTool } from "@hookform/devtools";
 const FormValues = {
   gwa_value: '',
   gwa_remarks: '',
+  copyOfReportCard: '',
+  copyOfRegistrationForm: '',
+  scannedWrittenEssay: '',
+  letterOfGratitude: ''
 }
 
 export default function RenewalSubmission() {
@@ -23,6 +27,8 @@ export default function RenewalSubmission() {
 
   
   // Zustand Store
+  const {copyOfReportCard, setCopyOfReportCard,  copyOfRegistrationForm, setCopyOfRegistrationForm,
+  scannedWrittenEssay, setScannedWrittenEssay, letterOfGratitude, setLetterOfGratitude } = useSubmissionStore();
   const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
 
@@ -31,47 +37,62 @@ export default function RenewalSubmission() {
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
-  const navigate = useNavigate();
-
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event, fileType) => {
     const file = event.target.files[0];
-    setSelectedFile(file);
+    
+    if (fileType === 'copyOfReportCard') {
+      setCopyOfReportCard(file);
+      console.log(file);
+    } else if (fileType === 'copyOfRegistrationForm') {
+      setCopyOfRegistrationForm(file);
+      console.log(file);
+    }
+    else if (fileType === 'scannedWrittenEssay') {
+      setScannedWrittenEssay(file);
+      console.log(file);
+    }
+    else if (fileType === 'letterOfGratitude') {
+      setLetterOfGratitude(file);
+      console.log(file);
+    }
   };
 
   const onSubmitRenewalForm = async (data, event) => {
     event.preventDefault();
     setLoading(true);
     setLoadingMessage('Submitting renewal form...');
-    const authToken = getAuthToken();
 
-    try{
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      };
+    const formData = new FormData();
+    formData.append('gwa_value', data.gwa_value);
+    formData.append('gwa_remarks', data.gwa_remarks);
+    formData.append('copyOfReportCard', copyOfReportCard);
+    formData.append('copyOfRegistrationForm', copyOfRegistrationForm);
+    formData.append('scannedWrittenEssay', scannedWrittenEssay);
+    formData.append('letterOfGratitude', letterOfGratitude);
 
-      const renewalFormData = {
-        gwa_value: data.gwa_value,
-        gwa_remarks: data.gwa_remarks,
-      };
+    const token = getAuthToken();
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    }
 
-      const renewalResponse = await axios.post(
-        '/api/term-gwa',
-        JSON.stringify(renewalFormData),
-        config
-      );
-
+    try {
+      const response = await axios.post('/api/renewal-documents', formData, config);
+      console.log(response);
       setLoading(false);
+      setAlertMessage('Renewal form submitted successfully');
+      setAlertOpen(true);
       form.reset(FormValues);
-      }
-      catch(error){
-        setLoading(false);
-        navigate('/login')
-      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      setErrorMessage('Failed to submit renewal form');
+      setErrorOpen(true);
+    }
   };
 
 
@@ -134,7 +155,7 @@ export default function RenewalSubmission() {
 
 
             <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
-            onSubmit={handleSubmit(onSubmitRenewalForm)}>
+            onSubmit={handleSubmit(onSubmitRenewalForm)} encType='multipart/form-data'>
 
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
@@ -228,18 +249,18 @@ export default function RenewalSubmission() {
                           <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                             <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                              <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                              <MUI.Typography sx={{ color: '#777777' }}>{copyOfReportCard ? copyOfReportCard.name : 'Browse File'}</MUI.Typography>
                             </MUI.Paper>
 
-                            <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                            <label htmlFor="copyOfReportCard" sx={{ cursor: 'pointer' }}>
                               <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                                 <MUI.AddIcon/> Add File
                               </MUI.Button>
                               <input
                                 type="file"
-                                id="fileInput"
+                                id="copyOfReportCard"
                                 style={{ display: 'none' }}
-                                onChange={handleFileChange}
+                                onChange={(event) => handleFileChange(event, 'copyOfReportCard')}
                               />
                             </label>
                           </MUI.Grid>
@@ -256,18 +277,18 @@ export default function RenewalSubmission() {
                           <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                             <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                              <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                              <MUI.Typography sx={{ color: '#777777' }}>{copyOfRegistrationForm ? copyOfRegistrationForm.name : 'Browse File'}</MUI.Typography>
                             </MUI.Paper>
 
-                            <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                            <label htmlFor="copyOfRegistrationForm" sx={{ cursor: 'pointer' }}>
                               <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                                 <MUI.AddIcon/> Add File
                               </MUI.Button>
                               <input
                                 type="file"
-                                id="fileInput"
+                                id="copyOfRegistrationForm"
                                 style={{ display: 'none' }}
-                                onChange={handleFileChange}
+                                onChange={(event) => handleFileChange(event, 'copyOfRegistrationForm')}
                               />
                             </label>
                           </MUI.Grid>
@@ -284,18 +305,18 @@ export default function RenewalSubmission() {
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                           <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                            <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                            <MUI.Typography sx={{ color: '#777777' }}>{scannedWrittenEssay ? scannedWrittenEssay.name : 'Browse File'}</MUI.Typography>
                           </MUI.Paper>
 
-                          <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                          <label htmlFor="scannedWrittenEssay" sx={{ cursor: 'pointer' }}>
                             <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                               <MUI.AddIcon/> Add File
                             </MUI.Button>
                             <input
                               type="file"
-                              id="fileInput"
+                              id="scannedWrittenEssay"
                               style={{ display: 'none' }}
-                              onChange={handleFileChange}
+                              onChange={(event) => handleFileChange(event, 'scannedWrittenEssay')}
                             />
                           </label>
                         </MUI.Grid>
@@ -312,18 +333,18 @@ export default function RenewalSubmission() {
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                           <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                            <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                            <MUI.Typography sx={{ color: '#777777' }}>{letterOfGratitude ? letterOfGratitude.name : 'Browse File'}</MUI.Typography>
                           </MUI.Paper>
 
-                          <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                          <label htmlFor="letterOfGratitude" sx={{ cursor: 'pointer' }}>
                             <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                               <MUI.AddIcon/> Add File
                             </MUI.Button>
                             <input
                               type="file"
-                              id="fileInput"
+                              id="letterOfGratitude"
                               style={{ display: 'none' }}
-                              onChange={handleFileChange}
+                              onChange={(event) => handleFileChange(event, 'letterOfGratitude')}
                             />
                           </label>
                         </MUI.Grid>

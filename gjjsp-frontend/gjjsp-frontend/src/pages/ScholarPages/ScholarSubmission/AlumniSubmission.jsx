@@ -241,7 +241,7 @@ export default function AlumniSubmission() {
                     }}
                     {...register("licensure_exam_type", {
                       required: {
-                          value: true,
+                          value: false,
                           message: 'Licensure Exam Type is required',
                       }
                     })}
@@ -279,7 +279,7 @@ export default function AlumniSubmission() {
                     }}
                     {...register("exam_passed_date", {
                       required: {
-                          value: true,
+                          value: false,
                           message: 'Exam Passed Date is required',
                       }
                     })}

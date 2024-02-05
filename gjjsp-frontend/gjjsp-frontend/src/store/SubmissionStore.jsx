@@ -13,6 +13,16 @@ const useSubmissionStore = create((set) => ({
     submissionStatus: 'SAVED',
     submissionRespond: 'Respond',
 
+    //Renewal Form 
+    copyOfReportCard: null,
+    setCopyOfReportCard: (copyOfReportCard) => set({copyOfReportCard}),
+    copyOfRegistrationForm: null,
+    setCopyOfRegistrationForm: (copyOfRegistrationForm) => set({copyOfRegistrationForm}),
+    scannedWrittenEssay: null,
+    setScannedWrittenEssay: (scannedWrittenEssay) => set({scannedWrittenEssay}),
+    letterOfGratitude: null,
+    setLetterOfGratitude: (letterOfGratitude) => set({letterOfGratitude}),
+
     // Submission Form
     file: '',
     setFile: (newFile) => set({file: newFile}),

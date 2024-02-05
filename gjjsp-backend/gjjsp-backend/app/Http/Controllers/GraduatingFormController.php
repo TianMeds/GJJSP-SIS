@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\GraduatingFormResource;
 use App\Http\Resources\GraduatingFormCollection;
-use App\Models\GraduatingForm;
+use App\Models\GraduatingDocument;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GraduatingFormController extends Controller
 {
@@ -15,7 +19,7 @@ class GraduatingFormController extends Controller
      */
     public function index()
     {
-        return response()->json(new GraduatingFormCollection(GraduatingForm::all()),Response::HTTP_OK);
+        return response()->json(new GraduatingFormCollection(GraduatingDocument::all()),Response::HTTP_OK);
     }
 
     /**
@@ -23,17 +27,114 @@ class GraduatingFormController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $graduatingForm = GraduatingForm::create($request->only([
-                'user_id', 'future_company_name', 'future_company_location', 'future_position', 'meeting_benefactor_sched'
-            ]));
+        try{
+            //Generate unique filename
+            $copyOfReportCardName = Str::random(10).'.'.$request->copyOfReportCard->getClientOriginalExtension();
+            $copyOfRegistrationFormName = Str::random(10).'.'.$request->copyOfRegistrationForm->getClientOriginalExtension();
+            $scannedWrittenEssayName = Str::random(10).'.'.$request->scannedWrittenEssay->getClientOriginalExtension();
+            $letterOfGratitudeName = Str::random(10).'.'.$request->letterOfGratitude->getClientOriginalExtension();
+            $statementOfAccountName = Str::random(10).'.'.$request->statementOfAccount->getClientOriginalExtension();
+            $graduationPictureName = Str::random(10).'.'.$request->graduationPicture->getClientOriginalExtension();
+            $transcriptOfRecordsName = Str::random(10).'.'.$request->transcriptOfRecords->getClientOriginalExtension();
+
+            $submission = null;
             
-            return new GraduatingFormResource($graduatingForm);
-        } catch (\Exception $e) {
+            $submission = GraduatingDocument::create([
+                'scholar_id' => $request->scholar_id,
+                'future_company' => $request->future_company,
+                'future_company_location' => $request->future_company_location,
+                'future_position' => $request->future_position,
+                'meeting_benefactor_sched' => $request->meeting_benefactor_sched,
+                'copyOfReportCard' => $copyOfReportCardName,
+                'copyOfRegistrationForm' => $copyOfRegistrationFormName,
+                'scannedWrittenEssay' => $scannedWrittenEssayName,
+                'letterOfGratitude' => $letterOfGratitudeName,
+                'statementOfAccount' => $statementOfAccountName,
+                'graduationPicture' => $graduationPictureName,
+                'transcriptOfRecords' => $transcriptOfRecordsName,
+            ]);
+
+            // Set Nextcloud API endpoint and credentials
+            $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/gjjsp/';
+            $nextcloudUsername = 'cbmedallada';
+            $nextcloudPassword = 'sm@llLamp50';
+
+            //Store files
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->copyOfReportCard, $copyOfReportCardName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->copyOfRegistrationForm, $copyOfRegistrationFormName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->scannedWrittenEssay, $scannedWrittenEssayName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->letterOfGratitude, $letterOfGratitudeName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->statementOfAccount, $statementOfAccountName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->graduationPicture, $graduationPictureName);
+            Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->transcriptOfRecords, $transcriptOfRecordsName);
+
+            $status = $request->input('status', 'graduating');
+
+            foreach(['copyOfReportCard', 'copyOfRegistrationForm', 'scannedWrittenEssay', 'letterOfGratitude', 'statementOfAccount', 'graduationPicture', 'transcriptOfRecords'] as $fileType){
+                if ($request->hasFile($fileType)) {
+                    $file = $request->file($fileType);
+                    ${$fileType} = $status . '_' . $file->getClientOriginalName();
+
+                    $nextcloudApiUrl = $nextcloudEndpoint . ${$fileType};
+
+                    $fileContent = file_get_contents($file);
+
+                    try{
+                        $response = Http::withBasicAuth($nextcloudUsername, $nextcloudPassword)
+                            ->attach(
+                                'file',
+                                file_get_contents($file),
+                                ${$fileType}
+                            )
+                            ->put($nextcloudApiUrl);
+
+                        if($response->successful()){
+                            $submission->{$fileType} = ${$fileType};
+                            $fileNames[$fileType] = $nextcloudApiUrl;
+                        }
+                        else{
+                            // Log the response and request details for debugging
+                            Log::error('Nextcloud API Request Failed:');
+                            Log::error('Request URL: ' . $nextcloudApiUrl);
+                            Log::error('Response Status: ' . $response->status());
+                            Log::error('Response Body: ' . $response->body());
+
+                            return response()->json(["message" => "Failed to upload file to Nextcloud"], 500);
+                        }
+                    }
+                    catch(\Exception $e){
+                         // Log the API request exception for debugging
+                         Log::error('Nextcloud API Request Exception: ' . $apiException->getMessage());
+                         Log::error('Nextcloud API Request Exception Trace: ' . $apiException->getTraceAsString());
+     
+                         // Re-throw the exception to let it propagate for further analysis
+                         throw $apiException;
+                    }
+                }
+            }
+
+            // Return JSON response
             return response()->json([
-                'message' => 'Error in creating graduating form',
+                'message' => 'Successfully uploaded files',
+                'future_company' => $request->future_company,
+                'future_company_location' => $request->future_company_location,
+                'future_position' => $request->future_position,
+                'meeting_benefactor_sched' => $request->meeting_benefactor_sched,
+                'copyOfReportCard' => $copyOfReportCardName,
+                'copyOfRegistrationForm' => $copyOfRegistrationFormName,
+                'scannedWrittenEssay' => $scannedWrittenEssayName,
+                'letterOfGratitude' => $letterOfGratitudeName,
+                'statementOfAccount' => $statementOfAccountName,
+                'graduationPicture' => $graduationPictureName,
+                'transcriptOfRecords' => $transcriptOfRecordsName,
+            ], 201);
+        }
+        catch (\Exception $e) {
+            // Return JSON response
+            return response()->json([
+                'message' => 'Error in file upload',
                 'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], 500);
         }
     }
 
