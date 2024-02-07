@@ -116,17 +116,17 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/documents', [DocumentController::class, 'index'])->name('document');
     Route::post('/documents', [DocumentController::class, 'store']);
     
+    
+    Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
+    Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
+
+    Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
+    Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
 }); 
 
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-
-Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
-Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
-
-Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
-Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
 
 Route::post('/generate-prompt', [PromptController::class, 'generate']);
 

@@ -332,8 +332,7 @@ export default function ScholarProfile() {
         
         const response = await axios.get(`/api/scholarsProfile`, {
           headers: {
-            'Authorization': 
-            `Bearer ${authToken}`
+            'Authorization':  `Bearer ${authToken}`
           }
         });
 

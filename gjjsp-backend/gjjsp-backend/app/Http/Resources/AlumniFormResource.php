@@ -14,6 +14,19 @@ class AlumniFormResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'scholar_id' => $this->scholar_id,
+            'year_submitted' => $this->year_submitted,
+            'company_name' => $this->company_name,
+            'position_in_company' => $this->position_in_company,
+            'company_location' => $this->company_location,
+            'licensure_exam_type' => $this->licensure_exam_type,
+            'exam_passed_date' => $this->exam_passed_date,
+            'volunteer_group_name' => $this->volunteer_group_name,
+            'yr_volunteered' => $this->yr_volunteered,
+            'submission_status' => $this->submission_status,
+            'updated_by' => $this->updated_by,
+        ];
     }
 }

@@ -95,17 +95,28 @@ export default function AlumniSubmission() {
             </MUI.Typography>
             
             <MUI.Grid sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
-              <MUI.FormControl>
-                <MUI.Select
-                  native
-                  sx={{border: '1px solid rgba(0,0,0,0.2)',
-                  boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                >
-                  <option value="All">SY 2023-2024</option>
-                  <option value="New">SY 2022-2023</option>
-                  <option value="For Renewal">SY 2021-2022</option>
-                </MUI.Select>
-              </MUI.FormControl>
+              <MUI.Grid id="schoolYearGrid">
+                    <MUI.InputLabel htmlFor="year_submitted" id="schoolYearLabel"></MUI.InputLabel>
+                      <Controller
+                        name="year_submitted"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <MUI.Select
+                            native
+                            {...field}
+                            id='year_submitted'
+                            sx={{border: '1px solid rgba(0,0,0,0.2)',
+                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                          >
+                            <option value="SY 2023-2024">SY 2023-2024</option>
+                            <option value="SY 2022-2023">SY 2022-2023</option>
+                            <option value="SY 2021-2022">SY 2021-2022</option>
+                            
+                          </MUI.Select>
+                        )}
+                      />
+                  </MUI.Grid>
 
             </MUI.Grid>
 
@@ -128,136 +139,136 @@ export default function AlumniSubmission() {
 
               <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} onSubmit={handleSubmit(onSubmit)}> 
            
-              <MUI.Grid item xs={12} md={4} mt={5}>
+                <MUI.Grid item xs={12} md={4} mt={5}>
 
-              <MUI.Grid container spacing={3}>
+                  <MUI.Grid container spacing={3}>
 
-                <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="company_name" id="currentCompanyLabel">1. Current Company Name</MUI.InputLabel>
-                  
-                  <MUI.TextField
-                    id='company_name'
-                    placeholder="Company Name"
-                    fullWidth 
-                    margin="normal" 
-                    sx={{
-                      background: '#f5f5f5',
-                      color: '#00000',
-                      marginLeft: 2,
-                      height: 'auto',
-                      marginBottom: 2,
-                    }}
-                    {...register("company_name", {
-                      required: {
-                          value: true,
-                          message: 'Company Name is required',
-                      }
-                    })}
-                  />
-                  {errors.company_name && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.company_name?.message}
-                    </p>
-                  )}
+                    <MUI.Grid item xs={12}>
+                      <MUI.InputLabel htmlFor="company_name" id="currentCompanyLabel">1. Current Company Name</MUI.InputLabel>
+                      
+                      <MUI.TextField
+                        id='company_name'
+                        placeholder="Company Name"
+                        fullWidth 
+                        margin="normal" 
+                        sx={{
+                          background: '#f5f5f5',
+                          color: '#00000',
+                          marginLeft: 2,
+                          height: 'auto',
+                          marginBottom: 2,
+                        }}
+                        {...register("company_name", {
+                          required: {
+                              value: true,
+                              message: 'Company Name is required',
+                          }
+                        })}
+                      />
+                      {errors.company_name && (
+                        <p id='errMsg'>
+                            <MUI.InfoIcon className='infoErr' />
+                            {errors.company_name?.message}
+                        </p>
+                      )}
+                    </MUI.Grid>
+
+                    <MUI.Grid item xs={12}>
+                      <MUI.InputLabel htmlFor="company_location" id="currentCompanyLocationLabel">2. Current Company Location</MUI.InputLabel>
+                      
+                      <MUI.TextField
+                        id='company_location'
+                        placeholder="Company Full Address"
+                        fullWidth 
+                        margin="normal" 
+                        sx={{
+                          background: '#f5f5f5',
+                          color: '#00000',
+                          marginLeft: 2,
+                          height: 'auto',
+                          marginBottom: 2,
+                        }}
+                        {...register("company_location", {
+                          required: {
+                              value: true,
+                              message: 'Company Location is required',
+                          }
+                        })}
+                      />
+
+                      {errors.company_location && (
+                        <p id='errMsg'>
+                            <MUI.InfoIcon className='infoErr' />
+                            {errors.company_location?.message}
+                        </p>
+                      )}
+                    </MUI.Grid>
+
+                    <MUI.Grid item xs={12}>
+                      <MUI.InputLabel htmlFor="position_in_company" id="currentJobLabel">3. Current Job Position</MUI.InputLabel>
+                      
+                      <MUI.TextField
+                        id='position_in_company'
+                        placeholder="Job Position"
+                        fullWidth 
+                        margin="normal"
+                        sx={{
+                          background: '#f5f5f5',
+                          color: '#00000',
+                          marginLeft: 2,
+                          height: 'auto',
+                          marginBottom: 2,
+                        }}
+                        {...register("position_in_company", {
+                          required: {
+                              value: true,
+                              message: 'Job Position is required',
+                          }
+                        })}
+                      />
+
+                      {errors.position_in_company && (
+                        <p id='errMsg'>
+                            <MUI.InfoIcon className='infoErr' />
+                            {errors.position_in_company?.message}
+                        </p>
+                      )}
+                    </MUI.Grid>
+
+                    <MUI.Grid item xs={12}>
+                      <MUI.InputLabel htmlFor="licensure_exam_type" id="licensureExamLabel">4. Licensure Exam Type</MUI.InputLabel>
+                      
+                      <MUI.TextField
+                        id='licensure_exam_type'
+                        placeholder="BAR, CPA, Board, and etc."
+                        fullWidth 
+                        margin="normal" 
+                        sx={{
+                          background: '#f5f5f5',
+                          color: '#00000',
+                          marginLeft: 2,
+                          height: 'auto',
+                          marginBottom: 2,
+                        }}
+                        {...register("licensure_exam_type", {
+                          required: {
+                              value: false,
+                              message: 'Licensure Exam Type is required',
+                          }
+                        })}
+                      />
+
+                      {errors.licensure_exam_type && (
+                        <p id='errMsg'>
+                            <MUI.InfoIcon className='infoErr' />
+                            {errors.licensure_exam_type?.message}
+                        </p>
+                      )}
+                    </MUI.Grid>
+
+                  </MUI.Grid>
+
                 </MUI.Grid>
-
-                <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="company_location" id="currentCompanyLocationLabel">2. Current Company Location</MUI.InputLabel>
-                  
-                  <MUI.TextField
-                    id='company_location'
-                    placeholder="Company Full Address"
-                    fullWidth 
-                    margin="normal" 
-                    sx={{
-                      background: '#f5f5f5',
-                      color: '#00000',
-                      marginLeft: 2,
-                      height: 'auto',
-                      marginBottom: 2,
-                    }}
-                    {...register("company_location", {
-                      required: {
-                          value: true,
-                          message: 'Company Location is required',
-                      }
-                    })}
-                  />
-
-                  {errors.company_location && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.company_location?.message}
-                    </p>
-                  )}
-                </MUI.Grid>
-
-                <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="position_in_company" id="currentJobLabel">3. Current Job Position</MUI.InputLabel>
-                  
-                  <MUI.TextField
-                    id='position_in_company'
-                    placeholder="Job Position"
-                    fullWidth 
-                    margin="normal"
-                    sx={{
-                      background: '#f5f5f5',
-                      color: '#00000',
-                      marginLeft: 2,
-                      height: 'auto',
-                      marginBottom: 2,
-                    }}
-                    {...register("position_in_company", {
-                      required: {
-                          value: true,
-                          message: 'Job Position is required',
-                      }
-                    })}
-                  />
-
-                  {errors.position_in_company && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.position_in_company?.message}
-                    </p>
-                  )}
-                </MUI.Grid>
-
-                <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="licensure_exam_type" id="licensureExamLabel">4. Licensure Exam Type</MUI.InputLabel>
-                  
-                  <MUI.TextField
-                    id='licensure_exam_type'
-                    placeholder="BAR, CPA, Board, and etc."
-                    fullWidth 
-                    margin="normal" 
-                    sx={{
-                      background: '#f5f5f5',
-                      color: '#00000',
-                      marginLeft: 2,
-                      height: 'auto',
-                      marginBottom: 2,
-                    }}
-                    {...register("licensure_exam_type", {
-                      required: {
-                          value: false,
-                          message: 'Licensure Exam Type is required',
-                      }
-                    })}
-                  />
-
-                  {errors.licensure_exam_type && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.licensure_exam_type?.message}
-                    </p>
-                  )}
-                </MUI.Grid>
-
-                </MUI.Grid>
-
-              </MUI.Grid>
 
               <MUI.Grid item xs={12} md={4}>
 

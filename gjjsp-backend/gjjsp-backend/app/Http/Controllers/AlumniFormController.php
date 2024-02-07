@@ -29,15 +29,28 @@ class AlumniFormController extends Controller
     {
 
         try {
-            $alumniForm = AlumniForm::create($request->only([
-                'company_name',
-                'position_in_company',
-                'company_location',
-                'licensure_exam_type',
-                'exam_passed_date',
-                'volunteer_group_name',
-                'yr_volunteered',
-            ]));
+
+            // Retrieve the authenticated user's ID
+
+            $user = Auth::user();
+        
+            // Assuming you have a relationship between users and scholars, 
+            // retrieve the scholar_id of the authenticated user
+            $scholarId = $user->scholar->id;
+            
+            // Create the AlumniForm with the scholar_id included
+            $alumniForm = AlumniForm::create([
+                'scholar_id' => $scholarId,
+                'year_submitted' => $request->year_submitted,
+                'company_name' => $request->company_name,
+                'position_in_company' => $request->position_in_company,
+                'company_location' => $request->company_location,
+                'licensure_exam_type' => $request->licensure_exam_type,
+                'exam_passed_date' => $request->exam_passed_date,
+                'volunteer_group_name' => $request->volunteer_group_name,
+                'yr_volunteered' => $request->yr_volunteered,
+            ]);
+    
 
             return new AlumniFormResource($alumniForm);
         } catch (\Exception $e) {

@@ -11,7 +11,8 @@ class AlumniForm extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'submission_id',
+        'scholar_id',
+        'year_submitted',
         'company_name',
         'position_in_company',
         'company_location',

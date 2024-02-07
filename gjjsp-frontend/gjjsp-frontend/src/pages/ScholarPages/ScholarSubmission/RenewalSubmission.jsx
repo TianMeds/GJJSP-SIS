@@ -14,13 +14,17 @@ import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 
 const FormValues = {
+  school_yr_submitted: '',
+  term_submitted: '',
   gwa_value: '',
   gwa_remarks: '',
-  copyOfReportCard: '',
-  copyOfRegistrationForm: '',
-  scannedWrittenEssay: '',
-  letterOfGratitude: ''
+  copyOfReportCard: null,
+  copyOfRegistrationForm: null,
+  scannedWrittenEssay: null,
+  letterOfGratitude: null,
 }
+
+
 
 export default function RenewalSubmission() {
 
@@ -44,10 +48,8 @@ export default function RenewalSubmission() {
     
     if (fileType === 'copyOfReportCard') {
       setCopyOfReportCard(file);
-      console.log(file);
     } else if (fileType === 'copyOfRegistrationForm') {
       setCopyOfRegistrationForm(file);
-      console.log(file);
     }
     else if (fileType === 'scannedWrittenEssay') {
       setScannedWrittenEssay(file);
@@ -55,7 +57,6 @@ export default function RenewalSubmission() {
     }
     else if (fileType === 'letterOfGratitude') {
       setLetterOfGratitude(file);
-      console.log(file);
     }
   };
 
@@ -86,6 +87,10 @@ export default function RenewalSubmission() {
       setLoading(false);
       setAlertMessage('Renewal form submitted successfully');
       setAlertOpen(true);
+      setCopyOfReportCard(null);
+      setCopyOfRegistrationForm(null);
+      setScannedWrittenEssay(null);
+      setLetterOfGratitude(null);
       form.reset(FormValues);
     } catch (error) {
       console.log(error);
@@ -101,6 +106,8 @@ export default function RenewalSubmission() {
       <MUI.ThemeProvider theme={theme}>
         <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <MUI.Grid container spacing={3}>
+            <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
+              onSubmit={handleSubmit(onSubmitRenewalForm)} encType='multipart/form-data'>
 
               <MUI.Grid item xs={12}>
                 <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
@@ -108,33 +115,56 @@ export default function RenewalSubmission() {
                     Renewal Submission
                   </MUI.Typography>
                   
+                  
                   <MUI.Grid item sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
-                    <MUI.FormControl>
-                      <MUI.Select
-                        native
-                        sx={{border: '1px solid rgba(0,0,0,0.2)',
-                        boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                      >
-                        <option value="All">SY 2023-2024</option>
-                        <option value="New">SY 2022-2023</option>
-                        <option value="For Renewal">SY 2021-2022</option>
-                      </MUI.Select>
-                    </MUI.FormControl>
+                 
+                  <MUI.Grid id="schoolYearGrid">
+                    <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
+                      <Controller
+                        name="school_yr_submitted"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <MUI.Select
+                            native
+                            {...field}
+                            id='school_yr_submitted'
+                            sx={{border: '1px solid rgba(0,0,0,0.2)',
+                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                          >
+                            <option value="">Select SY</option>
+                            <option value="SY 2023-2024">SY 2023-2024</option>
+                            <option value="SY 2022-2023">SY 2022-2023</option>
+                            <option value="SY 2021-2022">SY 2021-2022</option>
+                            
+                          </MUI.Select>
+                        )}
+                      />
+                  </MUI.Grid>
 
-
-
-                    <MUI.FormControl>
-                      <MUI.Select
-                        native
-                        sx={{border: '1px solid rgba(0,0,0,0.2)',
-                        boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                      >
-                        <option value="All">Term 1</option>
-                        <option value="New">Term 2</option>
-                        <option value="For Renewal">Term 3</option>
-                      </MUI.Select>
-                    </MUI.FormControl>
-
+                  <MUI.Grid id="termGrid">
+                    <MUI.InputLabel htmlFor="term_submitted" id="termLabel"></MUI.InputLabel>
+                      <Controller
+                        name="term_submitted"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <MUI.Select
+                            native
+                            {...field}
+                            id='term_submitted'
+                            sx={{border: '1px solid rgba(0,0,0,0.2)',
+                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                          >
+                            <option value="">Select Term</option>
+                            <option value="Term 1">Term 1</option>
+                            <option value="Term 2">Term 2</option>
+                            <option value="Term 3">Term 3</option>
+                          </MUI.Select>
+                        )}
+                      />
+                  </MUI.Grid>
+                  
                   </MUI.Grid>
 
                   {/* Submission History button */}
@@ -154,8 +184,7 @@ export default function RenewalSubmission() {
               </MUI.Grid>
 
 
-            <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
-            onSubmit={handleSubmit(onSubmitRenewalForm)} encType='multipart/form-data'>
+            
 
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
@@ -378,9 +407,7 @@ export default function RenewalSubmission() {
 
                 </MUI.Box>
               </MUI.Grid>
-
             </MUI.Grid>
-              
           </MUI.Grid>
 
           <DevTool control={control} />

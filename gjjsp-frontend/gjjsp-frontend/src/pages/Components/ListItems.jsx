@@ -90,7 +90,7 @@ export const SAP_ListItems = (
       <CustomListItem to="/user" icon={<MUI.GroupsOutlinedIcon />} secondary="Users" />
       <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholar" />
       <DropdownMenu/>
-      <CustomListItem to="/submission" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Submissions" />
+      <DropdownMenu3/>
 
     <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
       Quick Actions

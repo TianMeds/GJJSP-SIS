@@ -9,6 +9,8 @@ import useDashboardStore from '../../store/DashboardStore';
 import useAuthStore from '../../store/AuthStore';
 import useSubmissionStore from '../../store/SubmissionStore';
 import PrivacyNotice from '../../component/Layout/Dialog/PrivacyNotice';
+import { BarChart } from '@mui/x-charts/BarChart';
+
 
 export default function Dashboard() {
 
@@ -182,6 +184,27 @@ export default function Dashboard() {
                     </MUI.Table> 
                   </MUI.TableContainer>
                 </MUI.Paper>
+              </MUI.Grid>
+
+              {/* Scholar's Status Report */}
+
+              <MUI.Grid item xs={12} mt={2}>
+                <BarChart
+                  xAxis={[
+                    {
+                      id: 'barCategories',
+                      data: ['bar A', 'bar B', 'bar C'],
+                      scaleType: 'band',
+                    },
+                  ]}
+                  series={[
+                    {
+                      data: [2, 5, 3],
+                    },
+                  ]}
+                  width={500}
+                  height={300}
+                />
               </MUI.Grid>
           </MUI.Grid>
         </MUI.Container>

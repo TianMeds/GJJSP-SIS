@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ScholarStatus;
 use App\Models\User;
 use App\Models\ScholarshipCateg;
+use App\Models\RenewalDocument;
 
 class Scholar extends Model
 {
@@ -55,11 +56,14 @@ class Scholar extends Model
         return $this->belongsTo(ScholarshipCateg::class, 'scholarship_categ_id');
     }
 
+    public function renewal_documents()
+    {
+        return $this->hasMany(RenewalDocument::class);
+    }
+
     public function getScholarStatusNameAttribute()
     {
-        return $this->scholarStatus->scholar_status_name;
-
-        
+        return $this->scholarStatus->scholar_status_name;  
     }
 
     public function getUserFirstNameAttribute()
@@ -89,5 +93,8 @@ class Scholar extends Model
     {
         return $this->scholarship_categs->scholarship_categ_name;
     }
+
+
+
     protected $guarded;
 }

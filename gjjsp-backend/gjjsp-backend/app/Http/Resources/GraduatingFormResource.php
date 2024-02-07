@@ -14,6 +14,24 @@ class GraduatingFormResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'scholar_id' => $this->scholar_id,
+            'future_company' => $this->future_company,
+            'future_company_location' => $this->future_company_location,
+            'future_position' => $this->future_position,
+            'meeting_benefactor_sched' => $this->meeting_benefactor_sched,
+            'school_yr_submitted' => $this->school_yr_submitted,
+            'term_submitted' => $this->term_submitted,
+            'copyOfReportCard' => $this->copyOfReportCard,
+            'copyOfRegistrationForm' => $this->copyOfRegistrationForm,
+            'scannedWrittenEssay' => $this->scannedWrittenEssay,
+            'letterOfGratitude' => $this->letterOfGratitude,
+            'statementOfAccount' => $this->statementOfAccount,
+            'graduationPicture' => $this->graduationPicture,
+            'transcriptOfRecords' => $this->transcriptOfRecords,
+            'submission_status' => $this->submission_status,
+            'updated_by' => $this->updated_by,
+        ];
     }
 }

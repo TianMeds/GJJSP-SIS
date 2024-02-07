@@ -22,7 +22,9 @@ const LazySubmission = lazy(() => import('./pages/ClientPages/Submission'));
 const LazyExport = lazy(() => import('./pages/ClientPages/Export'));
 const LazyPartner = lazy(() => import('./pages/ClientPages/Partner'));
 const LazyProfile = lazy(() => import('./pages/ClientPages/Profile'));
-const LazyViewSubmission = lazy(() => import('./pages/ClientPages/ViewSubmission'));
+const LazyRenewalViewSubmission = lazy(() => import('./pages/ClientPages/RenewalViewSubmission'));
+const LazyGraduatingViewSubmission = lazy(() => import('./pages/ClientPages/GraduatingViewSubmission'));
+const LazyAlumniViewSubmission = lazy(() => import('./pages/ClientPages/AlumniViewSubmission'));
 const LazyClientSubmissionRenewal = lazy(() => import('./pages/ClientPages/RenewalSubmitted'));
 const LazyClientSubmissionGraduating = lazy(() => import('./pages/ClientPages/GraduatingSubmitted'));
 const LazyClientSubmissionAlumni = lazy(() => import('./pages/ClientPages/AlumniSubmitted'));
@@ -212,10 +214,28 @@ function App() {
         />
       
       <Route 
-          path="view" 
+          path="renewal-view" 
           element={
           <Suspense fallback="Scholarlink Loading...">
-            <LazyViewSubmission/>
+            <LazyRenewalViewSubmission/>
+          </Suspense>
+          }
+      />
+
+      <Route 
+          path="graduating-view" 
+          element={
+          <Suspense fallback="Scholarlink Loading...">
+            <LazyGraduatingViewSubmission/>
+          </Suspense>
+          }
+      />
+
+      <Route 
+          path="alumni-view" 
+          element={
+          <Suspense fallback="Scholarlink Loading...">
+            <LazyAlumniViewSubmission/>
           </Suspense>
           }
       />

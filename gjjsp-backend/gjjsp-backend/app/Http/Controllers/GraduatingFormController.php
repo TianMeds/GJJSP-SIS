@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class GraduatingFormController extends Controller
 {
@@ -28,6 +29,11 @@ class GraduatingFormController extends Controller
     public function store(Request $request)
     {
         try{
+
+            $user = Auth::user();
+
+            $scholarId = $user->scholar->id;
+
             //Generate unique filename
             $copyOfReportCardName = Str::random(10).'.'.$request->copyOfReportCard->getClientOriginalExtension();
             $copyOfRegistrationFormName = Str::random(10).'.'.$request->copyOfRegistrationForm->getClientOriginalExtension();
@@ -40,11 +46,13 @@ class GraduatingFormController extends Controller
             $submission = null;
             
             $submission = GraduatingDocument::create([
-                'scholar_id' => $request->scholar_id,
+                'scholar_id' => $scholarId,
                 'future_company' => $request->future_company,
                 'future_company_location' => $request->future_company_location,
                 'future_position' => $request->future_position,
                 'meeting_benefactor_sched' => $request->meeting_benefactor_sched,
+                'school_yr_submitted' => $request->school_yr_submitted,
+                'term_submitted' => $request->term_submitted,
                 'copyOfReportCard' => $copyOfReportCardName,
                 'copyOfRegistrationForm' => $copyOfRegistrationFormName,
                 'scannedWrittenEssay' => $scannedWrittenEssayName,
@@ -114,20 +122,7 @@ class GraduatingFormController extends Controller
             }
 
             // Return JSON response
-            return response()->json([
-                'message' => 'Successfully uploaded files',
-                'future_company' => $request->future_company,
-                'future_company_location' => $request->future_company_location,
-                'future_position' => $request->future_position,
-                'meeting_benefactor_sched' => $request->meeting_benefactor_sched,
-                'copyOfReportCard' => $copyOfReportCardName,
-                'copyOfRegistrationForm' => $copyOfRegistrationFormName,
-                'scannedWrittenEssay' => $scannedWrittenEssayName,
-                'letterOfGratitude' => $letterOfGratitudeName,
-                'statementOfAccount' => $statementOfAccountName,
-                'graduationPicture' => $graduationPictureName,
-                'transcriptOfRecords' => $transcriptOfRecordsName,
-            ], 201);
+            return new GraduatingFormResource($submission);
         }
         catch (\Exception $e) {
             // Return JSON response

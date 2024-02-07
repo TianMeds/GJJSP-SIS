@@ -23,6 +23,15 @@ const useSubmissionStore = create((set) => ({
     letterOfGratitude: null,
     setLetterOfGratitude: (letterOfGratitude) => set({letterOfGratitude}),
 
+    //Renewal Form
+    renewalForms: [],
+    renewalForm: false,
+    setRenewalForms: (renewalForms) => set({renewalForms}),
+    renewalSubmissionStatus: 'No Submission',
+    setRenewalSubmissionStatus: (newRenewalSubmissionStatus) => set({renewalSubmissionStatus: newRenewalSubmissionStatus}),
+    renewalValues: [],
+    setRenewalValues: (newRenewalValues) => set({renewalValues: newRenewalValues}),
+
     // Submission Form
     file: '',
     setFile: (newFile) => set({file: newFile}),

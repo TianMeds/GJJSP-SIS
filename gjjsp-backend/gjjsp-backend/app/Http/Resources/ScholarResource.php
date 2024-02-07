@@ -43,6 +43,7 @@ class ScholarResource extends JsonResource
             'user_last_name' => $this->getUserLastNameAttribute() ?? '',
             'user_middle_name' => $this->getUserMiddleNameAttribute() ?? '',
             'user_email_address' => $this->getUserEmailAddressAttribute() ?? '',
+            'submission_status' => $this->renewal_documents->pluck('submission_status')->all(),
             // 'user_mobile_num' => $this->getUserMobileNumAttribute() ?? 'N/A',
             // 'scholarship_categ_name' => $this->getScholarshipCategNameAttribute() ?? 'N/A',
         ];

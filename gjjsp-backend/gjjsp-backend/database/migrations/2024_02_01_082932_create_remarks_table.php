@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('remarks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('submission_id')->constrained('submissions');
             $table->string('remarks_message');
             $table->dateTime('sent_datetime')->nullable()->default(now());
         });

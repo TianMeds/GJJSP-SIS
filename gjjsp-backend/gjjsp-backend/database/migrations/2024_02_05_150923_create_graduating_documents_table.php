@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('future_company_location')->nullable();
             $table->string('future_position')->nullable();
             $table->string('meeting_benefactor_sched')->nullable();
+            $table->string('school_yr_submitted')->nullable();
+            $table->string('term_submitted')->nullable();
             $table->string('copyOfReportCard')->nullable();
             $table->string('copyOfRegistrationForm')->nullable();
             $table->string('scannedWrittenEssay')->nullable();
@@ -25,6 +27,8 @@ return new class extends Migration
             $table->string('statementOfAccount')->nullable();
             $table->string('graduationPicture')->nullable();
             $table->string('transcriptOfRecords')->nullable();
+            $table->string('submission_status')->default('No Submission');
+            $table->unsignedInteger('updated_by')->nullable()->constrained('users');
             $table->softDeletes();
         });
     }

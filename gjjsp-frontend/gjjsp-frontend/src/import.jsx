@@ -115,6 +115,7 @@
   import StepLabel from '@mui/material/StepLabel';
   import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
   import AddIcon from '@mui/icons-material/Add';
+  import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -240,5 +241,6 @@
     Step,
     StepLabel,
     ErrorOutlineOutlinedIcon,
-    AddIcon
+    AddIcon,
+    AddCommentOutlinedIcon
   };

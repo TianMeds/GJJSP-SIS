@@ -16,6 +16,8 @@ class GraduatingDocument extends Model
         'future_company_location',
         'future_position',
         'meeting_benefactor_sched',
+        'school_yr_submitted',
+        'term_submitted',
         'copyOfReportCard',
         'copyOfRegistrationForm',
         'scannedWrittenEssay',

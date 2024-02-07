@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Http\Requests\RenewalDocumentRequest;
+use Illuminate\Support\Facades\Auth;
 
 
 class RenewalDocumentController extends Controller
@@ -120,6 +121,10 @@ class RenewalDocumentController extends Controller
     public function store(Request $request)
     {
         try {
+
+            $user = Auth::user();
+
+            $scholarId = $user->scholar->id;
             // Generate unique filenames
             $copyOfReportCardName = Str::random(32) . '.' . $request->copyOfReportCard->getClientOriginalExtension();
             $copyOfRegistrationFormName = Str::random(32) . '.' . $request->copyOfRegistrationForm->getClientOriginalExtension();
@@ -130,9 +135,11 @@ class RenewalDocumentController extends Controller
 
             // Create Renewal Document
             $submission = RenewalDocument::create([
-                'scholar_id' => $request->scholar_id,
+                'scholar_id' => $scholarId,
                 'gwa_value' => $request->gwa_value,
                 'gwa_remarks' => $request->gwa_remarks,
+                'school_yr_submitted' => $request->school_yr_submitted,
+                'term_submitted' => $request->term_submitted,
                 'copyOfReportCard' => $copyOfReportCardName,
                 'copyOfRegistrationForm' => $copyOfRegistrationFormName,
                 'scannedWrittenEssay' => $scannedWrittenEssayName,
@@ -197,15 +204,7 @@ class RenewalDocumentController extends Controller
             }
     
             // Return JSON response
-            return response()->json([
-                'message' => 'Successfully uploaded files',
-                'gwa_value' => $request->gwa_value,
-                'gwa_remarks' => $request->gwa_remarks,
-                'copyOfReportCard' => $copyOfReportCardName,
-                'copyOfRegistrationForm' => $copyOfRegistrationFormName,
-                'scannedWrittenEssay' => $scannedWrittenEssayName,
-                'letterOfGratitude' => $letterOfGratitudeName,
-            ], 201);
+            return new RenewalDocumentResource($submission);
         } catch (\Exception $e) {
             // Return JSON response
             return response()->json([

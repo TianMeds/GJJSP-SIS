@@ -83,35 +83,54 @@ export default function GraduatingSubmission() {
         <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
             <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
-              Renewal Submission
+              Graduating Submission
             </MUI.Typography>
             
             <MUI.Grid sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
-              <MUI.FormControl>
-                <MUI.Select
-                  native
-                  sx={{border: '1px solid rgba(0,0,0,0.2)',
-                  boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                >
-                  <option value="All">SY 2023-2024</option>
-                  <option value="New">SY 2022-2023</option>
-                  <option value="For Renewal">SY 2021-2022</option>
-                </MUI.Select>
-              </MUI.FormControl>
+            <MUI.Grid id="schoolYearGrid">
+              <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
+                <Controller
+                  name="school_yr_submitted"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <MUI.Select
+                      native
+                      {...field}
+                      id='school_yr_submitted'
+                      sx={{border: '1px solid rgba(0,0,0,0.2)',
+                      boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                    >
+                      <option value="SY 2023-2024">SY 2023-2024</option>
+                      <option value="SY 2022-2023">SY 2022-2023</option>
+                      <option value="SY 2021-2022">SY 2021-2022</option>
+                      
+                    </MUI.Select>
+                  )}
+                />
+            </MUI.Grid>
 
-
-
-              <MUI.FormControl>
-                <MUI.Select
-                  native
-                  sx={{border: '1px solid rgba(0,0,0,0.2)',
-                  boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                >
-                  <option value="All">Term 1</option>
-                  <option value="New">Term 2</option>
-                  <option value="For Renewal">Term 3</option>
-                </MUI.Select>
-              </MUI.FormControl>
+                  <MUI.Grid id="termGrid">
+                    <MUI.InputLabel htmlFor="term_submitted" id="termLabel"></MUI.InputLabel>
+                      <Controller
+                        name="term_submitted"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <MUI.Select
+                            native
+                            {...field}
+                            id='term_submitted'
+                            sx={{border: '1px solid rgba(0,0,0,0.2)',
+                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                          >
+                            <option value="Term 1">Term 1</option>
+                            <option value="Term 2">Term 2</option>
+                            <option value="Term 3">Term 3</option>
+                          </MUI.Select>
+                        )}
+                      />
+                  </MUI.Grid>
 
             </MUI.Grid>
 
