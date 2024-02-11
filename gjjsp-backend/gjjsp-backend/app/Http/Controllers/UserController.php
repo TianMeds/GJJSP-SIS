@@ -24,6 +24,17 @@ class UserController extends Controller
     }
 
     /**
+     * Show the total of users.
+     */
+
+    public function totalUsers()
+    {
+        $totalUsers = User::count();
+
+        return response()->json(['total_users' => $totalUsers], Response::HTTP_OK);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

@@ -19,6 +19,17 @@ class ProjectPartnerController extends Controller
     }
 
     /**
+     * Total of Project Partners
+     */
+
+    public function totalProjectPartners()
+    {
+        $totalProjectPartners = ProjectPartner::count();
+
+        return response()->json(['total_project_partners' => $totalProjectPartners], Response::HTTP_OK);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

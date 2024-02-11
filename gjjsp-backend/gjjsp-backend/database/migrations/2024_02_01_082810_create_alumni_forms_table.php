@@ -22,8 +22,9 @@ return new class extends Migration
             $table->string('exam_passed_date')->nullable();
             $table->string('volunteer_group_name')->nullable();
             $table->string('yr_volunteered')->nullable();
-            $table->string('submission_status')->default('No Submission');
+            $table->string('submission_status')->default('For Approval');
             $table->string('updated_by')->nullable();
+            $table->timestamps();
             $table->softDeletes();
         });
     }

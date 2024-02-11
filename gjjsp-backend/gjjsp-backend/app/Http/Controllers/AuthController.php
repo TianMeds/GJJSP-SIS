@@ -12,6 +12,8 @@ use App\Models\Role;
 use App\Models\ScholarFamMember;
 use App\Models\HighschoolAcadDetails;   
 use App\Models\UndergradAcadDetails;
+use App\Models\RenewalDocument;
+use App\Models\GraduatingDocument;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -52,6 +54,7 @@ class AuthController extends Controller
             // Create Scholar profile separately
             $scholar = Scholar::create([
                 'user_id' => $user->id,
+                'scholar_status_id' => '1',
             ]);
 
             // Create Scholar Family Member profile separately
@@ -68,6 +71,7 @@ class AuthController extends Controller
             $undergradAcadDetails = UndergradAcadDetails::create([
                 'scholar_id' => $scholar->id,
             ]);
+
         }
 
         

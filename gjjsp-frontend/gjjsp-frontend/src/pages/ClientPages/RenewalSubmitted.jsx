@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import theme from '../../context/theme';
 import HistoryIcon from '@mui/icons-material/History';
 import axios from '../../api/axios';
@@ -25,8 +25,9 @@ export default function RenewalSubmitted() {
     //Zustand Calls
     const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
     const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
-    const { renewalForms, setRenewalForms, renewalSubmissionStatus, setRenewalSubmissionStatus  } = useSubmissionStore();
+    const { renewalForms, setRenewalForms, renewalForm, selectedSubmission, setSelectedSubmission, submissionValues, setSubmissionValues, submissionValue  } = useSubmissionStore();
 
+    const navigate = useNavigate();
     //Get Scholars Data
 
     useEffect(() => {
@@ -55,61 +56,21 @@ export default function RenewalSubmitted() {
         fetchScholars();
     }, []);
 
-    useEffect(() => {
-        const fetchScholarSubmission = async () => {
-            try {
-                const authToken = getAuthToken();
-            
-                const response = await axios.get('/api/renewal-documents', {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
 
-                if (response.status === 200) {
-                    console.log(response.data.data);
-                    setRenewalSubmissionStatus(response.data.data);
-                }
-                else{
-                    console.log(response);
-                }
-            }
-            catch(error){
-                console.log(error);
-            }
+      //View Submission Function
+    const viewSubmission = (submissionId) => {
         
+        const selectedSubmission = renewalForms.find((renewalForm) => renewalForm.id === submissionId);
+
+        if(selectedSubmission){
+            setSelectedSubmission(selectedSubmission);
+            navigate('/renewal-view');
         }
-        fetchScholarSubmission();
-    }, []);
 
-    // //Get Scholar Data who submits
-    // useEffect(() => {
-    //     const fetchScholarSubmission = async () => {
-    //         try {
-    //             const authToken = getAuthToken();
-
-    //             const response = await axios.get('/api/renewal-documents', {
-    //                 headers: {
-    //                     'Authorization': `Bearer ${authToken}`  
-    //                 }
-    //             });
-
-    //             if (response.status === 200) {
-    //                 console.log(response.data.data);
-    //                 setRenewalForms(response.data.data);
-    //             }
-    //             else{
-    //                 console.log(response);
-    //             }
-    //         }
-    //         catch(error){
-    //             console.log(error);
-    //         }
-    //     }
-    
-    //     fetchScholarSubmission();
-    
-    // }, []);
+        else{
+            console.log('Submission not found');
+        }
+    };
     
   return (
     <Layout>
@@ -231,12 +192,12 @@ export default function RenewalSubmitted() {
                             <MUI.TableCell sx={{border: 'none'}}  className='name'>
                             {`${renewalForm.user_first_name} ${renewalForm.user_middle_name || ""} ${renewalForm.user_last_name}`}
                             </MUI.TableCell>
-                            <MUI.TableCell sx={{border: 'none'}}  className='email'> 
+                            <MUI.TableCell sx={{border: 'none'}}  className='submission_status'> 
                                 {renewalForm.submission_status && renewalForm.submission_status.length > 0 ? renewalForm.submission_status : 'No Submission'}
                             </MUI.TableCell>
                             
                             <MUI.TableCell sx={{border: 'none'}}  className='role'>
-                                <MUI.IconButton color="inherit" component={Link} to='/renewal-view' sx={{ml: 2}}>
+                                <MUI.IconButton color="inherit" onClick={() => viewSubmission(renewalForm.id)}>
                                     <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                                 </MUI.IconButton>
                             </MUI.TableCell>

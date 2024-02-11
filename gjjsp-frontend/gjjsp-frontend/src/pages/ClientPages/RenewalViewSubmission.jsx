@@ -21,7 +21,7 @@ export default function ViewSubmission() {
   //Zustand Store
     const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
     const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
-    const { renewalForms, setRenewalForms, renewalSubmissionStatus, setRenewalSubmissionStatus, renewalValues, setRenewalValues  } = useSubmissionStore();
+    const { renewalScholarData, setRenewalScholarData, renewalSubmissionStatus, setRenewalSubmissionStatus, renewalValues, setRenewalValues, selectedSubmission, setSelectedSubmission  } = useSubmissionStore();
 
   //React Hook form 
   const form  = useForm();
@@ -29,57 +29,61 @@ export default function ViewSubmission() {
   const { errors } = formState;
 
 
+  
   useEffect(() => {
-    const fetchRenewalSubmission = async () => {
-      try {
-        const authToken = getAuthToken();
-        const response = await axios.get('/api/renewal-documents', {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-      
-        if (response.status === 200) {
-          console.log(response.data.data);
-          setRenewalValues(response.data.data);
+    const fetchScholars= async () => {
+        try {
+            const authToken = getAuthToken();
+        
+            const response = await axios.get('/api/scholars', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+        
+            if (response.status === 200) {
+                console.log(response.data.data);
+                setRenewalScholarData(response.data.data);
+            }
+            else{
+                console.log(response);
+            }
         }
-        else{
-          console.log(response);
+        catch(error){
+            console.log(error);
         }
-      }
-      catch(error){
-        console.log(error);
-      }
     }
-    fetchRenewalSubmission();
-  
-  }, []);
-  
+    fetchScholars();
+}, []);
 
   
 
   return (
     <Layout>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+
         <MUI.Grid container spacing={3}>
 
         <MUI.Grid container alignItems="center" sx={{display: 'flex', justifyContent: 'space-between'}}>
           <MUI.Grid item>
               <MUI.Button variant='contained' component={Link} to="/submitted-renewal">
-                  Close
+                  Close 
               </MUI.Button>
           </MUI.Grid>
 
           <MUI.Grid item>
-              <MUI.Typography>Scholar Name: Christian Medallada</MUI.Typography>
+              <MUI.Typography>Scholar Name: {selectedSubmission.user_first_name}</MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid item>
-              <MUI.Typography>Renewal Form: For Renewal</MUI.Typography>
+          <MUI.Typography>Renewal Form: {selectedSubmission.submission_status && selectedSubmission.submission_status.length > 0 ? selectedSubmission.submission_status : 'No Submission'}</MUI.Typography>
           </MUI.Grid>
 
           <MUI.Grid item>
-              <MUI.Typography>SY 2022-2023</MUI.Typography>
+          <MUI.Typography>
+        SY: {selectedSubmission.school_yr_submitted && Array.isArray(selectedSubmission.school_yr_submitted) && selectedSubmission.school_yr_submitted.length > 0 ? selectedSubmission.school_yr_submitted[0] : 'N/A Year'}
+    </MUI.Typography>
+
           </MUI.Grid>
 
 
@@ -88,16 +92,15 @@ export default function ViewSubmission() {
 
               <MUI.Button>Disapprove</MUI.Button>
           </MUI.Grid>
-      </MUI.Grid>
+        </MUI.Grid>
 
-      {renewalValues.map((item, index) => (
-            <MUI.Grid container item xs={12} sx={{ mt: 5, ml: 2, display: 'flex' }} key={index}>
+
+            <MUI.Grid container item xs={12} sx={{ mt: 5, ml: 2, display: 'flex' }} >
               <MUI.Grid item xs={12}>
                 <MUI.InputLabel htmlFor="gwa_value" id="gwaLabel">1. General Weighted Average</MUI.InputLabel>
 
 
                 <MUI.Box
-                  key={index}
                   sx={{
                     width: '100%', // Adjust width as needed
                     height: '50px', // Adjust height as needed
@@ -108,7 +111,7 @@ export default function ViewSubmission() {
                     marginTop: 2,
                   }}
                 >
-                  {item.gwa_value}
+                  {selectedSubmission.gwa_value}
                 </MUI.Box>
 
 
@@ -118,7 +121,6 @@ export default function ViewSubmission() {
                 <MUI.InputLabel htmlFor="gwa_remarks" id="remarksLabel">2. Add remarks about GWA</MUI.InputLabel>
 
                 <MUI.Box
-                  key={index}
                   sx={{
                     width: '100%', // Adjust width as needed
                     height: '50px', // Adjust height as needed
@@ -129,13 +131,13 @@ export default function ViewSubmission() {
                     marginTop: 2,
                   }}
                 >
-                  {item.gwa_remarks}
+                  {selectedSubmission.gwa_remarks}
                 </MUI.Box>
 
               </MUI.Grid>
 
               <MUI.Grid item xs={12}>
-                <MUI.Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+                <MUI.Typography variant='h5' sx={{ fontWeight: 'bold', mt: 5 }}>
                   Documentary Requirements
                 </MUI.Typography>
               </MUI.Grid>
@@ -153,12 +155,12 @@ export default function ViewSubmission() {
 
                     <MUI.TableRow>
                         <MUI.TableCell sx={{ border: 'none', display: 'flex', alignItems: 'flex-start', marginLeft: '-8px' }}>
-                          <MUI.Typography variant='body1'>Copy of Report Card of the previous semester</MUI.Typography> <MUI.ErrorOutlineOutlinedIcon />
+                          <MUI.Typography variant='body1'>Copy of Report Card of the previous semester</MUI.Typography> 
                         </MUI.TableCell>
                         <MUI.TableCell sx={{ border: 'none' }}>
 
                           <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                            <MUI.Typography variant='body1'>Renewal_CopyOfReportCard </MUI.Typography>
+                            <MUI.Typography variant='body1'>{selectedSubmission.copyOfReportCard && selectedSubmission.copyOfReportCard.length > 0 ? selectedSubmission.copyOfReportCard : 'No Submission'} </MUI.Typography>
                           </MUI.Grid>
 
                         </MUI.TableCell>
@@ -166,12 +168,12 @@ export default function ViewSubmission() {
 
                       <MUI.TableRow >
                         <MUI.TableCell sx={{ border: 'none', display: 'flex', alignItems: 'flex-start', marginLeft: '-8px' }}>
-                          <MUI.Typography variant='body1'>Copy of School Registration Form (RF)</MUI.Typography> <MUI.ErrorOutlineOutlinedIcon />
+                          <MUI.Typography variant='body1'>Copy of School Registration Form (RF)</MUI.Typography> 
                         </MUI.TableCell>
                         <MUI.TableCell sx={{border: 'none'}}>
 
                           <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                            <MUI.Typography variant='body1'>Renewal_CopyOfRegistrationForm</MUI.Typography>
+                            <MUI.Typography variant='body1'>{selectedSubmission.copyOfRegistrationForm && selectedSubmission.copyOfRegistrationForm.length > 0 ? selectedSubmission.copyOfRegistrationForm : 'No Submission'} </MUI.Typography>
                           </MUI.Grid>
 
                         </MUI.TableCell>  
@@ -184,7 +186,7 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{border: 'none'}}>
                           
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                          <MUI.Typography variant='body1'>Renewal_ScannedWrittenEssay</MUI.Typography>  
+                        <MUI.Typography variant='body1'>{selectedSubmission.scannedWrittenEssay && selectedSubmission.scannedWrittenEssay.length > 0 ? selectedSubmission.scannedWrittenEssay : 'No Submission'} </MUI.Typography>
                         </MUI.Grid>
 
                         </MUI.TableCell>
@@ -197,7 +199,7 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{border: 'none'}}>
 
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                          <MUI.Typography variant='body1'>Renewal_LetterOfGratitude</MUI.Typography>
+                        <MUI.Typography variant='body1'>{selectedSubmission.letterOfGratitude && selectedSubmission.letterOfGratitude.length > 0 ? selectedSubmission.letterOfGratitude : 'No Submission'} </MUI.Typography>
                         </MUI.Grid>
 
                         </MUI.TableCell>
@@ -211,7 +213,6 @@ export default function ViewSubmission() {
               </MUI.Grid>
 
             </MUI.Grid>
-          ))}
             </MUI.Grid>
       </MUI.Container>
     </Layout>

@@ -117,8 +117,7 @@ class UndergradAcadDetailsController extends Controller
     public function getUndergradAcadDetail()
     {
         try {
-            $userId = Auth::id(); // Retrieve the authenticated user's ID
-            $user = User::findOrFail($userId);
+            $userId = Auth::id(); // Retrieve the authenticated user's I
 
             $scholar = Scholar::where('user_id', $userId)->first();
 
@@ -130,6 +129,10 @@ class UndergradAcadDetailsController extends Controller
                 } else {
                     return response()->json(['message' => 'Undergrad Details not found!'], Response::HTTP_NOT_FOUND);
                 }
+            }
+            else{
+                return response()->json(['message' => 'Scholar not found!'], Response::HTTP_NOT_FOUND);
+            
             }
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error processing Undergrad Details!'], Response::HTTP_INTERNAL_SERVER_ERROR);

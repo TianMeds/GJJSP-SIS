@@ -142,13 +142,48 @@ useEffect(() => {
     setEditScholar(false);
     handleCloseScholar();
   }
+
+  const statusMapping = {
+    "New": 1,
+    "For Renewal": 2,
+    "For Renewal: Graduating": 3,
+    "Renewed": 4,
+    "Graduating": 5,
+    "Graduated": 6,
+    "Alumni": 7,
+    "Withdrew": 8,
+  }
+
+  const getStatusClassName = (statusId) => {
+    switch (statusId) {
+      case 1:
+        return "New";
+      case 2:
+        return "For_Renewal";
+      case 3:
+        return "For_Renewal_Graduating";
+      case 4:
+        return "Renewed";
+      case 5:
+        return "Graduating";
+      case 6:
+        return "Graduated";
+      case 7:
+        return "Alumni";
+      case 8:
+        return "Withdrew";
+      default:
+        return "";
+    }
+  };
   
   return (
     <Layout>
     <MUI.ThemeProvider theme={theme}>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <MUI.Grid container spacing={3}>
-          <MUI.Grid item xs={12}>
+          
+          <MUI.Grid item xs={12} mb={4}>
             <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
               <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Scholars</MUI.Typography>
                         
@@ -158,18 +193,15 @@ useEffect(() => {
                   <MUI.NotificationsIcon  sx={{transform: 'rotate(45deg)', mr: 1}}/>
                   <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
                 </MUI.Button>
-
-                <MUI.Button variant="contained" id='addButton' >
-                  <MUI.PersonAddAltOutlinedIcon sx={{mr: 1}}/>
-                  <MUI.Typography variant='body2' >{editScholar ? 'Edit Scholar' : 'Add Scholar'}</MUI.Typography>
-                </MUI.Button>
               </MUI.Box>  
 
             </MUI.Box>
           </MUI.Grid>
 
+          <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflow: 'auto', overflowX: 'hidden',  width: '100%' }}>
+
           {/* Search Bar */}
-          <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+          <MUI.Container sx={{mt: 4, mb: 8, display: 'flex', alignItems: 'center' }}>
             <Search>
               <SearchIconWrapperV2>
                 <MUI.SearchIcon />
@@ -197,10 +229,12 @@ useEffect(() => {
                 <option value="All">All</option>
                 <option value="New">New</option>
                 <option value="For Renewal">For Renewal</option>
+                <option value="For Renewal: Graduating">For Renewal: Graduating</option>
                 <option value="Renewed">Renewed</option>
                 <option value="Graduating">Graduating</option>
                 <option value="Graduated">Graduated</option>
                 <option value="Alumni">Alumni</option>
+                <option value="Withdrew">Withdrew</option>
               </MUI.Select>
             </MUI.FormControl>
 
@@ -222,15 +256,25 @@ useEffect(() => {
             <MUI.Table> 
               <MUI.TableHead>
                 <MUI.TableRow>
-                  <MUI.TableCell>Name</MUI.TableCell>
-                  <MUI.TableCell>Email</MUI.TableCell>
-                  <MUI.TableCell>Scholarship Category</MUI.TableCell>
-                  <MUI.TableCell>Scholar Status</MUI.TableCell>
-                  <MUI.TableCell>Action</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Name</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Email</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholarship Category</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar Status</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
-                  {scholarsData.map((scholar, index) => (
+                  {scholarsData
+                  .filter((scholar) => {
+                    return filteredScholar === 'All' ? true : (
+                      scholar.scholar_status_id === (statusMapping[filteredScholar] || null)
+                    );
+                  })
+                  .filter((scholar) => 
+                      (scholar.user_email_address && scholar.user_email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
+                      ((`${scholar.user_first_name} ${scholar.user_middle_name} ${scholar.user_last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
+                    )
+                    .map((scholar, index) => (
                     <MUI.TableRow key={index} className='scholar'>
                       <MUI.TableCell sx={{border: 'none'}} className='scholarName'>
                         {`${scholar.user_first_name} ${scholar.user_middle_name || ""} ${scholar.user_last_name}`}
@@ -241,9 +285,29 @@ useEffect(() => {
                       <MUI.TableCell sx={{border: 'none'}} className='scholarCatergory'>
                         {scholar.scholarship_categ_name}
                       </MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}} className='scholarStatus'>
-                        {scholar.scholar_status_name}
+
+                      <MUI.TableCell sx={{ border: 'none' }}>
+                      <span className={`scholarStatus ${getStatusClassName(scholar.scholar_status_id)}`}>
+                        {scholar.scholar_status_id === 1
+                          ? "New"
+                          : scholar.scholar_status_id === 2
+                          ? "For Renewal"
+                          : scholar.scholar_status_id === 3
+                          ? "For Renewal: Graduating"
+                          : scholar.scholar_status_id === 4
+                          ? "Renewed"
+                          : scholar.scholar_status_id === 5
+                          ? "Graduating"
+                          : scholar.scholar_status_id === 6
+                          ? "Graduated"
+                          : scholar.scholar_status_id === 7
+                          ? "Alumni"
+                          : scholar.scholar_status_id === 8
+                          ? "Withdrew"
+                          : ""}
+                      </span>
                       </MUI.TableCell>
+                      
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
                         <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}} />
@@ -265,6 +329,8 @@ useEffect(() => {
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>
           </MUI.TableContainer>   
+
+          </MUI.Grid>
 
            {/* Add Scholar Dialog */}
            {/* <MUI.Dialog  fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>

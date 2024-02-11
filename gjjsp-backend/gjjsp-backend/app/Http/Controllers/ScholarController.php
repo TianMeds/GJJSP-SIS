@@ -24,6 +24,18 @@ class ScholarController extends Controller
     }
 
     /**
+     * Get the Total of Scholars
+     */
+
+    public function totalScholars()
+    {
+        $totalScholars = Scholar::count();
+
+        return response()->json(['total_scholars' => $totalScholars], Response::HTTP_OK);
+    }
+
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

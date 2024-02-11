@@ -250,4 +250,116 @@
     font-weight: bold;  
 }
 
+/* User Role Span */ 
+
+.Scholarship_Administrator {
+background-color: purple;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Scholar_Manager {
+background-color: lightgreen;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Scholar {
+background-color: lightblue;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+/* User Status Span */
+
+.Active {
+background-color: lightgreen;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Inactive {
+background-color: orange;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Revoked {
+background-color: red;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+/* Scholar Status Span */
+
+.New {
+background-color: purple;
+color: white; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.For_Renewal {
+background-color: orange;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px;  
+}
+
+.For_Renewal_Graduating {
+background-color: rgb(255, 182, 47);
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Renewed {
+background-color: lightgreen;
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Graduating {
+background-color: rgb(169, 139, 220);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Graduated {
+background-color: rgb(36, 157, 222);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Alumni {
+background-color: rgb(211, 163, 163);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Withdrew {
+background-color: red;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
 

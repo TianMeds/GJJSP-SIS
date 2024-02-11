@@ -39,6 +39,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::get('/total-users', [UserController::class, 'totalUsers']);
     Route::get('/profile', [UserController::class, 'profile']);
     Route::put('/profile/{id}', [UserController::class, 'updateProfile']);
     Route::get('/userScholar', [UserController::class, 'getUserRoles']);
@@ -50,6 +51,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::delete('/scholars/{id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
     Route::get('/restore/{id}', [ScholarController::class, 'restoreScholar']);
+    Route::get('/total-scholars', [ScholarController::class, 'totalScholars']);
 
     //Scholars Profile Route
     Route::post('/scholarsProfile', [ScholarController::class, 'storeScholarProfile']);
@@ -66,6 +68,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
    //Scholarship Route
     Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
+    Route::get('/total-scholarships', [ScholarshipCategController::class, 'totalScholarships']);
     Route::post('/scholarships', [ScholarshipCategController::class, 'store']);
     Route::put('/scholarships/{id}', [ScholarshipCategController::class, 'update']);
     Route::delete('/scholarships/{id}', [ScholarshipCategController::class, 'destroy']);
@@ -73,6 +76,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
     //ProjectPartner Route
     Route::apiResource('/project-partners', ProjectPartnerController::class)->only(['index', 'show']);
+    Route::get('/total-project-partners', [ProjectPartnerController::class, 'totalProjectPartners']);
     Route::post('/project-partners', [ProjectPartnerController::class, 'store']);
     Route::put('/project-partners/{id}', [ProjectPartnerController::class, 'update']);
     Route::delete('/project-partners/{id}', [ProjectPartnerController::class, 'destroy']);
@@ -119,6 +123,9 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     
     Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
     Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
+    Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'update']);
+    Route::get('renewal-document' , [RenewalDocumentController::class, 'scholarSubmission']);
+    Route::get('total-renewal' , [RenewalDocumentController::class, 'totalRenewalDocuments']);
 
     Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);

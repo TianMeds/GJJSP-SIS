@@ -16,6 +16,7 @@ import useAuthStore from '../../store/AuthStore';
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 import {useNavigate} from 'react-router-dom';
+import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 
 //Regex Validations 
@@ -274,6 +275,8 @@ export default function User({state}) {
     'Scholar Manager': 2,
     'Scholar': 3,
   };
+
+
   
   return (
   <Layout>
@@ -281,7 +284,7 @@ export default function User({state}) {
     <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <MUI.Grid container spacing={3}>
       
-        <MUI.Grid item xs={12}>
+        <MUI.Grid item xs={12} mb={4}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
             <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Users</MUI.Typography>
                       
@@ -294,7 +297,9 @@ export default function User({state}) {
             </MUI.Box>
         </MUI.Grid>
 
-        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+        <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflow: 'auto', width: '100%' }}>
+
+        <MUI.Container sx={{mt: 4, mb: 4,  display: 'flex', alignItems: 'center' }}>
           <Search>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />
@@ -329,15 +334,15 @@ export default function User({state}) {
 
 
           {/* -------- Table Section  ----------*/}
-          <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2', margin: '2rem 0 0 1rem' }}>
+          <MUI.TableContainer>
             <MUI.Table> 
               <MUI.TableHead>
                 <MUI.TableRow>
-                  <MUI.TableCell>Name</MUI.TableCell>
-                  <MUI.TableCell>Email</MUI.TableCell>
-                  <MUI.TableCell>Role</MUI.TableCell>
-                  <MUI.TableCell>Status</MUI.TableCell>
-                  <MUI.TableCell>Action</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Name</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Email</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Role</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Status</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
@@ -352,13 +357,33 @@ export default function User({state}) {
                       ((`${user.first_name} ${user.middle_name} ${user.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
                     .map((user, index) => (
-                    <MUI.TableRow key={index} className='user' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='name'>{`${user.first_name} ${user.middle_name ? user.middle_name : ''} ${user.last_name}`}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='email'>{user.email_address}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='role'>
-                        {user.role_id === 1 ? 'Scholarship Administrator' : user.role_id === 2 ? 'Scholar Manager' : 'Scholar'}
+                    <MUI.TableRow key={index} className='user' sx={{backgroundColor: index % 2 === 0 ? '#eeeeee' : 'inherit'}}>
+                      <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)' }}  className='name'>{`${user.first_name} ${user.middle_name ? user.middle_name : ''} ${user.last_name}`}</MUI.TableCell>
+                      <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)' }}  className='email'>{user.email_address}</MUI.TableCell>
+                      <MUI.TableCell
+                        sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)' }}
+                        className="userRoles"
+                      >
+                        {user.role_id === 1 ? (
+                          <span className="Scholarship_Administrator">Scholarship Administrator</span>
+                        ) : user.role_id === 2 ? (
+                          <span className="Scholar_Manager">Scholar Manager</span>
+                        ) : (
+                          <span className="Scholar">Scholar</span>
+                        )}
                       </MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='status'>{user.user_status}</MUI.TableCell>
+                      <MUI.TableCell sx={{ border: 'none' }}>
+                        <span
+                          className={classNames({
+                            Active: user.user_status === 'Active',
+                            Inactive: user.user_status === 'Inactive',
+                            Revoked: user.user_status === 'Revoked',
+                          })}
+                        >
+                          {user.user_status}
+                        </span>
+                      </MUI.TableCell>
+
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
                         <MUI.IconButton color="inherit" onClick={() => viewProfile(user.id)}>
@@ -391,6 +416,8 @@ export default function User({state}) {
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>
           </MUI.TableContainer>   
+
+          </MUI.Grid>
 
           {/* ------------------ Dialog Box of the  Users ---------------*/ }
 

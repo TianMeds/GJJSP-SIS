@@ -23,14 +23,44 @@ const useSubmissionStore = create((set) => ({
     letterOfGratitude: null,
     setLetterOfGratitude: (letterOfGratitude) => set({letterOfGratitude}),
 
-    //Renewal Form
+    //Graduating Form
+    copyOfReportCardGraduating: null,
+    setCopyOfReportCardGraduating: (copyOfReportCardGraduating) => set({copyOfReportCardGraduating}),
+    copyOfRegistrationFormGraduating: null,
+    setCopyOfRegistrationFormGraduating: (copyOfRegistrationFormGraduating) => set({copyOfRegistrationFormGraduating}),
+    scannedWrittenEssayGraduating: null,
+    setScannedWrittenEssayGraduating: (scannedWrittenEssayGraduating) => set({scannedWrittenEssayGraduating}),
+    letterOfGratitudeGraduating: null,
+    setLetterOfGratitudeGraduating: (letterOfGratitudeGraduating) => set({letterOfGratitudeGraduating}),
+    statementOfAccount: null,
+    setStatementOfAccount: (statementOfAccount) => set({statementOfAccount}),
+    graduationPicture: null,
+    setGraduationPicture: (graduationPicture) => set({graduationPicture}),
+    transcriptOfRecords: null,
+    setTranscriptOfRecords: (transcriptOfRecords) => set({transcriptOfRecords}),
+
+
+
+    //Table Values and Status before viewing
     renewalForms: [],
     renewalForm: false,
-    setRenewalForms: (renewalForms) => set({renewalForms}),
-    renewalSubmissionStatus: 'No Submission',
-    setRenewalSubmissionStatus: (newRenewalSubmissionStatus) => set({renewalSubmissionStatus: newRenewalSubmissionStatus}),
+    setRenewalForms: (newRenewalForms) => set({renewalForms: newRenewalForms}),
+
+    //Forms and Table Values
     renewalValues: [],
     setRenewalValues: (newRenewalValues) => set({renewalValues: newRenewalValues}),
+
+    //Get Values of the Submission
+    submissionValues: [],
+    submissionValue: false,
+    setSubmissionValues: (submissionValues) => set({submissionValues}),
+    selectedSubmission: null,
+    setSelectedSubmission: (selectedSubmission) => set({selectedSubmission}),
+
+    //Values of the Submissions 
+    renewalScholarData: [],
+    setRenewalScholarData: (newRenewalScholarData) => set({renewalScholarData: newRenewalScholarData}),
+
 
     // Submission Form
     file: '',

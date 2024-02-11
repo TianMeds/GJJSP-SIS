@@ -27,8 +27,9 @@ return new class extends Migration
             $table->string('statementOfAccount')->nullable();
             $table->string('graduationPicture')->nullable();
             $table->string('transcriptOfRecords')->nullable();
-            $table->string('submission_status')->default('No Submission');
+            $table->string('submission_status')->default('For Approval');
             $table->unsignedInteger('updated_by')->nullable()->constrained('users');
+            $table->timestamps();
             $table->softDeletes();
         });
     }

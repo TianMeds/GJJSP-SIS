@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+use App\Models\Scholar;
+
 
 class RenewalDocument extends Model
 {
@@ -13,6 +15,7 @@ class RenewalDocument extends Model
 
     protected $fillable = [
         'scholar_id',
+        'user_id',
         'gwa_value',
         'gwa_remarks',
         'school_yr_submitted',
@@ -25,6 +28,14 @@ class RenewalDocument extends Model
         'updated_by',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    public $timestamps = false;
+    public function scholar()
+    {
+        return $this->belongsTo(Scholar::class);
+    }
+
 }

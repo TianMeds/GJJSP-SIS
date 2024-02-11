@@ -41,6 +41,7 @@ class AlumniFormController extends Controller
             // Create the AlumniForm with the scholar_id included
             $alumniForm = AlumniForm::create([
                 'scholar_id' => $scholarId,
+                'user_id' => $user->id,
                 'year_submitted' => $request->year_submitted,
                 'company_name' => $request->company_name,
                 'position_in_company' => $request->position_in_company,

@@ -16,7 +16,7 @@ export const ScholarProfileBox = () => {
     const {selectedUser} = useUserStore();
     const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
-    const {scholarFamMembers, setScholarFamMembers, yearsInProgram, setYearsInProgram, highschoolAcadDetails, setHighschoolAcadDetails, undergradAcadDetails, setUndergradAcadDetails  } = useScholarProfileStore();
+    const {scholarFamMembers, setScholarFamMembers, yearsInProgram, setYearsInProgram, highschoolAcadDetails, setHighschoolAcadDetails,  undergradAcadDetails, setUndergradAcadDetails  } = useScholarProfileStore();
     const navigate = useNavigate();
 
 //Fetch the Users Profiles

@@ -7,6 +7,49 @@ const useDashboardStore = create((set) => ({
     scholarStatuses: false,
     setScholarStatus: (scholarStatus) => set({scholarStatus}),
 
+    //Get Data from Scholar Status
+    scholarStatusCount: [],
+    setScholarStatusCount: (scholarStatusCount) => set({scholarStatusCount}),
+
+    //Get Total of Users
+    totalUsers: [],
+    setTotalUsers: (totalUsers) => set({ totalUsers}),
+
+    //Get Total of Scholars
+    totalScholars: [],
+    setTotalScholars: (totalScholars) => set({totalScholars}),
+
+    //Get Total of Scholarships Categories
+    totalScholarshipCategories: [],
+    setTotalScholarshipCategories: (totalScholarshipCategories) => set({totalScholarshipCategories}),
+
+    //Get Total of Project Partners
+    totalProjectPartners: [],
+    setTotalProjectPartners: (totalProjectPartners) => set({totalProjectPartners}),
+
+    //Get Scholars List of Submission 
+    scholarSubmission: [],
+    setScholarSubmission: (scholarSubmission) => set({scholarSubmission}),
+
+    graduatingSubmission: [],
+    setGraduatingSubmission: (graduatingSubmission) => set({graduatingSubmission}),
+
+    alumniSubmission: [],
+    setAlumniSubmission: (alumniSubmission) => set({alumniSubmission}),
+
+
+    //Bar Chart
+    term1Data: [],
+    setTerm1Data: (term1Data) => set({term1Data}),
+
+    term2Data: [],
+    setTerm2Data: (term2Data) => set({term2Data}),
+
+    term3Data: [],
+    setTerm3Data: (term3Data) => set({term3Data}),
+
+    
+
 }))
 
 export default useDashboardStore;

@@ -47,6 +47,7 @@ class GraduatingFormController extends Controller
             
             $submission = GraduatingDocument::create([
                 'scholar_id' => $scholarId,
+                'user_id' => $user->id,
                 'future_company' => $request->future_company,
                 'future_company_location' => $request->future_company_location,
                 'future_position' => $request->future_position,
@@ -60,10 +61,11 @@ class GraduatingFormController extends Controller
                 'statementOfAccount' => $statementOfAccountName,
                 'graduationPicture' => $graduationPictureName,
                 'transcriptOfRecords' => $transcriptOfRecordsName,
+                'submission_status' => 'For Approval',
             ]);
 
             // Set Nextcloud API endpoint and credentials
-            $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/gjjsp/';
+            $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/GraduatingDocuments/';
             $nextcloudUsername = 'cbmedallada';
             $nextcloudPassword = 'sm@llLamp50';
 

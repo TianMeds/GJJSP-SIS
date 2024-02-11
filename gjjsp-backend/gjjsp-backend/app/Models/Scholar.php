@@ -9,6 +9,7 @@ use App\Models\ScholarStatus;
 use App\Models\User;
 use App\Models\ScholarshipCateg;
 use App\Models\RenewalDocument;
+use App\Models\GraduatingDocument;
 
 class Scholar extends Model
 {
@@ -59,6 +60,11 @@ class Scholar extends Model
     public function renewal_documents()
     {
         return $this->hasMany(RenewalDocument::class);
+    }
+
+    public function graduating_documents()
+    {
+        return $this->hasMany(GraduatingDocument::class);
     }
 
     public function getScholarStatusNameAttribute()

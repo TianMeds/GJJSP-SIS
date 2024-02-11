@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('letterOfGratitude')->nullable();
             $table->string('submission_status')->default('For Approval');
             $table->unsignedInteger('updated_by')->nullable()->constrained('users');
+            $table->timestamps();
             $table->softDeletes();
         });
     }

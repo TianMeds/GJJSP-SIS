@@ -27,6 +27,12 @@ class RenewalDocumentResource extends JsonResource
             'letterOfGratitude' => $this->letterOfGratitude,
             'submission_status' => $this->submission_status,
             'updated_by' => $this->updated_by,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'user_first_name' =>$this->user->first_name,
+            'user_last_name' =>$this->user->last_name,
+            'user_middle_name' =>$this->user->middle_name,
+
         ];
     }
 }

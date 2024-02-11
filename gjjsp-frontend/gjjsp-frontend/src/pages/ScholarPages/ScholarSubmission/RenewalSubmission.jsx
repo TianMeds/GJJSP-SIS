@@ -41,8 +41,6 @@ export default function RenewalSubmission() {
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
-  const [selectedFile, setSelectedFile] = useState(null);
-
   const handleFileChange = (event, fileType) => {
     const file = event.target.files[0];
     
@@ -68,6 +66,8 @@ export default function RenewalSubmission() {
     const formData = new FormData();
     formData.append('gwa_value', data.gwa_value);
     formData.append('gwa_remarks', data.gwa_remarks);
+    formData.append('school_yr_submitted', data.school_yr_submitted);
+    formData.append('term_submitted', data.term_submitted);
     formData.append('copyOfReportCard', copyOfReportCard);
     formData.append('copyOfRegistrationForm', copyOfRegistrationForm);
     formData.append('scannedWrittenEssay', scannedWrittenEssay);
@@ -122,20 +122,20 @@ export default function RenewalSubmission() {
                     <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
                       <Controller
                         name="school_yr_submitted"
+                        id='school_yr_submitted'
                         control={control}
                         defaultValue=""
                         render={({ field }) => (
                           <MUI.Select
                             native
                             {...field}
-                            id='school_yr_submitted'
                             sx={{border: '1px solid rgba(0,0,0,0.2)',
                             boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                           >
                             <option value="">Select SY</option>
-                            <option value="SY 2023-2024">SY 2023-2024</option>
-                            <option value="SY 2022-2023">SY 2022-2023</option>
-                            <option value="SY 2021-2022">SY 2021-2022</option>
+                            <option value="2023-2024">SY 2023-2024</option>
+                            <option value="2022-2023">SY 2022-2023</option>
+                            <option value="2021-2022">SY 2021-2022</option>
                             
                           </MUI.Select>
                         )}
@@ -146,13 +146,13 @@ export default function RenewalSubmission() {
                     <MUI.InputLabel htmlFor="term_submitted" id="termLabel"></MUI.InputLabel>
                       <Controller
                         name="term_submitted"
+                        id='term_submitted'
                         control={control}
                         defaultValue=""
                         render={({ field }) => (
                           <MUI.Select
                             native
                             {...field}
-                            id='term_submitted'
                             sx={{border: '1px solid rgba(0,0,0,0.2)',
                             boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                           >

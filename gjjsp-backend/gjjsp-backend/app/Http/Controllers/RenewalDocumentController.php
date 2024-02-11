@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RenewalDocumentResource;
+use App\Http\Resources\ScholarResoure;
 use App\Http\Resources\RenewalDocumentCollection;
 use App\Models\RenewalDocument;
+use App\Models\Scholar;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +27,16 @@ class RenewalDocumentController extends Controller
         return response()->json(new RenewalDocumentCollection(RenewalDocument::all()),Response::HTTP_OK);
     }
 
+    /**
+     * Total of Renewal Documents
+     */
+
+    public function totalRenewalDocuments()
+    {
+        $totalRenewalDocuments = RenewalDocument::count();
+
+        return response()->json(['total_renewal_documents' => $totalRenewalDocuments], Response::HTTP_OK);
+    } 
     /**
      * Store a newly created resource in storage.
      */
@@ -136,6 +148,7 @@ class RenewalDocumentController extends Controller
             // Create Renewal Document
             $submission = RenewalDocument::create([
                 'scholar_id' => $scholarId,
+                'user_id' => $user->id,
                 'gwa_value' => $request->gwa_value,
                 'gwa_remarks' => $request->gwa_remarks,
                 'school_yr_submitted' => $request->school_yr_submitted,
@@ -144,10 +157,12 @@ class RenewalDocumentController extends Controller
                 'copyOfRegistrationForm' => $copyOfRegistrationFormName,
                 'scannedWrittenEssay' => $scannedWrittenEssayName,
                 'letterOfGratitude' => $letterOfGratitudeName,
+                'submission_status' => 'For Approval',
+                
             ]);
     
             // Set Nextcloud API endpoint and credentials
-            $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/gjjsp/';
+            $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/RenewalDocuments/';
             $nextcloudUsername = 'cbmedallada';
             $nextcloudPassword = 'sm@llLamp50';
     
@@ -228,11 +243,78 @@ class RenewalDocumentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, RenewalDocument $renewalDocument)
+    public function update(Request $request, $id)
     {
-        //
+        // Find the RenewalDocument object by ID
+        $renewalDocument = RenewalDocument::find($id);
+    
+        // Check if the RenewalDocument exists
+        if ($renewalDocument) {
+            try {
+                // Update the RenewalDocument object with the request data
+                $renewalDocument->update($request->all());
+    
+                // Return a success response
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Renewal Document has been updated',
+                    'method' => 'POST',
+                ], 200);
+            } catch (\Exception $err) {
+                // If an error occurs during the update process, return an error response
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Error updating Renewal Document',
+                    'error' => $err->getMessage(),
+                ], 500);
+            }
+        } else {
+            // If the RenewalDocument with the specified ID is not found, return a not found response
+            return response()->json([
+                'status' => false,
+                'message' => 'Renewal Document not found',
+            ], 404);
+        }
     }
 
+    // public function scholarSubmission()
+    // {
+    //     try {
+    //         // Check if the authenticated user is an admin (role_id 1 or 2)
+    //         if (Auth::check() && (Auth::user()->role_id == 1 || Auth::user()->role_id == 2)) {
+    //             // Retrieve the user ID from the request or any other source
+    //             $userId = request()->input('user_id');
+    
+    //             // Find the scholar profile based on the provided user ID
+    //             $scholar = Scholar::where('user_id', $userId)->first();
+    
+    //             if ($scholar) {
+    //                 // Scholar profile found, return as a resource
+    //                 return new ScholarResource($scholar);
+    //             } else {
+    //                 // Scholar profile not found for the provided user ID
+    //                 return response()->json(['message' => 'Scholar profile not found for the provided user ID'], Response::HTTP_NOT_FOUND);
+    //             }
+    //         } else {
+    //             // Retrieve the authenticated user's ID
+    //             $userId = Auth::id();
+    
+    //             // Find the scholar profile that belongs to the authenticated user
+    //             $scholar = Scholar::where('user_id', $userId)->first();
+    
+    //             if ($scholar) {
+    //                 // Scholar profile found, return as a resource
+    //                 return new ScholarResource($scholar);
+    //             } else {
+    //                 // Scholar profile not found for the authenticated user
+    //                 return response()->json(['message' => 'Scholar profile not found for the authenticated user'], Response::HTTP_NOT_FOUND);
+    //             }
+    //         }
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+    //     }
+    // }
+    
     /**
      * Remove the specified resource from storage.
      */

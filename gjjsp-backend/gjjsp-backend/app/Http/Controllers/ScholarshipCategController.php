@@ -19,6 +19,17 @@ class ScholarshipCategController extends Controller
     }
 
     /**
+     * Total of Scholarship Categories
+     */
+
+    public function totalScholarships()
+    {
+        $totalScholarshipCateg = ScholarshipCateg::count();
+
+        return response()->json(['total_scholarship_categ' => $totalScholarshipCateg], Response::HTTP_OK);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

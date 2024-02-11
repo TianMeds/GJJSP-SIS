@@ -8,6 +8,7 @@ import axios from '../../../api/axios';
 
 import useLoginStore from '../../../store/LoginStore';
 import useAuthStore from '../../../store/AuthStore';
+import useDashboardStore from '../../../store/DashboardStore';
 
 //React Hook Form
 import {useForm, Controller } from 'react-hook-form';
@@ -36,14 +37,7 @@ export default function AlumniSubmission() {
     const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
     const { errors } = formState;
 
-    const [selectedFile, setSelectedFile] = useState(null);
-
-    const handleFileChange = (event) => {
-      const file = event.target.files[0];
-      setSelectedFile(file);
-    };
-
-    const onSubmit = async (data, event) => {
+    const onSubmitAlumniForm = async (data, event) => {
       event.preventDefault();
       setLoading(true);
       setLoadingMessage('Submitting Alumni Form...');
@@ -58,6 +52,7 @@ export default function AlumniSubmission() {
         };
 
         const alumniFormData = {
+          year_submitted: data.year_submitted,
           company_name: data.company_name,
           company_location: data.company_location,
           position_in_company: data.position_in_company,
@@ -88,7 +83,12 @@ export default function AlumniSubmission() {
     <MUI.ThemeProvider theme={theme}>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <MUI.Grid container spacing={3}>
+
+        <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
+              onSubmit={handleSubmit(onSubmitAlumniForm)} >
+
         <MUI.Grid item xs={12}>
+          
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
             <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
               Alumni Submission
@@ -109,9 +109,10 @@ export default function AlumniSubmission() {
                             sx={{border: '1px solid rgba(0,0,0,0.2)',
                             boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                           >
-                            <option value="SY 2023-2024">SY 2023-2024</option>
-                            <option value="SY 2022-2023">SY 2022-2023</option>
-                            <option value="SY 2021-2022">SY 2021-2022</option>
+                            <option value="">Select Year</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
                             
                           </MUI.Select>
                         )}
@@ -122,7 +123,7 @@ export default function AlumniSubmission() {
 
             {/* Submission History button */}
             <MUI.Button variant="contained" component={Link} to="" id="addButton">
-              <HistoryIcon sx={{ mr: 1 }} />
+              <HistoryIcon sx={{ mr: 1 }} />a
               <MUI.Typography variant="body2">Submission history</MUI.Typography>
             </MUI.Button>
 
@@ -137,7 +138,7 @@ export default function AlumniSubmission() {
               </MUI.Grid>
 
 
-              <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} onSubmit={handleSubmit(onSubmit)}> 
+              <MUI.Grid  container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }}> 
            
                 <MUI.Grid item xs={12} md={4} mt={5}>
 
@@ -236,7 +237,7 @@ export default function AlumniSubmission() {
                     </MUI.Grid>
 
                     <MUI.Grid item xs={12}>
-                      <MUI.InputLabel htmlFor="licensure_exam_type" id="licensureExamLabel">4. Licensure Exam Type</MUI.InputLabel>
+                      <MUI.InputLabel htmlFor="licensure_exam_type" id="licensureExamLabel">4. Licensure Exam Type (If you take it)</MUI.InputLabel>
                       
                       <MUI.TextField
                         id='licensure_exam_type'
@@ -274,7 +275,7 @@ export default function AlumniSubmission() {
 
               <MUI.Grid container spacing={3} mt={2}>
                 <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="exam_passed_date" id="examDateLabel">5. Exam  Passed Date</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="exam_passed_date" id="examDateLabel">5. Exam  Passed Date </MUI.InputLabel>
                   
                  <MUI.TextField
                     id='exam_passed_date'
@@ -290,10 +291,11 @@ export default function AlumniSubmission() {
                     }}
                     {...register("exam_passed_date", {
                       required: {
-                          value: false,
-                          message: 'Exam Passed Date is required',
+                        value: watch("licensure_exam_type") !== "" ? true : false,
+                        message: 'Exam Passed Date is required when Licensure Exam Type is filled',
                       }
                     })}
+                    disabled={watch("licensure_exam_type") === ""} // Disable the field if licensure_exam_type is empty
                   />
 
                   {errors.exam_passed_date && (
@@ -305,7 +307,7 @@ export default function AlumniSubmission() {
                 </MUI.Grid>
 
                 <MUI.Grid item xs={12}>
-                  <MUI.InputLabel htmlFor="volunteer_group_name" id="volunteerGroupLabel">6. Volunteer Group Name (Optional)</MUI.InputLabel>
+                  <MUI.InputLabel htmlFor="volunteer_group_name" id="volunteerGroupLabel">6. Volunteer Group Name (If you volunteered)</MUI.InputLabel>
                   
                   <MUI.TextField
                     id='volunteer_group_name'
@@ -352,9 +354,11 @@ export default function AlumniSubmission() {
                     }}
                     {...register("yr_volunteered", {
                       required: {
-                          value: false,
+                        value: watch("volunteer_group_name") !== "" ? true : false,
+                        message: 'Year Volunteered is required when Volunteer Group Name is filled',
                       }
                     })}
+                    disabled={watch("volunteer_group_name") === ""}
                   />
                 </MUI.Grid>
 
@@ -386,6 +390,7 @@ export default function AlumniSubmission() {
           </MUI.Grid>
 
           <DevTool control={control} />
+        </MUI.Grid>
           
       </MUI.Container>
     </MUI.ThemeProvider>

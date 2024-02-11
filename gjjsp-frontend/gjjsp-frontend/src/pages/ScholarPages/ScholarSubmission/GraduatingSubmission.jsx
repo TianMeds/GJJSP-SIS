@@ -8,20 +8,31 @@ import axios from '../../../api/axios';
 
 import useLoginStore from '../../../store/LoginStore';
 import useAuthStore from '../../../store/AuthStore';
+import useSubmissionStore from '../../../store/SubmissionStore';
 
 import {useForm, Controller } from 'react-hook-form';
 import { DevTool } from "@hookform/devtools";
 
 const FormValues = {
-  future_company_name: '',
+  future_company: '',
   future_company_location: '',
   future_position: '',
   meeting_benefactor_sched: '',
+  school_yr_submitted: '',
+  term_submitted: '',
+  copyOfReportCard: null,
+  copyOfRegistrationForm: null,
+  scannedWrittenEssay: null,
+  letterOfGratitude: null,
+  statementOfAccount: null,
+  graduationPicture: null,
+  transcriptOfRecords: null,
 }
 
 export default function GraduatingSubmission() {
 
   // Zustand Store
+  const {copyOfReportCardGraduating, setCopyOfReportCardGraduating, copyOfRegistrationFormGraduating, setCopyOfRegistrationFormGraduating, scannedWrittenEssayGraduating, setScannedWrittenEssayGraduating, letterOfGratitudeGraduating, setLetterOfGratitudeGraduating, statementOfAccount, setStatementOfAccount, graduationPicture, setGraduationPicture, transcriptOfRecords, setTranscriptOfRecords} = useSubmissionStore();
   const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
   
@@ -30,48 +41,86 @@ export default function GraduatingSubmission() {
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
-  const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event, fileType) => {
     const file = event.target.files[0];
-    setSelectedFile(file);
+    
+    if (fileType === 'copyOfReportCard') {
+      setCopyOfReportCardGraduating(file);
+    } else if (fileType === 'copyOfRegistrationForm') {
+      setCopyOfRegistrationFormGraduating(file);
+    }
+    else if (fileType === 'scannedWrittenEssay') {
+      setScannedWrittenEssayGraduating(file);
+      console.log(file);
+    }
+    else if (fileType === 'letterOfGratitude') {
+      setLetterOfGratitudeGraduating(file);
+    }
+    else if (fileType === 'statementOfAccount') {
+      setStatementOfAccount(file);
+    }
+    else if (fileType === 'graduationPicture') {
+      setGraduationPicture(file);
+    }
+    else if (fileType === 'transcriptOfRecords') {
+      setTranscriptOfRecords(file);
+    }
   };
 
-    const onSubmit = async (data, event) => {
-      event.preventDefault();
-      setLoading(true);
-      setLoadingMessage('Submitting Graduating form...');
-      const authToken = getAuthToken();
+  const onSubmitGraduatingForm = async (data, event ) => {
+    event.preventDefault();
+    setLoading(true);
+    setLoadingMessage('Submitting Graduating Form...');
 
-      try{
-        const config = {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          }
-        }
+    const formData = new FormData();
+    formData.append('future_company', data.future_company);
+    formData.append('future_company_location', data.future_company_location);
+    formData.append('future_position', data.future_position);
+    formData.append('meeting_benefactor_sched', data.meeting_benefactor_sched);
+    formData.append('school_yr_submitted', data.school_yr_submitted);
+    formData.append('term_submitted', data.term_submitted);
+    formData.append('copyOfReportCard', copyOfReportCardGraduating);
+    formData.append('copyOfRegistrationForm', copyOfRegistrationFormGraduating);
+    formData.append('scannedWrittenEssay', scannedWrittenEssayGraduating);
+    formData.append('letterOfGratitude', letterOfGratitudeGraduating);
+    formData.append('statementOfAccount', statementOfAccount);
+    formData.append('graduationPicture', graduationPicture);
+    formData.append('transcriptOfRecords', transcriptOfRecords);
 
-        const graduatingFormData = {
-          future_company_name: data.future_company_name,
-          future_company_location: data.future_company_location,
-          future_position: data.future_position,
-          meeting_benefactor_sched: data.meeting_benefactor_sched,
-        };
-
-        const graduatingResponse = await axios.post(
-          '/api/graduating-form',
-          JSON.stringify(graduatingFormData),
-          config
-        );
-
-        setLoading(false);
-        form.reset(FormValues)
-      }
-      catch (error) {
-        setLoading(false);
-        console.log(error)
+    const authToken = getAuthToken();
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${authToken}`
       }
     }
+
+    try{
+      const response = await axios.post('/api/graduating-documents', formData, config);
+      console.log(response);
+      setLoading(false);
+      setAlertOpen(true);
+      setAlertMessage('Graduating Form submitted successfully');
+      setCopyOfRegistrationFormGraduating(null);
+      setCopyOfReportCardGraduating(null);
+      setScannedWrittenEssayGraduating(null);
+      setLetterOfGratitudeGraduating(null);
+      setStatementOfAccount(null);
+      setGraduationPicture(null);
+      setTranscriptOfRecords(null);
+      form.reset(FormValues);
+    }
+    catch(error){
+      console.log(error);
+      setLoading(false);
+      setErrorOpen(true);
+      setErrorMessage('Failed to submit Graduating Form');
+    }
+  };
+
+
+    
 
 
   return (
@@ -79,6 +128,8 @@ export default function GraduatingSubmission() {
     <MUI.ThemeProvider theme={theme}>
       <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <MUI.Grid container spacing={3}>
+          <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} 
+              onSubmit={handleSubmit(onSubmitGraduatingForm)} encType="multipart/form-data">
 
         <MUI.Grid item xs={12}>
           <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
@@ -101,6 +152,7 @@ export default function GraduatingSubmission() {
                       sx={{border: '1px solid rgba(0,0,0,0.2)',
                       boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                     >
+                      <option value="">Select SY</option>
                       <option value="SY 2023-2024">SY 2023-2024</option>
                       <option value="SY 2022-2023">SY 2022-2023</option>
                       <option value="SY 2021-2022">SY 2021-2022</option>
@@ -124,6 +176,7 @@ export default function GraduatingSubmission() {
                             sx={{border: '1px solid rgba(0,0,0,0.2)',
                             boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                           >
+                            <option value="">Select Term</option>
                             <option value="Term 1">Term 1</option>
                             <option value="Term 2">Term 2</option>
                             <option value="Term 3">Term 3</option>
@@ -150,15 +203,15 @@ export default function GraduatingSubmission() {
                 </MUI.Typography>
               </MUI.Grid>
 
-            <MUI.Grid component="form"  method='post' noValidate container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} onSubmit={handleSubmit(onSubmit)}>
+            <MUI.Grid container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }} >
            
               <MUI.Grid container item xs={12} sx={{mt: 5, ml: 2, display: 'flex'}}>
 
               <MUI.Grid item xs={12}>
-                <MUI.InputLabel htmlFor="future_company_name" id="futureCompanyNameLabel">1. Future Company Name</MUI.InputLabel>
+                <MUI.InputLabel htmlFor="future_company" id="futureCompanyNameLabel">1. Future Company Name</MUI.InputLabel>
                 
                 <MUI.TextField
-                  id="future_company_name"
+                  id="future_company"
                   placeholder="Future Company Name"
                   fullWidth // Make the text field take up the full width
                   margin="normal" // Adjust spacing as needed
@@ -169,7 +222,7 @@ export default function GraduatingSubmission() {
                     height: 'auto',
                     marginBottom: 2,
                   }}
-                  {...register("future_company_name", {
+                  {...register("future_company", {
                     required: {
                         value: true,
                         message: 'Future Company Name is required',
@@ -308,18 +361,18 @@ export default function GraduatingSubmission() {
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                           <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                            <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                            <MUI.Typography sx={{ color: '#777777' }}>{copyOfReportCardGraduating ? copyOfReportCardGraduating.name : 'Browse File'}</MUI.Typography>
                           </MUI.Paper>
 
-                          <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                          <label htmlFor="copyOfReportCard" sx={{ cursor: 'pointer' }}>
                             <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                               <MUI.AddIcon/> Add File
                             </MUI.Button>
                             <input
                               type="file"
-                              id="fileInput"
+                              id="copyOfReportCard"
                               style={{ display: 'none' }}
-                              onChange={handleFileChange}
+                              onChange={(event) => handleFileChange(event, 'copyOfReportCard')}
                             />
                           </label>
                         </MUI.Grid>
@@ -336,18 +389,18 @@ export default function GraduatingSubmission() {
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                           <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                            <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                            <MUI.Typography sx={{ color: '#777777' }}>{copyOfRegistrationFormGraduating? copyOfRegistrationFormGraduating.name : 'Browse File'}</MUI.Typography>
                           </MUI.Paper>
 
-                          <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                          <label htmlFor="copyOfRegistrationForm" sx={{ cursor: 'pointer' }}>
                             <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                               <MUI.AddIcon/> Add File
                             </MUI.Button>
                             <input
                               type="file"
-                              id="fileInput"
+                              id="copyOfRegistrationForm"
                               style={{ display: 'none' }}
-                              onChange={handleFileChange}
+                              onChange={(event) => handleFileChange(event, 'copyOfRegistrationForm')}
                             />
                           </label>
                         </MUI.Grid>
@@ -364,18 +417,18 @@ export default function GraduatingSubmission() {
                       <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                         <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                          <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                          <MUI.Typography sx={{ color: '#777777' }}>{scannedWrittenEssayGraduating ? scannedWrittenEssayGraduating.name : 'Browse File'}</MUI.Typography>
                         </MUI.Paper>
 
-                        <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                        <label htmlFor="scannedWrittenEssay" sx={{ cursor: 'pointer' }}>
                           <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                             <MUI.AddIcon/> Add File
                           </MUI.Button>
                           <input
                             type="file"
-                            id="fileInput"
+                            id="scannedWrittenEssay"
                             style={{ display: 'none' }}
-                            onChange={handleFileChange}
+                            onChange={(event) => handleFileChange(event, 'scannedWrittenEssay')}
                           />
                         </label>
                       </MUI.Grid>
@@ -392,18 +445,18 @@ export default function GraduatingSubmission() {
                       <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                         <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                          <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                          <MUI.Typography sx={{ color: '#777777' }}>{letterOfGratitudeGraduating ? letterOfGratitudeGraduating.name : 'Browse File'}</MUI.Typography>
                         </MUI.Paper>
 
-                        <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                        <label htmlFor="letterOfGratitude" sx={{ cursor: 'pointer' }}>
                           <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                             <MUI.AddIcon/> Add File
                           </MUI.Button>
                           <input
                             type="file"
-                            id="fileInput"
+                            id="letterOfGratitude"
                             style={{ display: 'none' }}
-                            onChange={handleFileChange}
+                            onChange={(event) => handleFileChange(event, 'letterOfGratitude')}
                           />
                         </label>
                       </MUI.Grid>
@@ -420,18 +473,18 @@ export default function GraduatingSubmission() {
                       <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                         <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                          <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                          <MUI.Typography sx={{ color: '#777777' }}>{statementOfAccount ? statementOfAccount.name : 'Browse File'}</MUI.Typography>
                         </MUI.Paper>
 
-                        <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                        <label htmlFor="statementOfAccount" sx={{ cursor: 'pointer' }}>
                           <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                             <MUI.AddIcon/> Add File
                           </MUI.Button>
                           <input
                             type="file"
-                            id="fileInput"
+                            id="statementOfAccount"
                             style={{ display: 'none' }}
-                            onChange={handleFileChange}
+                            onChange={(event) => handleFileChange(event, 'statementOfAccount')}
                           />
                         </label>
                       </MUI.Grid>
@@ -448,18 +501,18 @@ export default function GraduatingSubmission() {
                       <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                         <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                          <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                          <MUI.Typography sx={{ color: '#777777' }}>{graduationPicture ? graduationPicture.name : 'Browse File'}</MUI.Typography>
                         </MUI.Paper>
 
-                        <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                        <label htmlFor="graduationPicture" sx={{ cursor: 'pointer' }}>
                           <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                             <MUI.AddIcon/> Add File
                           </MUI.Button>
                           <input
                             type="file"
-                            id="fileInput"
+                            id="graduationPicture"
                             style={{ display: 'none' }}
-                            onChange={handleFileChange}
+                            onChange={(event) => handleFileChange(event, 'graduationPicture')}
                           />
                         </label>
                       </MUI.Grid>
@@ -476,18 +529,18 @@ export default function GraduatingSubmission() {
                       <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
 
                         <MUI.Paper elevation={1} sx={{ padding: '10px', width: '150px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr:2,}}>
-                          <MUI.Typography sx={{ color: '#777777' }}>{selectedFile ? selectedFile.name : 'Browse File'}</MUI.Typography>
+                          <MUI.Typography sx={{ color: '#777777' }}>{transcriptOfRecords ? transcriptOfRecords.name : 'Browse File'}</MUI.Typography>
                         </MUI.Paper>
 
-                        <label htmlFor="fileInput" sx={{ cursor: 'pointer' }}>
+                        <label htmlFor="transcriptOfRecords" sx={{ cursor: 'pointer' }}>
                           <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                             <MUI.AddIcon/> Add File
                           </MUI.Button>
                           <input
                             type="file"
-                            id="fileInput"
+                            id="transcriptOfRecords"
                             style={{ display: 'none' }}
-                            onChange={handleFileChange}
+                            onChange={(event) => handleFileChange(event, 'transcriptOfRecords')}
                           />
                         </label>
                       </MUI.Grid>
@@ -520,6 +573,8 @@ export default function GraduatingSubmission() {
               </MUI.Box>
               </MUI.Grid>
           </MUI.Grid>
+        </MUI.Grid>
+
         </MUI.Grid>
 
         <DevTool control={control} />
