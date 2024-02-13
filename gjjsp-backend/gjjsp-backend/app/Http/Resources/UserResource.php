@@ -24,6 +24,10 @@ class UserResource extends JsonResource
             'password' => $this->password,
             'role_id' => $this->role_id,
             'user_status' => $this->user_status,
+            'scholar_status_id' => $this->scholar->pluck('scholar_status_id')->all(),
+            'scholarship_categ_id' => $this->scholar->pluck('scholarship_categ_id')->all(),
+            'project_partner_id' => $this->scholar->pluck('project_partner_id')->all(),
+            'school_id' => $this->scholar->pluck('school_id')->all(),
         ];
     }
 }

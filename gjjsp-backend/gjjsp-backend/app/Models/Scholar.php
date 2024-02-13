@@ -18,6 +18,7 @@ class Scholar extends Model
     protected $fillable = [
         'user_id',
         'scholarship_categ_id',
+        'project_partner_id',
         'scholar_photo_filepath',
         'gender',
         'religion',

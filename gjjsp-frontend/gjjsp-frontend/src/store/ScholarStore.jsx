@@ -5,12 +5,15 @@ const useScholarStore = create((set) => ({
 
     //Hook for get function
     scholars: [],
-    setScholars: (newScholars) => set({scholars: newScholars}),
+    setScholars: (scholars) => set({scholars}),
 
     scholar: false,
     setScholar: (newScholar) => set({scholar: newScholar}),
     scholarsData: [],
-    setScholarsData: (newScholarsData) => set({scholarsData: newScholarsData}),
+    setScholarsData: (scholarsData) => set({scholarsData}),
+
+    userScholars: [],
+    setUserScholars: (userScholars) => set({userScholars}),
     
     scholarsWithIndex: [],
     editScholar: false,
@@ -30,6 +33,15 @@ const useScholarStore = create((set) => ({
 
     handleOpenScholar: () => set({scholar: true}),
     handleCloseScholar: () => set({scholar: false}),
+
+    scholarshipCateg: [],
+    setScholarshipCateg: (scholarshipCateg) => set({scholarshipCateg}),
+
+    projectPartner: [],
+    setProjectPartner: (projectPartner) => set({projectPartner}),
+
+    school: [],
+    setSchool: (school) => set({school}),
 
     addScholar: (scholarName, scholarEmailAddress, scholarCategory, scholarStatus) =>
     set((store) => ({

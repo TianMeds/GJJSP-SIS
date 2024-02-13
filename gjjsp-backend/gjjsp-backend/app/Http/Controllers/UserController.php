@@ -6,6 +6,7 @@ use App\Mail\UserUpdate;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -122,6 +123,39 @@ class UserController extends Controller
         }
     
         return response()->json(['message' => 'User restored successfully'], 200);
+    }
+
+    public function getScholars()
+    {
+        // Fetch users with role_id of 3 or scholars
+        $scholars = User::where('role_id', 3)->orWhereHas('scholar')->get();
+        
+        return response()->json(new UserCollection($scholars), Response::HTTP_OK);
+    }
+
+    public function updateOtherScholarProfile(Request $request, $id)
+    {
+        try {
+            // Find the scholar by ID
+            $scholar = Scholar::findOrFail($id);
+            
+            // Update the scholar with the request data
+            $scholar->update($request->only([
+                'scholarship_categ_id', 'project_partner_id', 'scholar_status_id', 'school_id',
+            ]));
+    
+            // Return the updated scholar as a resource
+            return new ScholarResource($scholar);
+        } catch (\Exception $e) {
+            // Log the exception for further investigation
+            \Log::error('Error in updateOtherScholarProfile: ' . $e->getMessage());
+    
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'method' => 'PUT'
+            ], Response::HTTP_NOT_FOUND);
+        }
     }
 
 

@@ -19,6 +19,7 @@ use App\Http\Controllers\TermGwaController;
 use App\Http\Controllers\AlumniFormController;
 use App\Http\Controllers\GraduatingFormController;
 use App\Http\Controllers\RenewalDocumentController;
+use App\Http\Controllers\SchoolController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::put('/profile/{id}', [UserController::class, 'updateProfile']);
     Route::get('/userScholar', [UserController::class, 'getUserRoles']);
     Route::get('/restore/{id}', [UserController::class, 'restore']);
+    Route::get('/userScholars', [UserController::class, 'getScholars']);
 
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
@@ -51,6 +53,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::delete('/scholars/{id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
     Route::get('/restore/{id}', [ScholarController::class, 'restoreScholar']);
+    Route::put('/scholars-data/{user_id}', [ScholarController::class, 'updateOtherScholarProfile']);
+    Route::post('school-data', [ScholarController::class, 'storeSchool']);
     Route::get('/total-scholars', [ScholarController::class, 'totalScholars']);
 
     //Scholars Profile Route
@@ -129,7 +133,15 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
     Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
+
+    //School Route 
+    Route::apiResource('/schools', SchoolController::class)->only(['index', 'show']);
+    Route::post('/schools', [SchoolController::class, 'store']);
+    Route::put('/schools/{id}', [SchoolController::class, 'update']);
+    Route::delete('/schools/{id}', [SchoolController::class, 'destroy']);
+    Route::get('/restore-schools/{id}', [SchoolController::class, 'restoreSchool']);
 }); 
+
 
 
 //Public Route

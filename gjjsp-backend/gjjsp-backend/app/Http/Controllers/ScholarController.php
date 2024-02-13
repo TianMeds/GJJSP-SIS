@@ -8,6 +8,7 @@ use App\Http\Resources\ScholarCollection;
 use App\Http\Resources;
 use App\Models\Scholar;
 use App\Models\User;
+use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -47,6 +48,7 @@ class ScholarController extends Controller
         ]));
         return new ScholarResource($scholar);
     }
+
 
     /**
      * Display the specified resource.
@@ -172,6 +174,50 @@ class ScholarController extends Controller
     
             return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
         }
+    }
+    public function updateOtherScholarProfile(Request $request, $user_id)
+    {
+        try {
+            // Find the scholar by ID
+            $scholar = Scholar::where('user_id', $user_id)->firstOrFail();
+            
+            // Check if school_id is 'other'
+            if ($request->has('school_id') && $request->input('school_id') === 'other') {
+                // Create a new school entry
+                $school = $this->storeSchool($request);
+                // Set the school_id of the scholar to the newly created school's ID
+                $request->merge(['school_id' => $school->id]);
+            }
+            
+            // Update the scholar with the request data
+            $scholar->update($request->only([
+                'scholarship_categ_id', 'project_partner_id', 'scholar_status_id', 'school_id',
+            ]));
+    
+            // Return the updated scholar as a resource
+            return new ScholarResource($scholar);
+        } catch (\Exception $e) {
+            // Log the exception for further investigation
+            \Log::error('Error in updateOtherScholarProfile: ' . $e->getMessage());
+    
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'method' => 'PUT'
+            ], Response::HTTP_NOT_FOUND);
+        } 
+    }
+
+    public function storeSchool(Request $request)
+    {
+         // Create a new school entry
+        $school = School::create($request->only([
+            'school_name',
+            'school_type',
+            'school_address',
+        ]));
+
+        return $school;
     }
 
     public function storeScholarProfile(Request $request)

@@ -13,10 +13,11 @@ import axios from '../../api/axios';
 import useAuthStore from '../../store/AuthStore';
 
 const FormValues = {
-  scholarName: '',
-  scholarEmailAddress: '',
-  scholarStatus: '',
-  scholarCategory: '',
+  'scholarship_categ_id': '',
+  'project_partner_id': '',
+  'scholar_status_id': '',
+  'school_id': '',
+
 }
 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -24,20 +25,159 @@ const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\
 
 export default function Scholar({state}) {
   const form  = useForm();
-  const { register, control, handleSubmit, formState, reset, validate} = form
+  const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
   const navigate = useNavigate();
   
   //Zustand hooks 
   const {getAuthToken,alertOpen, setAlertOpen, errorOpen, setErrorOpen,alertMessage, setAlertMessage, errorMessage, setErrorMessage} = useAuthStore();
-  const {scholars, setScholars,setSelectedScholar} = useScholarStore();
-  const [scholarsData, setScholarsData] = useState([]);
+  const {scholars, scholar, setScholars,editScholar, setEditScholar,  scholarsData, setScholarsData, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool} = useScholarStore();
   const { setLoading, setLoadingMessage} = useLoginStore();
-  const {setAvatarInitial, users, setUsers, setSelectedUser} = useUserStore();
+  const {setAvatarInitial, users, setUsers, selectedUser, setSelectedUser} = useUserStore();
 
-  const onSubmit = (data) => {
-    console.log("Form submitted", data)
-  }
+
+  // Update Scholar Details Data
+  const onSubmit = async  (data, event) => {
+    event.preventDefault();
+    const authToken = getAuthToken();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      }
+    }
+
+    try {
+      if(editScholar){
+        setAlertOpen(true);
+        setAlertMessage('Updating Scholar...');
+        setLoading(true);
+        setLoadingMessage("Updating Scholar")
+
+        let updatedData = {
+          ...data,
+          scholarship_categ_id: parseInt(data.scholarship_categ_id),
+          project_partner_id: parseInt(data.project_partner_id),
+          scholar_status_id: parseInt(data.scholar_status_id)
+        };
+  
+        if (data.school_id === 'other') {
+          // If school_id is 'other', create a new school entry
+          const response = await axios.post('/api/schools', {
+            school_name: data.school_name, // Assuming you have a field for new school name in your form
+            school_type: data.school_type, // Assuming you have a field for new school type in your form
+            school_address: data.school_address // Assuming you have a field for new school address in your form
+          }, config);
+          
+          // Set the school_id to the ID of the newly created school
+          updatedData.school_id = response.data.data.id;
+        }
+
+        const response = await axios.put(`/api/scholars-data/${selectedUser.id}`,  updatedData, config)
+        handleCloseScholar();
+        setEditScholar(false);
+        setSelectedUser(null);
+        setLoading(false);
+        setAlertOpen(true);
+        setAlertMessage('Scholar Updated');
+      }
+
+      const response  = await axios.get('/api/userScholars', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setScholarsData(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage("Updated Scholars List")
+      } else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating scholars list")
+      }
+      form.reset(FormValues);
+    }
+    catch (error) {
+      if (error.response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+      else if (error.response.status === 422) {
+        setErrorOpen(true);
+        setErrorMessage("Please fill up all the required fields");
+      }
+    }
+
+  };
+
+  useEffect(() => {
+    setAlertOpen(true);
+    setErrorOpen(false);
+    setAlertMessage('Please wait updating scholar list');
+
+    const fetchScholarshipCategory = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/scholarships', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setScholarshipCateg(response.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated Scholarship Category")
+        } else {
+          setErrorOpen(true);
+          setErrorMessage("Error updating scholarship category")
+        }
+
+        const projectPartnerResponse = await axios.get('/api/project-partners', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (projectPartnerResponse.status === 200) {
+          setProjectPartner(projectPartnerResponse.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated Project Partner")
+        } else {
+          setErrorOpen(true);
+          setErrorMessage("Error updating project partner")
+        }
+
+        const schoolResponse = await axios.get('/api/schools', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (schoolResponse.status === 200) {
+          setSchool(schoolResponse.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated School")
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage("Error updating school")
+        }
+        
+      } catch (err) {
+        if (err.response.status === 401 || err.projectPartnerResponse.status === 401 || err.schoolResponse.status === 401 ) {
+          setErrorOpen(true);
+          setErrorMessage("Session expired. Please login again.")
+          navigate('/login')
+        }
+      }
+    }
+
+    fetchScholarshipCategory();
+  }, []);
+
 
 
 //Fetch Scholar Details
@@ -49,7 +189,7 @@ useEffect(() => {
   const fetchScholarData = async () => {
     try {
       const authToken = useAuthStore.getState().getAuthToken();
-      const response = await axios.get('/api/scholars', {
+      const response = await axios.get('/api/userScholars', {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -107,35 +247,33 @@ useEffect(() => {
     }
   };
 
+  const updateScholar = (scholarId) => {
+    const selectedUser = scholarsData.find((scholarData) => scholarData.id === scholarId);
+    setEditScholar(true);
+    setSelectedUser(selectedUser);
+    handleOpenScholar();
+    form.reset(selectedUser);
+  }
+
   // View Profile Scholar 
   const viewScholarProfile = (scholarId) => {
-    const selectedUser = scholars.find((scholar) => scholar.id === scholarId);
-    
-    if (selectedUser) {
-      const { role_id, first_name, last_name } = selectedUser; // Accessing role_id from selectedUser 
-    
-      setSelectedUser(selectedUser)
-      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`);
+    const selectedUser = scholarsData.find((scholarData) => scholarData.id === scholarId);
 
-      const rolePath = role_id === 1 || role_id === 2 ? '/profile' : role_id === 3 ? '/scholar-profile' : '/*';
-      navigate(rolePath);
-    } else {
-      // Handle the case when selectedUser is not found
-      // For example, show an error message or handle the navigation differently
-      console.error('User not found');
+    if (selectedUser) {
+      const {role_id, first_name, last_name} = selectedUser;
+
+      setSelectedUser(selectedUser);
+      setAvatarInitial(`${first_name.charAt(0).toUpperCase()}${last_name.charAt(0).toUpperCase()}`);
+      
+      const path = role_id === 3 ? '/scholar-profile' : '/*';
+      navigate(path)
     }
+    else{
+      console.log('Scholar Not Found')
+    }
+   
   };
 
-  const {
-    handleOpenScholar,
-    handleCloseScholar,
-    filteredScholar,
-    setFilteredScholar,
-    searchQuery,
-    handleSearch,
-    editScholar,
-    setEditScholar,
-  } = useScholarStore();
 
   const handleCancelScholar = () => {
     form.reset(FormValues);
@@ -267,42 +405,47 @@ useEffect(() => {
                   {scholarsData
                   .filter((scholar) => {
                     return filteredScholar === 'All' ? true : (
-                      scholar.scholar_status_id === (statusMapping[filteredScholar] || null)
+                      scholar.scholar_status_id[0] === (statusMapping[filteredScholar] || null)
                     );
                   })
                   .filter((scholar) => 
-                      (scholar.user_email_address && scholar.user_email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
-                      ((`${scholar.user_first_name} ${scholar.user_middle_name} ${scholar.user_last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
+                      (scholar.email_address && scholar.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
+                      ((`${scholar.first_name} ${scholar.middle_name} ${scholar.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
                     .map((scholar, index) => (
+                      (scholar.role_id === 3) ? (
                     <MUI.TableRow key={index} className='scholar'>
                       <MUI.TableCell sx={{border: 'none'}} className='scholarName'>
-                        {`${scholar.user_first_name} ${scholar.user_middle_name || ""} ${scholar.user_last_name}`}
+                        {`${scholar.first_name} ${scholar.middle_name || ""} ${scholar.last_name}`}
                       </MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}} className='scholarEmail'>
-                        {scholar.user_email_address}
+                        {scholar.email_address}
                       </MUI.TableCell>
                       <MUI.TableCell sx={{border: 'none'}} className='scholarCatergory'>
-                        {scholar.scholarship_categ_name}
+                        {scholar.scholarship_categ_id.map(id => (
+                          <div key={id}>
+                            {scholarshipCateg.find(category => category.id === id)?.scholarship_categ_name || 'Unknown Category'}
+                          </div>
+                        ))}
                       </MUI.TableCell>
 
                       <MUI.TableCell sx={{ border: 'none' }}>
-                      <span className={`scholarStatus ${getStatusClassName(scholar.scholar_status_id)}`}>
-                        {scholar.scholar_status_id === 1
+                      <span className={`scholarStatus ${getStatusClassName(scholar.scholar_status_id[0])}`}>
+                        {scholar.scholar_status_id[0] === 1
                           ? "New"
-                          : scholar.scholar_status_id === 2
+                          : scholar.scholar_status_id[0] === 2
                           ? "For Renewal"
-                          : scholar.scholar_status_id === 3
+                          : scholar.scholar_status_id[0] === 3
                           ? "For Renewal: Graduating"
-                          : scholar.scholar_status_id === 4
+                          : scholar.scholar_status_id[0] === 4
                           ? "Renewed"
-                          : scholar.scholar_status_id === 5
+                          : scholar.scholar_status_id[0] === 5
                           ? "Graduating"
-                          : scholar.scholar_status_id === 6
+                          : scholar.scholar_status_id[0] === 6
                           ? "Graduated"
-                          : scholar.scholar_status_id === 7
+                          : scholar.scholar_status_id[0] === 7
                           ? "Alumni"
-                          : scholar.scholar_status_id === 8
+                          : scholar.scholar_status_id[0] === 8
                           ? "Withdrew"
                           : ""}
                       </span>
@@ -312,9 +455,11 @@ useEffect(() => {
                         <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}} />
                         </MUI.IconButton>
-                        <MUI.IconButton color="inherit">
+
+                        <MUI.IconButton color="inherit" onClick={() => updateScholar(scholar.id)}>
                           <MUI.BorderColorIcon />
                         </MUI.IconButton>
+
                         <MUI.IconButton
                           color="inherit"
                           sx={{ textTransform: 'capitalize' }}
@@ -324,6 +469,7 @@ useEffect(() => {
                         </MUI.IconButton>
                       </MUI.TableCell>
                     </MUI.TableRow>
+                      ) : null
                   ))}
                 </MUI.TableBody>
             </MUI.Table>
@@ -333,104 +479,137 @@ useEffect(() => {
           </MUI.Grid>
 
            {/* Add Scholar Dialog */}
-           {/* <MUI.Dialog  fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
-                <MUI.DialogTitle variant='h3' sx={{fontWeight: 'bold'}}>Add Scholar</MUI.DialogTitle>
+           <MUI.Dialog open={scholar} onClose={handleCloseScholar} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} method="post" noValidate>
+                <MUI.DialogTitle variant='h3' sx={{fontWeight: 'bold'}}>Update Scholar</MUI.DialogTitle>
                 <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
                 <MUI.DialogContent>
                 
-                <MUI.Grid id="scholarNameGrid">
-                  <MUI.InputLabel htmlFor="scholarName" id="scholarNameLabel">Name</MUI.InputLabel>
-                    <MUI.TextField 
-                      type='text'
-                      id='scholarName'
-                      placeholder='Scholar Name' 
-                      fullWidth 
-
-                      {...register("scholarName",{
-                        required: {
-                          value: true,
-                          message: 'This field is required'
-                        },
-                        pattern: {
-                          value: USER_REGEX,
-                          message: 'Names should only contain letters, periods, and hypens, with no leading or hanging spaces.'
-                        }
-                      })}
-                    />
-                    {errors.scholarName && (
-                      <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr'/>
-                        {errors.scholarName?.message}
-                      </p>
+            
+                <MUI.Grid id="scholarshipCategGrid">
+                  <MUI.InputLabel htmlFor="scholarship_categ_id" id="scholarshipCategLabel">Scholarship Type</MUI.InputLabel>
+                  <Controller
+                    name="scholarship_categ_id"
+                    control={control}
+                    defaultValue={scholarshipCateg.id} // Ensure it's a scalar value
+                    rules={{
+                      required: 'Scholarship Type is required',
+                      validate: (value) => value !== '' || 'Please select a scholarship type'
+                    }}
+                    render={({ field }) => (
+                      <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                        <MUI.Select
+                          id='scholarship_categ_id' // Unique ID for this component
+                          native
+                          {...field}
+                          value={field.value || ''}
+                        >
+                          <option value="" disabled>Select Scholarship Category</option>
+                          {scholarshipCateg.map((category) => (
+                            <option key={category.id} value={category.id}>{category.scholarship_categ_name}</option>
+                          ))}
+                        </MUI.Select>
+                      </MUI.FormControl>
                     )}
+                  />
+
+                  {errors.scholarship_categ_id && (
+                    <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr'/>
+                      {errors.scholarship_categ_id?.message}
+                    </p>
+                  )}
                 </MUI.Grid>
 
-                <MUI.Grid id="scholarEmailGrid">
-                    <MUI.InputLabel htmlFor="scholarEmail" id="scholarEmailLabel">Email</MUI.InputLabel>
-                    <MUI.TextField 
-                      type='email'
-                      id='scholarEmail'
-                      placeholder='Scholar Email' 
-                      fullWidth 
-
-                      {...register("scholarEmailAddress",{
-                        required: {
-                          value: true,
-                          message: 'Email is required'
-                        },
-                        pattern: {
-                          value: EMAIL_REGEX,
-                          message: 'Please enter a valid email address.'
-                        }
-                      })}
+                <MUI.Grid id="projectPartnerGrid">
+                    <MUI.InputLabel htmlFor="project_partner_id" id="projectPartnerLabel">Project Partner</MUI.InputLabel>
+                    <Controller
+                      name="project_partner_id"
+                      control={control}
+                      defaultValue={null}
+                      rules={{ 
+                        required: 'Status is required', 
+                        validate: (value) => value !== '' || 'Please select a status' 
+                      }}
+                      render={({ field }) => (
+                        
+                        <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                        <MUI.Select
+                          id='project_partner_id' // Unique ID for this component
+                          native
+                          {...field}
+                        >
+                          <option value="" disabled>Select Project Partner</option>
+                          {projectPartner.map((partner) => (
+                            <option key={partner.id} value={partner.id}>{partner.project_partner_name}</option>
+                          ))}
+                        </MUI.Select>
+                        </MUI.FormControl>
+                      )}
                     />
 
-                    {errors.scholarEmail && (
+                    {errors.project_partner_id && (
                       <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr'/>
-                        {errors.scholarEmail?.message}
+                        {errors.project_partner_id?.message}
                       </p>
                     )}
                 </MUI.Grid>
                 
-                <MUI.Grid id="scholarCategoryGrid">
-                    <MUI.InputLabel htmlFor="scholarCategory" id="scholarCategoryLabel">Scholarship Category</MUI.InputLabel>
-                    <Controller
-                      name="scholarCategory"
-                      control={control}
-                      defaultValue=""
-                      rules={{
-                        required: "Scholar Category is required",
-                        validate: (value) => value !== '' || 'Please select a scholar category'
-                      }}
-                      render={({ field }) =>  (
-                        <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
-                          <MUI.Select
-                            native
-                            {...field}
-                            id='scholarCategory'
-                            sx={{mb: 2}}
-                          >
-                            <option value="" disabled>Select Scholarship Category</option>
-                            <option value="GADO - Formal Educ">GADO - Formal Educ</option>
-                            <option value="GADO - Techvoc">GADO - Techvoc</option>
-                            <option value="JESS - Window of Oppurtunity">JESS - Window of Oppurtunity</option>
-                          </MUI.Select>
-                        
-                        </MUI.FormControl>
-                      )}
-                    />
-                    {errors.scholarCategory && (
-                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.scholarCategory?.message}</p>
-                    )}
-                </MUI.Grid>
+                <MUI.Grid id="schoolGrid">
+  <MUI.InputLabel htmlFor="school_id" id="schoolLabel">School</MUI.InputLabel>
+  <Controller
+    name="school_id"
+    control={control}
+    defaultValue={null}
+    rules={{
+      required: "School is required",
+      validate: (value) => value !== '' || 'Please select a school'
+    }}
+    render={({ field }) =>  (
+      <MUI.FormControl sx={{  width: '100%', borderRadius: '8px' }}>
+        <MUI.Select
+          native
+          {...field}
+          id='school_id'
+          sx={{ mb: 2 }}
+        >
+          <option value="" disabled>Select School</option>
+          {school.map((schoolItem) => (
+            <option key={schoolItem.id} value={schoolItem.id}>{schoolItem.school_name}</option>
+          ))}
+          <option value="other">Other</option>
+        </MUI.Select>
+      </MUI.FormControl>
+    )}
+  />
+  {errors.school_id && (
+    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_id?.message}</p>
+  )}
+</MUI.Grid>
+
+{watch('school_id') === 'other' && (
+  <MUI.Grid id="addSchoolGrid">
+    <MUI.InputLabel htmlFor="school_name" id="addSchoolLabel">Add School</MUI.InputLabel>
+    <MUI.TextField
+      id="school_name"
+      type="text"
+      {...register('school_name', {
+        required: 'School is required',
+      })}
+      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+    />
+    {errors.school_name && (
+      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_name?.message}</p>
+    )}
+  </MUI.Grid>
+)}
 
                 <MUI.Grid id="scholarStatusGrid">
-                    <MUI.InputLabel htmlFor="scholarStatus" id="scholarStatusLabel">Scholar Status</MUI.InputLabel>
+                    <MUI.InputLabel htmlFor="scholar_status_id" id="scholarStatusLabel">Scholar Status</MUI.InputLabel>
                     <Controller
-                      name='scholarStatus'
+                      name='scholar_status_id'
                       control={control}
-                      defaultValue=""
+                      defaultValue={null}
                       rules={{
                         required: "Scholar Status is required",
                         validate: (value) => value !== '' || 'Please select a scholar status'
@@ -438,27 +617,30 @@ useEffect(() => {
                       render={({ field }) =>  (
                         <MUI.FormControl sx={{  width: '100%', borderRadius: '8px',}}>
                           <MUI.Select
-                            id='scholarStatus'
+                            id='scholar_status_id'
                             native
                             {...field}
                             sx={{mb: 2}}
                           >
                             <option value="" disabled>Select Scholar Status</option>
-                            <option value="New">New Scholar</option>
-                            <option value="For Renewal">For Renewal</option>
-                            <option value="Renewed">Renewed</option>
-                            <option value="Graduating">Graduating</option>
-                            <option value="Graduated">Graduated</option>
-                            <option value="Alumni">Alumni</option>
+                            <option value="1">New Scholar</option>
+                            <option value="2">For Renewal</option>
+                            <option value="3">For Renewal: Graduating</option>
+                            <option value="4">Renewed</option>
+                            <option value="5">Graduating</option>
+                            <option value="6">Graduated</option>
+                            <option value="7">Alumni</option>
+                            <option value="8">Withdrew</option>
                           </MUI.Select>
                         
                         </MUI.FormControl>
                       )}
                     />
-                    {errors.scholarStatus && (
-                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.scholarStatus?.message}</p>
+                    {errors.scholar_status_id && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.scholar_status_id  ?.message}</p>
                     )}
                 </MUI.Grid>
+
                     
                 </MUI.DialogContent>
 
@@ -474,7 +656,7 @@ useEffect(() => {
                     </MUI.Button>
                   </MUI.DialogActions>
 
-              </MUI.Dialog> */}
+              </MUI.Dialog>
 
           
         </MUI.Grid>

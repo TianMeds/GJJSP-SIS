@@ -12,7 +12,7 @@ import {useNavigate} from 'react-router-dom';
 export const ScholarProfileBox = () => {
     const {auth, setAuth} = useAuth();
 
-    const {scholars, setScholars, scholar, setScholar, scholarsData, setScholarsData} = useScholarStore();
+    const {scholars, setScholars, scholar, setScholar, scholarsData, setScholarsData, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool} = useScholarStore();
     const {selectedUser} = useUserStore();
     const {setLoading, setLoadingMessage} = useLoginStore();
     const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
@@ -206,6 +206,71 @@ useEffect(() => {
   // You may want to re-run this effect when scholarsData changes
 }, [scholarsData]);
 
+useEffect(() => {
+  setAlertOpen(true);
+  setErrorOpen(false);
+  setAlertMessage('Please wait updating scholar list');
+
+  const fetchScholarshipCategory = async () => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+      const response = await axios.get('/api/scholarships', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setScholarshipCateg(response.data.data);
+        setAlertOpen(false);
+        setAlertMessage("Updated Scholarship Category")
+      } else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating scholarship category")
+      }
+
+      const projectPartnerResponse = await axios.get('/api/project-partners', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (projectPartnerResponse.status === 200) {
+        setProjectPartner(projectPartnerResponse.data.data);
+        setAlertOpen(false);
+        setAlertMessage("Updated Project Partner")
+      } else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating project partner")
+      }
+
+      const schoolResponse = await axios.get('/api/schools', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (schoolResponse.status === 200) {
+        setSchool(schoolResponse.data.data);
+        setAlertOpen(false);
+        setAlertMessage("Updated School")
+      }
+      else {
+        setErrorOpen(true);
+        setErrorMessage("Error updating school")
+      }
+      
+    } catch (err) {
+      if (err.response.status === 401 || err.projectPartnerResponse.status === 401 || err.schoolResponse.status === 401 ) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+    }
+  }
+
+  fetchScholarshipCategory();
+}, []);
 
   return (
     <MUI.Grid container spacing={2} sx={{mt: 5}}>
@@ -296,22 +361,24 @@ useEffect(() => {
         >
         <MUI.Box>
           <MUI.Typography variant='h5'>Scholarship Type</MUI.Typography>
-          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}></MUI.Typography>
+          <MUI.Typography sx={{textTransform: 'uppercase' , mt: 2}}>
+          {scholarshipCateg.find(category => category.id === scholarsData.scholarship_categ_id)?.scholarship_categ_name || 'Unknown Category'}
+          </MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>Project Partner</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}>{projectPartner.find(partner => partner.id === scholarsData.project_partner_id)?.project_partner_name}</MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>School</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}>{school.find(school => school.id === scholarsData.school_id)?.school_name}</MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>
           <MUI.Typography variant='h5'>School Address</MUI.Typography>
-          <MUI.Typography sx={{mt: 2}}></MUI.Typography>
+          <MUI.Typography sx={{mt: 2}}>{school.find(school => school.id === scholarsData.school_id)?.school_address}</MUI.Typography>
         </MUI.Box>
 
         <MUI.Box sx={{mt: 3}}>

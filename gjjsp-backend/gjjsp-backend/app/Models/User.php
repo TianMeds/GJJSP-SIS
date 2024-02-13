@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Scholar;
 
 class User extends Authenticatable
 {
@@ -45,6 +46,10 @@ class User extends Authenticatable
         'password',
         'role_id',
         'user_status',
+        'scholar_status_id',
+        'scholarship_categ_id',
+        'project_partner_id',
+        'school_id',
     ];
 
     /**
@@ -59,7 +64,7 @@ class User extends Authenticatable
 
     public function scholar()
     {
-        return $this->hasOne(Scholar::class);
+        return $this->hasMany(Scholar::class);
     }
 
     public function role()
