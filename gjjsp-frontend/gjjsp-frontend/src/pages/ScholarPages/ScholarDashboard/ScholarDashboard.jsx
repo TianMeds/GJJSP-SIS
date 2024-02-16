@@ -68,7 +68,7 @@ export default function ScholarDashboard() {
             </MUI.Grid>
 
             {/* Introduction Box */}
-            <MUI.Grid item xs={12} md={8} lg={9}>
+            <MUI.Grid item xs={12} md={8} lg={8}>
             <MUI.Paper
                elevation={3}
                 sx={{
@@ -109,7 +109,7 @@ export default function ScholarDashboard() {
               
             </MUI.Grid>
             {/* Scholars Status Report */}
-              <MUI.Grid item xs={12} md={2} lg={3}>
+              <MUI.Grid item xs={12} md={2} lg={4}>
                 <MUI.Paper
                   sx={{
                     p: 2,
@@ -118,8 +118,34 @@ export default function ScholarDashboard() {
                     height: 'auto',
                   }}
                 >
-                  <MUI.Typography>Academic Status</MUI.Typography>
-                  <MUI.Typography variant='h4' m={2} sx={{display: 'flex', alignItems: 'center'}}><MUI.InfoIcon/> No Announcement</MUI.Typography>
+                  <MUI.Typography variant='h3' sx={{fontWeight: 'bold'}} >Academic Status</MUI.Typography>
+                  <br/>
+
+                  <MUI.Grid container alignItems="center">
+                    <MUI.ApartmentIcon  sx={{color: '#1976d2'}}/>
+                  <MUI.Grid item>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2'}}>Total Scholars: 100</MUI.Typography>
+                  </MUI.Grid>
+                </MUI.Grid> 
+                <br/>
+
+                <MUI.Grid container alignItems="center">
+                    <MUI.SchoolOutlinedIcon   sx={{color: '#1976d2'}}/>
+                  <MUI.Grid item>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2'}}>Total Scholars: 100</MUI.Typography>
+                  </MUI.Grid>
+                </MUI.Grid> 
+
+                <br/>
+                
+                <MUI.Grid container alignItems="center">
+                    <MUI.CalendarTodayIcon  sx={{color: '#1976d2'}}/>
+                  <MUI.Grid item>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2'}}>Total Scholars: 100</MUI.Typography>
+                  </MUI.Grid>
+                </MUI.Grid> 
+
+
                   
                 </MUI.Paper>
               </MUI.Grid>

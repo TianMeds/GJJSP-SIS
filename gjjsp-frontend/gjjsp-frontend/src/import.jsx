@@ -117,6 +117,8 @@
   import AddIcon from '@mui/icons-material/Add';
   import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
   import WarningIcon from '@mui/icons-material/Warning';
+  import ApartmentIcon from '@mui/icons-material/Apartment';
+  import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -244,5 +246,7 @@
     ErrorOutlineOutlinedIcon,
     AddIcon,
     AddCommentOutlinedIcon,
-    WarningIcon
+    WarningIcon, 
+    ApartmentIcon,
+    CalendarTodayIcon
   };
