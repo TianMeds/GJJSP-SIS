@@ -50,7 +50,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
     Route::put('/scholars/{user_id}', [ScholarController::class, 'update']);
-    Route::delete('/scholars/{id}', [ScholarController::class, 'destroy']);
+    Route::delete('/scholars/{user_id}', [ScholarController::class, 'destroy']);
     Route::get('/scholars/search/{user_id}', [ScholarController::class, 'search']);
     Route::get('/restore/{id}', [ScholarController::class, 'restoreScholar']);
     Route::put('/scholars-data/{user_id}', [ScholarController::class, 'updateOtherScholarProfile']);

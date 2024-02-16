@@ -11,6 +11,20 @@ const useUserStore = create((set) => ({
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
 
+
+    modalUsers: false,
+    setModalUsers: (modalUsers) => set({ modalUsers }),
+    handleOpenModalUsers: () => set({modalUsers: true}),
+    handleCloseModalUsers: () => set({modalUsers: false}),
+
+    deleteModal: false,
+    setDeleteModal: (deleteModal) => set({ deleteModal }),
+    handleOpenDeleteModal: () => set({deleteModal: true}),
+    handleCloseDeleteModal: () => set({deleteModal: false}),
+
+    userIdToDelete: null,
+    setUserIdToDelete: (userIdToDelete) => set({ userIdToDelete }),
+    
     //Hooks for Get User Data
     users: [],
     user: false,

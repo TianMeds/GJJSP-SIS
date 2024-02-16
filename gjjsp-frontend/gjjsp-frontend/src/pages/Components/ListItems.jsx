@@ -67,7 +67,7 @@ export const SMP_ListItems = (
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
         alt="The house from the offer."
         src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-        secondary="Ask AI" 
+        secondary="Generate Report" 
       />
 
   </React.Fragment>
@@ -102,7 +102,7 @@ export const SAP_ListItems = (
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
         alt="The house from the offer."
         src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-        secondary="Ask AI" 
+        secondary="Generate Report" 
       />
   </React.Fragment>
   
@@ -130,7 +130,7 @@ export const SP_ListItems = (
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
         alt="The house from the offer."
         src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-        secondary="Ask AI" 
+        secondary="Generate Report"  
       />
 </React.Fragment>
 );

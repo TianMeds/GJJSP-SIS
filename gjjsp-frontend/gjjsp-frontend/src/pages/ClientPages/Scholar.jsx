@@ -31,8 +31,14 @@ export default function Scholar({state}) {
   
   //Zustand hooks 
   const {getAuthToken,alertOpen, setAlertOpen, errorOpen, setErrorOpen,alertMessage, setAlertMessage, errorMessage, setErrorMessage} = useAuthStore();
-  const {scholars, scholar, setScholars,editScholar, setEditScholar,  scholarsData, setScholarsData, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool} = useScholarStore();
+
+  const {scholars, scholar, setScholars,editScholar, setEditScholar,  scholarsData, setScholarsData, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool, modalScholars, setModalScholars,
+  handleOpenModalScholars, handleCloseModalScholars, deleteModal, setDeleteModal,
+ scholarIdToDelete, setScholarIdToDelete
+} = useScholarStore();
+
   const { setLoading, setLoadingMessage} = useLoginStore();
+
   const {setAvatarInitial, users, setUsers, selectedUser, setSelectedUser} = useUserStore();
 
 
@@ -52,7 +58,7 @@ export default function Scholar({state}) {
         setAlertOpen(true);
         setAlertMessage('Updating Scholar...');
         setLoading(true);
-        setLoadingMessage("Updating Scholar")
+        setLoadingMessage("Updating Scholar");
 
         let updatedData = {
           ...data,
@@ -70,31 +76,37 @@ export default function Scholar({state}) {
           }, config);
           
           // Set the school_id to the ID of the newly created school
-          updatedData.school_id = response.data.data.id;
+          updatedData.school_id = parseInt(response.data.data.id);
+        }
+        else if (Array.isArray(data.school_id)) {
+          // If school_id is an array, extract the first integer value
+          updatedData.school_id = parseInt(data.school_id[0]);
         }
 
         const response = await axios.put(`/api/scholars-data/${selectedUser.id}`,  updatedData, config)
         handleCloseScholar();
+        handleCloseModalScholars();
         setEditScholar(false);
         setSelectedUser(null);
         setLoading(false);
         setAlertOpen(true);
         setAlertMessage('Scholar Updated');
-      }
 
-      const response  = await axios.get('/api/userScholars', {
-        headers: {
-          Authorization: `Bearer ${authToken}`
+        const scholarResponse = await axios.get('/api/userScholars', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (scholarResponse.status === 200) {
+          setScholarsData(scholarResponse.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated Scholars List")
+        } else {
+          setErrorOpen(true);
+          setErrorMessage("Error updating scholars list")
         }
-      });
-
-      if (response.status === 200) {
-        setScholarsData(response.data.data);
-        setAlertOpen(true);
-        setAlertMessage("Updated Scholars List")
-      } else {
-        setErrorOpen(true);
-        setErrorMessage("Error updating scholars list")
+        
       }
       form.reset(FormValues);
     }
@@ -178,73 +190,98 @@ export default function Scholar({state}) {
     fetchScholarshipCategory();
   }, []);
 
+  //Fetch Scholar Details
+  useEffect(() => {
+    setAlertOpen(true);
+    setErrorOpen(false);
+    setAlertMessage('Please wait updating scholar list');
+    
+    const fetchScholarData = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/userScholars', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
 
-
-//Fetch Scholar Details
-useEffect(() => {
-  setAlertOpen(true);
-  setErrorOpen(false);
-  setAlertMessage('Please wait updating scholar list');
-  
-  const fetchScholarData = async () => {
-    try {
-      const authToken = useAuthStore.getState().getAuthToken();
-      const response = await axios.get('/api/userScholars', {
-        headers: {
-          Authorization: `Bearer ${authToken}`
+        if (response.status === 200) {
+          setScholarsData(response.data.data); 
+          console.log(response.data.data);
+          setAlertOpen(false);
+          setAlertMessage("Updated Scholars List")
+        } else {
+          setErrorOpen(true);
+          setErrorMessage("Error updating scholars list")
         }
-      });
-
-      if (response.status === 200) {
-        setScholarsData(response.data.data); // Make sure this line is updating the scholars state
-        setAlertOpen(false);
-        setAlertMessage("Updated Scholars List")
-      } else {
-        setErrorOpen(true);
-        setErrorMessage("Error updating scholars list")
-      }
-    } catch (err) {
-      if (response.status === 401) {
-        setErrorOpen(true);
-        setErrorMessage("Session expired. Please login again.")
-        navigate('/login')
+      } catch (err) {
+        if (err.response?.status === 401) {
+          setErrorOpen(true);
+          setErrorMessage("Session expired. Please login again.")
+          navigate('/login')
+        }
       }
     }
+
+    fetchScholarData();
+  }, []);
+
+  const handleOpenDeleteModal = (id, first_name, last_name) => {
+    setScholarIdToDelete(id);
+    setSelectedUser({first_name, last_name});
+    setDeleteModal(true);
   }
 
-  fetchScholarData();
-}, []);
+  const handleCloseDeleteModal = () => {
+    setScholarIdToDelete(null);
+    setDeleteModal(false);
+  }
 
   // Delete Profile Scholar
-  const deleteScholar = async (event, id) => {
-    event.preventDefault();
-    setLoading(true);
-    setLoadingMessage("Deleting Scholar")
-    setAlertOpen(true);
-    setAlertMessage('Deleting Scholar...');
-    try {
-      const authToken = getAuthToken();
-      const response = await axios.delete(`/api/scholars/${id}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      });
+  const deleteScholar = async (event) => {
 
-      if (response.status === 200) {
+    if(scholarIdToDelete) {
+      try {
+        const authToken = getAuthToken();
+        setLoading(true);
+        setLoadingMessage("Deleting user");
         setAlertOpen(true);
-        setAlertMessage("Successfully deleted scholar")
-        setScholarsData(scholarsData.filter((scholar) => scholar.id !== id));
-      } else {
-        setErrorOpen(true);
-        setErrorMessage("Error deleting scholar")
+        setAlertMessage('Deleting user...');
+
+        await axios.delete(`/api/scholars/${scholarIdToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        const response = await axios.get('/api/scholars', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setScholarsData(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage("Successfully deleted scholar")
+        } else {
+          setErrorOpen(true);
+          setErrorMessage("Error deleting scholar")
+        }
+
+        setAlertOpen(true);
+        setAlertMessage('User Deleted');
+        setLoading(false);
       }
-    } catch (err) {
-      if (response.status === 401) {
-        setErrorOpen(true);
-        setErrorMessage("Session expired. Please login again.")
-        navigate('/login')
+      catch (error) {
+        if (error.response.status === 401) {
+          setErrorOpen(true);
+          setErrorMessage("Session expired. Please login again.")
+          navigate('/login')
+        }
       }
     }
+    handleCloseDeleteModal();
   };
 
   const updateScholar = (scholarId) => {
@@ -331,6 +368,13 @@ useEffect(() => {
                   <MUI.NotificationsIcon  sx={{transform: 'rotate(45deg)', mr: 1}}/>
                   <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
                 </MUI.Button>
+
+                
+              <MUI.Button variant='contained' component={Link} to="/export"  id='addButton' sx={{mr: 4}}>
+                <MUI.FileUploadOutlinedIcon sx={{mr: 1}}/>
+                <MUI.Typography variant='body2'>Export Data</MUI.Typography>
+              </MUI.Button>
+              
               </MUI.Box>  
 
             </MUI.Box>
@@ -339,7 +383,7 @@ useEffect(() => {
           <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflow: 'auto', overflowX: 'hidden',  width: '100%' }}>
 
           {/* Search Bar */}
-          <MUI.Container sx={{mt: 4, mb: 8, display: 'flex', alignItems: 'center' }}>
+          <MUI.Container sx={{mt: 4, mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Search>
               <SearchIconWrapperV2>
                 <MUI.SearchIcon />
@@ -352,41 +396,36 @@ useEffect(() => {
               />
             </Search>
 
-            <MUI.IconButton aria-label="filter">
-              <MUI.FilterListIcon />
-            </MUI.IconButton>
           
             <MUI.FormControl>
               <MUI.Select
                 value={filteredScholar}
                 onChange={(e) => setFilteredScholar(e.target.value)}
-                native
-                sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
-                boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                displayEmpty
+                  inputProps={{ 'aria-label': 'Filter' }}
+                  startAdornment={
+                    <MUI.InputAdornment position="start">
+                      <MUI.FilterListIcon
+                        viewBox="0 0 24 24"
+                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                      />
+                    </MUI.InputAdornment>
+                  }
+                  sx={{ borderRadius: '12px' }}
               >
-                <option value="All">All</option>
-                <option value="New">New</option>
-                <option value="For Renewal">For Renewal</option>
-                <option value="For Renewal: Graduating">For Renewal: Graduating</option>
-                <option value="Renewed">Renewed</option>
-                <option value="Graduating">Graduating</option>
-                <option value="Graduated">Graduated</option>
-                <option value="Alumni">Alumni</option>
-                <option value="Withdrew">Withdrew</option>
+                <MUI.MenuItem value="All">All</MUI.MenuItem>
+                <MUI.MenuItem value="New">New</MUI.MenuItem>
+                <MUI.MenuItem value="For Renewal">For Renewal</MUI.MenuItem>
+                <MUI.MenuItem value="For Renewal: Graduating">For Renewal: Graduating</MUI.MenuItem>
+                <MUI.MenuItem value="Renewed">Renewed</MUI.MenuItem>
+                <MUI.MenuItem value="Graduating">Graduating</MUI.MenuItem>
+                <MUI.MenuItem value="Graduated">Graduated</MUI.MenuItem>
+                <MUI.MenuItem value="Alumni">Alumni</MUI.MenuItem>
+                <MUI.MenuItem value="Withdrew">Withdrew</MUI.MenuItem>
               </MUI.Select>
             </MUI.FormControl>
 
-            <MUI.Button variant='contained' component={Link} to="/export"
-            sx={{
-              ml: 2,
-              borderRadius: '15px',
-              height: '50px',
-            }}
-            >
-            <MUI.FileUploadOutlinedIcon sx={{mr: 1}}/>
-             <MUI.Typography variant='h5' sx={{fontSize: '0.8rem'}}>Export Data</MUI.Typography>
-            </MUI.Button>
-
+        
           </MUI.Container>
 
           {/* -------- Table Section  ----------*/}
@@ -403,12 +442,12 @@ useEffect(() => {
               </MUI.TableHead>
                 <MUI.TableBody>
                   {scholarsData
-                  .filter((scholar) => {
-                    return filteredScholar === 'All' ? true : (
-                      scholar.scholar_status_id[0] === (statusMapping[filteredScholar] || null)
-                    );
-                  })
-                  .filter((scholar) => 
+                    .filter((scholar) => {
+                      return filteredScholar === 'All' ? true : (
+                        scholar.scholar_status_id[0] === (statusMapping && statusMapping[filteredScholar] || null)
+                      );
+                    })
+                    .filter((scholar) => 
                       (scholar.email_address && scholar.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
                       ((`${scholar.first_name} ${scholar.middle_name} ${scholar.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
@@ -463,7 +502,7 @@ useEffect(() => {
                         <MUI.IconButton
                           color="inherit"
                           sx={{ textTransform: 'capitalize' }}
-                          onClick={(event) => deleteScholar(event, scholar.id)}
+                          onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)}
                         >
                           <MUI.DeleteIcon />
                         </MUI.IconButton>
@@ -477,6 +516,8 @@ useEffect(() => {
           </MUI.TableContainer>   
 
           </MUI.Grid>
+
+          {/* ------------------ Dialog Box of the  Scholars ---------------*/ }
 
            {/* Add Scholar Dialog */}
            <MUI.Dialog open={scholar} onClose={handleCloseScholar} fullWidth maxWidth="xs" component='form' onSubmit={handleSubmit(onSubmit)} method="post" noValidate>
@@ -556,53 +597,100 @@ useEffect(() => {
                 </MUI.Grid>
                 
                 <MUI.Grid id="schoolGrid">
-  <MUI.InputLabel htmlFor="school_id" id="schoolLabel">School</MUI.InputLabel>
-  <Controller
-    name="school_id"
-    control={control}
-    defaultValue={null}
-    rules={{
-      required: "School is required",
-      validate: (value) => value !== '' || 'Please select a school'
-    }}
-    render={({ field }) =>  (
-      <MUI.FormControl sx={{  width: '100%', borderRadius: '8px' }}>
-        <MUI.Select
-          native
-          {...field}
-          id='school_id'
-          sx={{ mb: 2 }}
-        >
-          <option value="" disabled>Select School</option>
-          {school.map((schoolItem) => (
-            <option key={schoolItem.id} value={schoolItem.id}>{schoolItem.school_name}</option>
-          ))}
-          <option value="other">Other</option>
-        </MUI.Select>
-      </MUI.FormControl>
-    )}
-  />
-  {errors.school_id && (
-    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_id?.message}</p>
-  )}
-</MUI.Grid>
+                  <MUI.InputLabel htmlFor="school_id" id="schoolLabel">School</MUI.InputLabel>
+                  <Controller
+                    name="school_id"
+                    control={control}
+                    defaultValue={null}
+                    rules={{
+                      required: "School is required",
+                      validate: (value) => value !== '' || 'Please select a school'
+                    }}
+                    render={({ field }) =>  (
+                      <MUI.FormControl sx={{  width: '100%', borderRadius: '8px' }}>
+                        <MUI.Select
+                          native
+                          {...field}
+                          id='school_id'
+                          sx={{ mb: 2 }}
+                        >
+                          <option value="" disabled>Select School</option>
+                          {school.map((schoolItem) => (
+                            <option key={schoolItem.id} value={schoolItem.id}>{schoolItem.school_name}</option>
+                          ))}
+                          <option value="other">Other</option>
+                        </MUI.Select>
+                      </MUI.FormControl>
+                    )}
+                  />
+                  {errors.school_id && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_id?.message}</p>
+                  )}
+                </MUI.Grid>
 
-{watch('school_id') === 'other' && (
-  <MUI.Grid id="addSchoolGrid">
-    <MUI.InputLabel htmlFor="school_name" id="addSchoolLabel">Add School</MUI.InputLabel>
-    <MUI.TextField
-      id="school_name"
-      type="text"
-      {...register('school_name', {
-        required: 'School is required',
-      })}
-      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
-    />
-    {errors.school_name && (
-      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_name?.message}</p>
-    )}
-  </MUI.Grid>
-)}
+                {watch('school_id') === 'other' && (
+                  <>
+                  <MUI.Grid id="addSchoolGrid">
+                    <MUI.InputLabel htmlFor="school_name" id="addSchoolLabel">Add School</MUI.InputLabel>
+                    <MUI.TextField
+                      id="school_name"
+                      type="text"
+                      {...register('school_name', {
+                        required: 'School is required',
+                      })}
+                      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+                    />
+                    {errors.school_name && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_name?.message}</p>
+                    )}
+                  </MUI.Grid>
+
+                   <MUI.Grid id="schoolTypeGrid">
+                  <MUI.InputLabel htmlFor="school_type" id="schoolTypeLabel">School Type</MUI.InputLabel>
+                    <Controller
+                      name="school_type"
+                      control={control}
+                      defaultValue={null}
+                      rules={{
+                        required: "School Type is required",
+                        validate: (value) => value !== '' || 'Please select a school type'
+                      }}
+                      render={({ field }) =>  (
+                        <MUI.FormControl sx={{  width: '100%', borderRadius: '8px', mb: 2 }}>
+                          <MUI.Select
+                            native
+                            {...field}
+                            id='school_type'
+                          >
+                            <option value="" disabled>Select School Type</option>
+                            <option value="Private">Private</option>
+                            <option value="Public">Public</option>
+                          </MUI.Select>
+                        </MUI.FormControl>
+                      )}
+                    />
+                    {errors.school_type && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_type?.message}</p>
+                    )}
+                </MUI.Grid>
+
+                <MUI.Grid id="schoolAddressGrid">
+                  <MUI.InputLabel htmlFor="school_address" id="schoolAddressLabel">School Address</MUI.InputLabel>
+                  <MUI.TextField
+                    id="school_address"
+                    type="text"
+                    {...register('school_address', {
+                      required: 'School Address is required',
+                    })}
+                    sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+                  />
+                  {errors.school_address && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_address?.message}</p>
+                  )}
+                </MUI.Grid>
+                
+                </>
+                )}                
 
                 <MUI.Grid id="scholarStatusGrid">
                     <MUI.InputLabel htmlFor="scholar_status_id" id="scholarStatusLabel">Scholar Status</MUI.InputLabel>
@@ -649,14 +737,87 @@ useEffect(() => {
                       Cancel
                     </MUI.Button>
                     <MUI.Button 
-                    type='submit'
-                    variant='contained'
-                    color="primary">
-                      {editScholar ? 'Save Changes' : 'Add Scholar'}
+                      variant='contained'
+                      color="primary"
+                      onClick={handleOpenModalScholars}
+                    >
+                
+                      Save Changes
                     </MUI.Button>
                   </MUI.DialogActions>
 
-              </MUI.Dialog>
+            </MUI.Dialog>
+
+            {/* Modal for Update User */}
+            <MUI.Dialog open={modalScholars} onClose={handleCloseModalScholars}>
+
+              <MUI.DialogTitle id="dialogTitle" mt={2}>Heads Up!</MUI.DialogTitle>
+              <MUI.DialogContent>
+                <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                  You're about to make some changes to a scholar's information. Everything look good?
+                </MUI.Typography>
+              </MUI.DialogContent>
+
+              <MUI.DialogActions>
+                <MUI.Button onClick={handleCloseModalScholars} color="primary">
+                  Cancel
+                </MUI.Button>
+                <MUI.Button  
+                  onClick={handleSubmit(onSubmit)} 
+                  type='submit' 
+                  color="primary" 
+                  variant="contained" 
+                  sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}
+                  >
+                  Save Changes
+                </MUI.Button>
+              </MUI.DialogActions>
+
+            </MUI.Dialog>
+
+            {/* Delete Modal */}
+            <MUI.Dialog open={deleteModal} onClose={handleCloseDeleteModal}>
+
+            <MUI.DialogTitle 
+              id="dialogTitle" 
+              mt={2}>
+              <MUI.WarningIcon 
+              sx={{
+                color: '#CA3521', 
+                fontSize: '1.2rem'}}
+            /> 
+              Deleting {selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}
+            </MUI.DialogTitle>
+
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                Heads up! This will permanently delete's <b>{selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}  </b> account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseDeleteModal} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button
+                onClick={deleteScholar}
+                color="primary"
+                variant="contained"
+                sx={{
+                  backgroundColor: '#CA3521', 
+                  borderRadius: '5px', 
+                  mb: 2, 
+                  mt: 2,
+                  '&:hover': {
+                    backgroundColor: '#CA3521', // Override hover color to stay red
+                  }
+                }}
+              >
+                Yes, Delete Scholar
+              </MUI.Button>
+            </MUI.DialogActions>
+
+            </MUI.Dialog>
 
           
         </MUI.Grid>

@@ -31,6 +31,26 @@ const usePartnerStore = create((set) => ({
     handleOpenPartner: () => set({partner: true}),
     handleClosePartner: () => set({partner: false}),
 
+    schools: [],
+    setSchools: (schools) => set({ schools }),
+
+    categories: [],
+    setCategories: (categories) => set({ categories }),
+
+    modalPartner: false,
+    setModalPartner: (modalPartner) => set({ modalPartner }),
+    handleOpenModalPartner: () => set({modalPartner: true}),
+    handleCloseModalPartner: () => set({modalPartner: false}),
+
+    deleteModalPartner: false,
+    setDeleteModalPartner: (deleteModalPartner) => set({ deleteModalPartner }),
+    handleOpenDeleteModalPartner: () => set({deleteModalPartner: true}),
+    handleCloseDeleteModalPartner: () => set({deleteModalPartner: false}),
+
+    partnerIdToDelete: null,
+    setPartnerIdToDelete: (partnerIdToDelete) => set({ partnerIdToDelete }),
+    
+
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),

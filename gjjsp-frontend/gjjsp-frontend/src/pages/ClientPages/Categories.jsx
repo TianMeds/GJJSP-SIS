@@ -42,8 +42,11 @@ export default function Scholarship({state}) {
   const role_id = auth?.user?.role_id || '';
 
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen,errorMessage,setErrorMessage} = useAuthStore();
+
   const {setLoading, setLoadingMessage} = useLoginStore();
-  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId} = useScholarshipStore();
+
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId, modalCateg, handleOpenModalCateg, handleCloseModalCateg, setModalCateg, deleteModal, setDeleteModal, projectIdToDelete, setProjectIdToDelete,  } = useScholarshipStore();
+
   const {partners, partner, setPartners, selectedProjectPartner, setSelectedProjectPartner, selectedProjectPartnerId, setSelectedProjectPartnerId} = usePartnerStore();
 
   // Get Project Partners Data 
@@ -115,6 +118,17 @@ export default function Scholarship({state}) {
     fetchScholarship();
   },[]);
 
+  const handleOpenDeleteModal = (id, first_name, last_name) => {
+    setProjectIdToDelete(id);
+    setSelectedCategories({first_name, last_name});
+    setDeleteModal(true);
+  }
+
+  const handleCloseDeleteModal = () => {
+    setProjectIdToDelete(null);
+    setDeleteModal(false);
+  }
+
   //POST CATEGORIES DATA
   const onSubmit = async (data, event) => {
     event.preventDefault();
@@ -134,6 +148,7 @@ export default function Scholarship({state}) {
         setLoadingMessage('Updating category')
         const response = await axios.put(`/api/scholarships/${selectedCategories.id}`,{...data}, config)
         handleCloseScholarship();
+        handleCloseModalCateg();
         setEditCategories(false);
         setSelectedCategories(null);
         setLoading(false);
@@ -155,6 +170,7 @@ export default function Scholarship({state}) {
         setAlertMessage("Scholarship category added");
         setLoading(false);
         handleCloseScholarship();
+        handleCloseModalCateg();
       }
       const response = await axios.get('/api/scholarships', {
         headers: {
@@ -227,7 +243,8 @@ export default function Scholarship({state}) {
   
       if (response.status === 200) {
        setProjects(response.data.data);
-       handleCloseScholarship()
+       handleCloseScholarship();
+        handleCloseDeleteModal();
       }
       else {
         setErrorOpen(true);
@@ -285,7 +302,7 @@ export default function Scholarship({state}) {
         </MUI.Grid>
 
 
-        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+        <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Search>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />
@@ -299,21 +316,26 @@ export default function Scholarship({state}) {
           </Search>
                         
 
-          <MUI.IconButton aria-label="filter">
-            <MUI.FilterListIcon />
-          </MUI.IconButton>
-
           <MUI.FormControl>
             <MUI.Select
               value={filteredStatus}
               onChange={(e) => setFilteredStatus(e.target.value)}
-              native
-              sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
-              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Filter' }}
+              startAdornment={
+                <MUI.InputAdornment position="start">
+                  <MUI.FilterListIcon
+                    viewBox="0 0 24 24"
+                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                  />
+                </MUI.InputAdornment>
+              }
+              sx={{ borderRadius: '12px' }}               
+
             >
-              <option value="All">All</option>
-              <option value="Closed for Application">Closed Application</option>
-              <option value="Open for Application">Open Application</option>
+              <MUI.MenuItem value="All">All</MUI.MenuItem>
+              <MUI.MenuItem value="Closed for Application">Closed Application</MUI.MenuItem>
+              <MUI.MenuItem value="Open for Application">Open Application</MUI.MenuItem>
             </MUI.Select>
           </MUI.FormControl>
         </MUI.Container>
@@ -479,7 +501,7 @@ export default function Scholarship({state}) {
                         disabled={role_id === 2}
                       >
                         <option value="" disabled>Select Project Status</option>
-                        <option value="Closed for Application">Closed for Application</option>
+                        {editCategories && <option value="Closed for Application">Closed for Application</option>}
                         <option value="Open for Application">Open for Application</option>
                       </MUI.Select>
                     </MUI.FormControl>
@@ -505,7 +527,7 @@ export default function Scholarship({state}) {
                       textTransform: 'capitalize',  
                     }}
                   >
-                    <MUI.Typography variant='h6' sx={{color: 'white'}} onClick={(event) => deleteCategories(event, currentProjectId)}>
+                    <MUI.Typography variant='h6' sx={{color: 'white'}} onClick={handleOpenDeleteModal}>
                       Delete this category 
                     </MUI.Typography>
                   </MUI.Button>
@@ -530,11 +552,70 @@ export default function Scholarship({state}) {
                     color="primary"
                     variant='contained'
                     id='Button'
-                    onClick={role_id === 2 ? handleCancelEdit : handleSubmit(onSubmit)}
+                    onClick={handleOpenModalCateg}
                   >
                    {role_id === 2 ? 'Close' :  (editCategories ? 'Save Changes' : 'Add')}
                   </MUI.Button>
               </MUI.DialogActions>
+
+        </MUI.Dialog>
+        
+
+        {/* Modal for Add and Update Users */}
+        <MUI.Dialog open={modalCateg} onClose={handleCloseModalCateg}>
+          <MUI.DialogTitle id="dialogTitle" mt={2}>{editCategories ? 'Heads Up!' : 'New Categories Alert'}</MUI.DialogTitle>
+
+          <MUI.DialogContent>
+            <MUI.Typography  variant='h5' ml={1} sx={{color: '#44546F'}}>
+              {editCategories ? "You're about to make some changes to a user's information. Everything look good?" : "Ready to add a new scholarship category? Make sure all the details are correct."} 
+            </MUI.Typography>
+          </MUI.DialogContent>
+
+          <MUI.DialogActions>
+            <MUI.Button onClick={handleCloseModalCateg} color="primary">
+              Cancel
+            </MUI.Button>
+
+            <MUI.Button 
+             onClick={role_id === 2 ? handleCancelEdit : handleSubmit(onSubmit)} 
+              color="primary" 
+              variant='contained'
+              sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}
+            >
+              {role_id === 2 ? 'Close' :  (editCategories ? 'Save Changes' : 'Yes, Add Categories')}
+            </MUI.Button>
+          </MUI.DialogActions>
+
+        </MUI.Dialog>
+
+        {/* Modal for Delete Users */}
+
+        <MUI.Dialog open={deleteModal} onClose={handleCloseDeleteModal}>
+          <MUI.DialogTitle id="dialogTitle" mt={2}>
+            <MUI.WarningIcon sx={{color: '#CA3521', fontSize: '1.2rem'}}/>  Delete Category
+          </MUI.DialogTitle>
+          
+          <MUI.DialogContent>
+            <MUI.Typography  variant='h5' ml={1} sx={{color: '#44546F'}}>
+              Heads up! This will permanently delete's {selectedCategories?.scholarship_categ_name} category. Are you sure you want to proceed?
+            </MUI.Typography>
+          </MUI.DialogContent>
+
+          <MUI.DialogActions>
+            <MUI.Button onClick={handleCloseDeleteModal} color="primary">
+              Cancel
+            </MUI.Button>
+
+            <MUI.Button
+            onClick={(event) => deleteCategories(event, currentProjectId)}
+            color="primary"
+            variant='contained'
+            >
+              Yes, Delete Category
+            </MUI.Button>
+          
+        </MUI.DialogActions>
+            
 
         </MUI.Dialog>
         <DevTool control={control} />

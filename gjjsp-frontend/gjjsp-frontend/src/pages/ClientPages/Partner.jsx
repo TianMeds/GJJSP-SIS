@@ -23,7 +23,7 @@ const FormValues = {
 export default function Partner({state}) {
 
   const form  = useForm();
-  const { register, control, handleSubmit, formState, reset, validate} = form
+  const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
   const navigate = useNavigate();
   
@@ -41,6 +41,10 @@ export default function Partner({state}) {
     setSelectedPartner, 
     filteredPartner, 
     setFilteredPartner, 
+    schools, 
+    setSchools,
+    categories,
+    setCategories, modalPartner, setPartnerModal, handleOpenModalPartner, handleCloseModalPartner, deleteModalPartner, setDeleteModalPartner,  partnerIdToDelete, setPartnerIdToDelete
   } = usePartnerStore();  
 
   const {setLoading, setLoadingMessage} = useLoginStore();
@@ -82,6 +86,49 @@ export default function Partner({state}) {
     fetchPartner();
   }, []);
 
+  useEffect(() => {
+    const fetchSchoolData = async () => {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        const response = await axios.get('/api/schools', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setSchools(response.data.data);
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch scholarship data');
+        }
+
+        const categoryResponse = await axios.get('/api/scholarships', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (categoryResponse.status === 200) {
+          setCategories(categoryResponse.data.data);
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch scholarship data');
+        }
+      }
+      catch(err){
+        if(err.response?.status === 401){
+          setErrorOpen(true)
+          setErrorMessage("You've been logout");
+          navigate('/login')
+        }
+      }
+    }
+    fetchSchoolData();
+  },[]);
+
 
   //Add Partner
   const onSubmit = async (data, event) => {
@@ -101,8 +148,29 @@ export default function Partner({state}) {
         setAlertMessage('Please wait while updating partner');
         setLoading(true);
         setLoadingMessage('Updating partner');
-        const response = await axios.put(`/api/project-partners/${selectedPartner.id}`, {...data}, config)
+
+        let updatedPartnerData = {
+          ...data,
+          scholarship_categ_id: parseInt(data.scholarship_categ_id),
+          project_partner_name: data.project_partner_name,
+          project_partner_mobile_num: data.project_partner_mobile_num,
+        };
+
+        if(data.school_id === 'other'){
+          const response = await axios.post('/api/schools', {
+            school_name: data.school_name,
+            school_type: data.school_type,
+            school_address: data.school_address
+          }, config);
+          updatedPartnerData.school_id = parseInt(response.data.data.id);
+        }
+        else if (Array.isArray(data.school_id)) {
+          updatedPartnerData.school_id = parseInt(data.school_id[0]);
+        }
+
+        const response = await axios.put(`/api/project-partners/${selectedPartner.id}`, updatedPartnerData, config)
         handleClosePartner();
+        handleCloseModalPartner();
         setEditPartner(false);
         setLoading(false)
         setAlertOpen(true);
@@ -113,15 +181,32 @@ export default function Partner({state}) {
         setAlertMessage('Please wait while adding partner');
         setLoading(true);
         setLoadingMessage('Adding partner');
-        const response = await axios.post('/api/project-partners', {
+
+        let updatedPartnerData = {
+          ...data,
+          scholarship_categ_id: parseInt(data.scholarship_categ_id),
           project_partner_name: data.project_partner_name,
           project_partner_mobile_num: data.project_partner_mobile_num,
-          school_id: data.school_id,
-        }, config)
+        };
+
+        if(data.school_id === 'other'){
+          const response = await axios.post('/api/schools', {
+            school_name: data.school_name,
+            school_type: data.school_type,
+            school_address: data.school_address
+          }, config);
+          updatedPartnerData.school_id = parseInt(response.data.data.id);
+        }
+        else if (Array.isArray(data.school_id)) {
+          updatedPartnerData.school_id = parseInt(data.school_id[0]);
+        }
+
+        const response = await axios.post('/api/project-partners', updatedPartnerData, config)
         setAlertOpen(true);
         setAlertMessage('Adding partner please wait');
         setLoading(false);
         handleClosePartner();
+        handleCloseModalPartner();
       }
       const response = await axios.get('/api/project-partners',{
         headers: {
@@ -165,48 +250,66 @@ export default function Partner({state}) {
     form.reset(selectedPartner);
   }
 
-  //Delete function for partner
-  const deletePartner = async (event, id) => {
-    event.preventDefault();
-    setLoading(true);
-    setLoadingMessage('Deleting partner');
-    setAlertOpen(true);
-    setAlertMessage('Please wait while deleting partner');
-    const authToken = useAuthStore.getState().getAuthToken();
+  const handleOpenDeleteModalPartner = (id, project_partner_name) => {
+    setPartnerIdToDelete(id);
+    setSelectedPartner({project_partner_name: project_partner_name});
+    setDeleteModalPartner(true);
+  }
 
-    try{
-      await axios.delete(`/api/project-partners/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      const response = await axios.get('/api/project-partners',{
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      if (response.status === 200) {
-        setPartners(response.data.data);
+  const handleCloseDeleteModalPartner = () => {
+    setPartnerIdToDelete(null);
+    setDeleteModalPartner(false);
+  }
+
+  const deletePartner = async (event) => {
+
+    if(partnerIdToDelete) {
+      try{
+        const authToken = getAuthToken();
+        setLoading(true);
+        setLoadingMessage('Deleting partner');
         setAlertOpen(true);
-        setAlertMessage('Project partners list updated');
-      }
-      else{
+        setAlertMessage('Please wait while deleting partner');
+
+        await axios.delete(`/api/project-partners/${partnerIdToDelete}`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const response = await axios.get('/api/project-partners', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          setPartners(response.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Project partners list updated');
+        }
+        else{
+          setAlertOpen(true);
+          setAlertMessage('Something went wrong while fetching project partners list');
+        }
+        setLoading(false);
         setAlertOpen(true);
-        setAlertMessage('Something went wrong while fetching project partners list');
+        setAlertMessage('Partner deleted');
+
       }
-      setLoading(false);
+      catch(err){
+        if(err.response?.status === 401){
+          setErrorOpen(true);
+          setErrorMessage("You've been logout");
+          navigate('/login')
+        }
+        else{
+          setErrorOpen(true);
+          setErrorMessage('Something went wrong');
+        }
     }
-    catch(err){
-      if(err.response?.status === 401){
-        setErrorOpen(true);
-        setErrorMessage("You've been logout");
-        navigate('/login')
-      }
-      else{
-        setErrorOpen(true);
-        setErrorMessage('Something went wrong');
-      }
-    }
+  }
+  handleCloseDeleteModalPartner()
   }
   
   const handleCancelPartner = () => {
@@ -222,7 +325,7 @@ export default function Partner({state}) {
         <MUI.Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <MUI.Grid container spacing={3}>
 
-            <MUI.Grid item xs={12}>
+            <MUI.Grid item xs={12} mb={4}>
               <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
               <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Partners</MUI.Typography>
                         
@@ -235,66 +338,83 @@ export default function Partner({state}) {
               </MUI.Box>
             </MUI.Grid>
 
-            <MUI.Container sx={{mt: 4, display: 'flex', alignItems: 'center' }}>
+            <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '100%' }}>
+
+            <MUI.Container sx={{mt: 4, mb: 4,  display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Search>
                 <SearchIconWrapperV2>
                   <MUI.SearchIcon />
                 </SearchIconWrapperV2>
                 <StyledInputBaseV2
-                  placeholder="Search for Scholarship Project or Benefactor"
+                  placeholder="Search for Project Partner and School"
                   inputProps={{ 'aria-label': 'search' }}
                   value={searchQuery}
                   onChange={handleSearch}
                 />
               </Search>
-                            
 
-              <MUI.IconButton aria-label="filter">
-                <MUI.FilterListIcon />
-              </MUI.IconButton>
-
-              <MUI.FormControl>
+              <MUI.FormControl variant="outlined" sx={{ minWidth: 120 }}>
                 <MUI.Select
                   value={filteredPartner}
                   onChange={(e) => setFilteredPartner(e.target.value)}
-                  native
-                  sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
-                  boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'Filter' }}
+                  startAdornment={
+                    <MUI.InputAdornment position="start">
+                      <MUI.FilterListIcon
+                        viewBox="0 0 24 24"
+                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                      />
+                    </MUI.InputAdornment>
+                  }
+                  sx={{ borderRadius: '12px' }}
                 >
-                  <option value="All">All</option>
-                  <option value="Holy Spirit National College">Holy Spirit National College</option>
-                  <option value="Asia Pacific College">Asia Pacific College</option>
+                  <MUI.MenuItem value="All">All</MUI.MenuItem>
+                  {schools.map((school) => (
+                    <MUI.MenuItem key={school.id} value={school.id}>
+                      {school.school_name}
+                    </MUI.MenuItem>
+                  ))}
                 </MUI.Select>
               </MUI.FormControl>
+
+              
             </MUI.Container>
 
             {/* -------- Table Section  ----------*/}
-          <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2', margin: '2rem 0 0 1rem' }}>
+          <MUI.TableContainer>
             <MUI.Table> 
               <MUI.TableHead>
                 <MUI.TableRow>
-                  <MUI.TableCell>Name</MUI.TableCell>
-                  <MUI.TableCell>Mobile Number</MUI.TableCell>
-                  <MUI.TableCell>School</MUI.TableCell>
-                  <MUI.TableCell>Action</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '0.8rem'}}>Name</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '0.8rem'}}>Mobile Number</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '0.8rem'}}>School</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '0.8rem'}}>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
                   {partners
+                    .filter((partner) => {
+                      const matchSearchQuery = partner.project_partner_name.toLowerCase().includes(searchQuery.toLowerCase());
+                      const matchSchool = filteredPartner === 'All' || partner.school_id === parseInt(filteredPartner);
+                      return matchSearchQuery && matchSchool;
+                    })
                     .map((partner, index) => (
-                    <MUI.TableRow key={index} className='partner' >
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerName'>{partner.project_partner_name}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerMobileNum'>{partner.project_partner_mobile_num}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none'}}  className='partnerSchool'>{partner.school_id}</MUI.TableCell>
-                      <MUI.TableCell sx={{border: 'none',  color: '#2684ff' }}>
+                    <MUI.TableRow key={index} className='partner' sx={{backgroundColor: index % 2 === 0 ? '#fbf3f2' : '#e0e0e0'}}>
+                      <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)', borderRight: '1px solid rgba(224, 224, 224, 1)', fontStyle: 'italic' }}  className='partnerName'>{partner.project_partner_name}</MUI.TableCell>
+                      <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)', borderRight: '1px solid rgba(224, 224, 224, 1)', fontStyle: 'italic' }}  className='partnerMobileNum'>{partner.project_partner_mobile_num}</MUI.TableCell>
+                      <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)', borderRight: '1px solid rgba(224, 224, 224, 1)', fontStyle: 'italic' }} className='partnerSchool'>
+                        {schools.find(school => school.id === partner.school_id)?.school_name || 'School Not Found'}
+                      </MUI.TableCell>
+                      <MUI.TableCell sx={{ border: 'none', color: '#2684ff', display: 'flex', gap: '8px' }}>
 
-                        <MUI.IconButton color="inherit" onClick={() => updatePartner(partner.id)}>
-                          <MUI.BorderColorIcon />
-                        </MUI.IconButton>
+                        <MUI.Button onClick={() => updatePartner(partner.id)} variant='contained' sx={{backgroundColor: '#0C66E4'}}>
+                          Edit
+                        </MUI.Button>
 
-                        <MUI.IconButton color="inherit" sx={{ textTransform: 'capitalize' }} onClick={(event) => deletePartner(event, partner.id)}>
-                          <MUI.DeleteIcon />
-                        </MUI.IconButton>
+                        <MUI.Button onClick={(event) => handleOpenDeleteModalPartner(partner.id, partner.project_partner_name)} variant='contained' color='error'>
+                          Delete
+                        </MUI.Button>
 
                       </MUI.TableCell>
                     </MUI.TableRow>
@@ -303,6 +423,8 @@ export default function Partner({state}) {
             </MUI.Table>
             <MUI.Divider sx={{width:'100%'}}/>
           </MUI.TableContainer>   
+
+          </MUI.Grid>
 
 
           {/* -------- Add Partner Dialog ----------*/}
@@ -361,34 +483,187 @@ export default function Partner({state}) {
                 )}
               </MUI.Grid>
 
-              <MUI.Grid id="partnerSchoolGrid">
-                <MUI.InputLabel htmlFor="school_id" id="partnerSchoolLabel">School</MUI.InputLabel>
-                <MUI.TextField
-                  type='text'
-                  id="school_id"
-                  placeholder='school'
-                  fullWidth
-
-                  {...register('school_id', {
-                    required: {
-                      value: true,
-                      message: 'School is required'
-                    },
-                  })}
+              <MUI.Grid id="scholarshipCategoryGrid">
+                <MUI.InputLabel htmlFor="scholarship_categ_id" id="scholarshipCategoryLabel">Scholarship Category</MUI.InputLabel>
+                <Controller
+                  name="scholarship_categ_id"
+                  control={control}
+                  rules={{
+                    required: "Scholarship Category is required",
+                    validate: (value) => value !== '' || 'Please select a scholarship category'
+                  }}
+                  render={({ field }) =>  (
+                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        native
+                        {...field}
+                        id='scholarship_categ_id'
+                        sx={{ mb: 2 }}
+                      >
+                        <option value="">Select Scholarship Category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>{category.scholarship_categ_name}</option>
+                        ))}
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
                 />
-                {errors.school_id && (
-                  <p id='errMsg'>
-                    <MUI.InfoIcon className='infoErr'/>
-                    {errors.school_id?.message}
-                  </p>
+                {errors.scholarship_categ_id && (
+                  <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.scholarship_categ_id?.message}</p>
                 )}
               </MUI.Grid>
+
+              <MUI.Grid id="schoolGrid">
+                <MUI.InputLabel htmlFor="school_id" id="schoolLabel">School</MUI.InputLabel>
+                <Controller
+                  name="school_id"
+                  control={control}
+                  defaultValue={null}
+                  rules={{
+                    required: "School is required",
+                    validate: (value) => value !== '' || 'Please select a school'
+                  }}
+                  render={({ field }) =>  (
+                    <MUI.FormControl sx={{  width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        native
+                        {...field}
+                        id='school_id'
+                        sx={{ mb: 2 }}
+                      >
+                        <option value="" disabled>Select School</option>
+                        {schools.map((schoolItem) => (
+                          <option key={schoolItem.id} value={schoolItem.id}>{schoolItem.school_name}</option>
+                        ))}
+                        <option value="other">Other</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
+                />
+                {errors.school_id && (
+                  <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_id?.message}</p>
+                )}
+              </MUI.Grid>
+
+              {watch('school_id') === 'other' && (
+                  <MUI.Grid id="addSchoolGrid">
+                    <MUI.InputLabel htmlFor="school_name" id="addSchoolLabel">Add School</MUI.InputLabel>
+                    <MUI.TextField
+                      id="school_name"
+                      type="text"
+                      {...register('school_name', {
+                        required: 'School is required',
+                      })}
+                      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+                    />
+                    {errors.school_name && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_name?.message}</p>
+                    )}
+                  </MUI.Grid>
+                )}
+
+                {watch('school_id') === 'other' && (
+                  <MUI.Grid id="addSchoolGrid">
+                    <MUI.InputLabel htmlFor="school_type" id="addSchoolLabel">School Type</MUI.InputLabel>
+                    <MUI.TextField
+                      id="school_type"
+                      type="text"
+                      {...register('school_type', {
+                        required: 'School is required',
+                      })}
+                      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+                    />
+                    {errors.school_type && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_type?.message}</p>
+                    )}
+                  </MUI.Grid>
+                )}
+
+                {watch('school_id') === 'other' && (
+                  <MUI.Grid id="addressSchoolGrid">
+                    <MUI.InputLabel htmlFor="school_address" id="addressSchoolLabel">School Address</MUI.InputLabel>
+                    <MUI.TextField
+                      id="school_address"
+                      type="text"
+                      {...register('school_address', {
+                        required: 'School is required',
+                      })}
+                      sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
+                    />
+                    {errors.school_address && (
+                      <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_address?.message}</p>
+                    )}
+                  </MUI.Grid>
+                )}
                
             </MUI.DialogContent>
 
             <MUI.DialogActions>
               <MUI.Button onClick={handleCancelPartner} id="cancelButton">Cancel</MUI.Button>
-              <MUI.Button type='submit' variant='contained' id="submitButton">{editPartner ? "Save Changes" : 'Add Partner'}</MUI.Button>
+              <MUI.Button onClick={handleOpenModalPartner} variant='contained' id="submitButton">{editPartner ? "Save Changes" : 'Add Partner'}</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          {/* -------- Add and Update Partner Dialog ----------*/}
+          <MUI.Dialog open={modalPartner} onClose={handleCloseModalPartner}>
+            <MUI.DialogTitle id="dialogTitle">{editPartner ? 'Heads up!' : 'New Project Partner Alert!'}</MUI.DialogTitle>
+
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                {editPartner ? "You're about to make some changes to a user's information. Everything look good?" : "Ready to add a new scholarship category? Make sure all the details are correct."}
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseModalPartner} id="cancelButton">Cancel</MUI.Button>
+              <MUI.Button 
+                onClick={handleSubmit(onSubmit)} 
+                variant='contained' 
+                id="submitButton"
+                sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}
+              >
+                {editPartner ? 'Yes, Update Partner' : 'Yes, Add Partner'}
+              </MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          {/* -------- Delete Partner Dialog ----------*/}
+          <MUI.Dialog open={deleteModalPartner} onClose={handleCloseDeleteModalPartner}>
+            <MUI.DialogTitle 
+              id="dialogTitle" 
+              mt={2}>
+              <MUI.WarningIcon 
+              sx={{
+                color: '#CA3521', 
+                fontSize: '1.2rem'}}
+            /> 
+              Deleting {selectedPartner ? `${selectedPartner.project_partner_name}` : ''}
+            </MUI.DialogTitle>
+
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+              Heads up! This will permanently delete's <b>{selectedPartner ? `${selectedPartner.project_partner_name}` : ''}  </b> account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseDeleteModalPartner} id="cancelButton">Cancel</MUI.Button>
+              <MUI.Button
+                onClick={deletePartner}
+                variant='contained'
+                color='error'
+                sx={{
+                  backgroundColor: '#CA3521', 
+                  borderRadius: '5px', 
+                  mb: 2, 
+                  mt: 2,
+                  '&:hover': {
+                    backgroundColor: '#CA3521', // Override hover color to stay red
+                  }
+                }}
+              >
+                Yes, Delete Partner
+              </MUI.Button>
             </MUI.DialogActions>
           </MUI.Dialog>
 

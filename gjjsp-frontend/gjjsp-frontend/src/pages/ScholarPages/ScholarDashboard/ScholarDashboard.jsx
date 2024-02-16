@@ -68,40 +68,48 @@ export default function ScholarDashboard() {
             </MUI.Grid>
 
             {/* Introduction Box */}
-            <MUI.Grid item xs={12} md={8} lg={7}>
-              <MUI.Paper
+            <MUI.Grid item xs={12} md={8} lg={9}>
+            <MUI.Paper
+               elevation={3}
                 sx={{
                   p: 3,
                   display: 'flex',
-                  flexDirection: 'column',
-                  height: 'auto',
+                  flexDirection: 'row', 
+                  height: '250px',
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  borderRadius: '12px'
                 }}
               >
-                <MUI.Typography>Introduction</MUI.Typography>
-                <MUI.Typography variant='h4' m={2}>Welcome to Scholarlink</MUI.Typography>
+                <div>
+                  <MUI.Typography variant='h2'sx={{fontWeight: 'bold'}} m={2}>Welcome, Admin to Scholarlink</MUI.Typography>
 
-                <MUI.Box sx={{ display: 'flex', mb: 2, mt:3 }}>
-                  <img src={LogoImg} alt="Your Image Alt Text" style={{ width: '130px', height: '130px', marginLeft: -20}} />
-
-                  <MUI.Box sx={{ display: 'flex', flexDirection: 'column', mt: 2 }}>
+                  <MUI.Box sx={{ display: 'flex', flexDirection: 'column', m: 2 }}>
                     <MUI.Typography variant='h5' pb={2}>
                       Check out the
-                        <MUI.Typography component={Link} to="" variant='h5' sx={{textDecoration: 'none'}}> Scholarlink User Guide </MUI.Typography> 
-                      for a quick tutorial
+                      <MUI.Typography component={Link} to="" variant='h5' sx={{textDecoration: 'none'}}> Scholarlink User Guide </MUI.Typography> 
+                      for a quick tutorial 
                     </MUI.Typography>
 
-                    <MUI.Typography variant='h5' >
-                      Contact
-                      <MUI.Typography component={Link} to="" variant='h5' sx={{textDecoration: 'none'}}> See So Support Team </MUI.Typography> 
+                    <MUI.Typography variant='h5'>
+                      Contact{' '}
+                      <MUI.Link
+                        href="mailto:cbmedallada@student.apc.edu.ph"
+                        variant='h5'
+                        sx={{ textDecoration: 'none' }}
+                      >
+                        See So Support Team
+                      </MUI.Link>{' '}
                       for any issues or questions
                     </MUI.Typography>
                   </MUI.Box>
-                </MUI.Box>
+                </div>
+                <img src={LogoImg} alt="Your Image Alt Text" style={{ width: '200px', height: '200px' }} />
               </MUI.Paper>
-
+              
             </MUI.Grid>
             {/* Scholars Status Report */}
-              <MUI.Grid item xs={12} md={4} lg={5}>
+              <MUI.Grid item xs={12} md={2} lg={3}>
                 <MUI.Paper
                   sx={{
                     p: 2,
@@ -110,7 +118,7 @@ export default function ScholarDashboard() {
                     height: 'auto',
                   }}
                 >
-                  <MUI.Typography>Announcement</MUI.Typography>
+                  <MUI.Typography>Academic Status</MUI.Typography>
                   <MUI.Typography variant='h4' m={2} sx={{display: 'flex', alignItems: 'center'}}><MUI.InfoIcon/> No Announcement</MUI.Typography>
                   
                 </MUI.Paper>

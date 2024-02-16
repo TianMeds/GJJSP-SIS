@@ -6,7 +6,7 @@ use App\Mail\UserUpdate;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources;
-
+use App\Models\Scholar;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -72,7 +72,10 @@ class UserController extends Controller
     public function update(Request $request, User $user, $id)
     {
         $user = User::find($id);
-        $user->update($request->all());
+        $user->update($request->only([
+            'first_name', 'middle_name', 'last_name', 'user_mobile_num',
+            'email_address', 'password', 'role_id', 'user_status',
+        ]));
 
         if($user) {
             try{
@@ -127,10 +130,13 @@ class UserController extends Controller
 
     public function getScholars()
     {
-        // Fetch users with role_id of 3 or scholars
-        $scholars = User::where('role_id', 3)->orWhereHas('scholar')->get();
-        
-        return response()->json(new UserCollection($scholars), Response::HTTP_OK);
+        $scholars = User::where('role_id', 3)
+        ->whereHas('scholar', function ($query) {
+            $query->whereNull('deleted_at');
+        })
+        ->get();
+
+    return new UserCollection($scholars);
     }
 
     public function updateOtherScholarProfile(Request $request, $id)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProjectPartnerCollection;
 use App\Http\Resources\ProjectPartnerResource;
 use App\Models\ProjectPartner;
+use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -33,7 +34,17 @@ class ProjectPartnerController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+{
+    try {
+        // Check if school_id is 'other'
+        if ($request->has('school_id') && $request->input('school_id') === 'other') {
+            // Create a new school entry
+            $school = $this->storeSchool($request);
+            // Set the school_id of the project partner to the newly created school's ID
+            $request->merge(['school_id' => $school->id]);
+        }
+
+        // Create the project partner
         $projectPartner = ProjectPartner::create($request->only([
             'scholarship_categ_id',
             'project_partner_name',
@@ -41,8 +52,21 @@ class ProjectPartnerController extends Controller
             'school_id',
         ]));
 
+        // Return the created project partner as a resource
         return new ProjectPartnerResource($projectPartner);
+    } catch (\Exception $e) {
+        // Log the exception for further investigation
+        \Log::error('Error in store method: ' . $e->getMessage());
+
+        // Return an error response
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage(),
+            'method' => 'POST'
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
+
 
     /**
      * Display the specified resource.
@@ -57,9 +81,46 @@ class ProjectPartnerController extends Controller
      */
     public function update(Request $request, ProjectPartner $projectPartner, $id)
     {
-        $projectPartner = ProjectPartner::find($id);
-        $projectPartner->update($request->all());
-        return new ProjectPartnerResource($projectPartner);
+        try {
+            // Find the project partner by ID
+            $projectPartner = ProjectPartner::findOrFail($id);
+            
+            // Check if school_id is 'other'
+            if ($request->has('school_id') && $request->input('school_id') === 'other') {
+                // Create a new school entry
+                $school = $this->storeSchool($request);
+                // Set the school_id of the project partner to the newly created school's ID
+                $request->merge(['school_id' => $school->id]);
+            }
+            
+            // Update the project partner with the request data
+            $projectPartner->update($request->all());
+
+            // Return the updated project partner as a resource
+            return new ProjectPartnerResource($projectPartner);
+        } catch (\Exception $e) {
+            // Log the exception for further investigation
+            \Log::error('Error in update method: ' . $e->getMessage());
+
+            // Return an error response
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'method' => 'PUT'
+            ], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function storeSchool(Request $request)
+    {
+         // Create a new school entry
+        $school = School::create($request->only([
+            'school_name',
+            'school_type',
+            'school_address',
+        ]));
+
+        return $school;
     }
 
     /**

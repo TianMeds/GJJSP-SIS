@@ -22,6 +22,7 @@ const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const CONTACT_REGEX = /^\+?63\d{10}$/
 
 //Reseting Form Values 
@@ -39,11 +40,12 @@ const FormValues = {
 export default function User({state}) {
 
   const form  = useForm();
-  const { register, control, handleSubmit, formState, reset, validate} = form
+  const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
-    selectedUser, setSelectedUser, setAvatarInitial
+    selectedUser, setSelectedUser, setAvatarInitial, modalUsers, setModalUsers, handleOpenModalUsers, handleCloseModalUsers, deleteModal, setDeleteModal,
+    userIdToDelete, setUserIdToDelete
   } = useUserStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
@@ -72,6 +74,7 @@ export default function User({state}) {
       setLoadingMessage("Updating user")
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
+      handleCloseModalUsers();
       setEditUser(false)
       setSelectedUser(null);
       setLoading(false);
@@ -97,6 +100,7 @@ export default function User({state}) {
         setAlertMessage('User Added');
         setLoading(false)
         handleCloseUser(); // Call the hook after successful submission
+        handleCloseModalUsers();
     }
     const response = await axios.get('/api/users', {
       headers: {
@@ -183,65 +187,65 @@ export default function User({state}) {
     form.reset(selectedUser);
   }
 
-  // Delete Function Data
-  const deleteUser = async (event, id) => {
-    event.preventDefault();
-    setLoading(true);
-    setLoadingMessage("Deleting user")
-    setAlertOpen(true);
-    setAlertMessage('Deleting user...');
-    const authToken = useAuthStore.getState().getAuthToken();
-  
-    try {
-      await axios.delete(`/api/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      });
-  
-      const response = await axios.get('/api/users', {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      });
-  
-      if (response.status === 200) {
-        const filteredUsers = response.data.data.map(user => {
-          const { password, ...filteredUser } = user;
-          return filteredUser;
+  const handleOpenDeleteModal = (id, first_name, last_name) => {
+    setUserIdToDelete(id); // Set the ID of the user to delete
+    setSelectedUser({ first_name, last_name });
+    setDeleteModal(true); // Open the delete confirmation modal
+  };
+
+  const handleCloseDeleteModal = () => {
+    setUserIdToDelete(null); // Reset the stored user ID
+    setDeleteModal(false); // Close the delete confirmation modal
+  };
+
+  const deleteUser = async (event) => {
+    // Delete user logic
+    if (userIdToDelete) {
+      try {
+        const authToken = useAuthStore.getState().getAuthToken();
+        setLoading(true);
+        setLoadingMessage("Deleting user");
+        setAlertOpen(true);
+        setAlertMessage('Deleting user...');
+
+        await axios.delete(`/api/users/${userIdToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
         });
-  
-        setUsers(filteredUsers);
-      }
-      else {
-        setErrorOpen(true);
-        setErrorMessage('Failed to fetch data');
-      }
-  
-      setAlertOpen(true)
-      setAlertMessage('User Deleted');
-      setLoading(false);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        setErrorOpen(true);
-        setErrorMessage("You've been logged out");
-      } else if (error.response?.status === 404) {
-        setErrorOpen(true);
-        setErrorMessage('User not found');
-      } else if (error.response?.status === 403) {
-        setErrorOpen(true);
-        setErrorMessage('Unauthorized access');
-      } else if (error.response?.status === 500) {
-        setErrorOpen(true);
-        setErrorMessage('Server Error');
-      } else if (!error.response) {
-        setErrorOpen(true);
-        setErrorMessage('Network Error: Failed to reach the server');
-      } else {
-        setErrorOpen(true);
-        setErrorMessage('An unexpected error occurred');
+
+        const response = await axios.get('/api/users', {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+
+        if (response.status === 200) {
+          const filteredUsers = response.data.data.map(user => {
+            const { password, ...filteredUser } = user;
+            return filteredUser;
+          });
+
+          setUsers(filteredUsers);
+        } else {
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch data');
+        }
+
+        setAlertOpen(true);
+        setAlertMessage('User Deleted');
+        setLoading(false);
+      } catch (error) {
+        if (error.response.status === 401) {
+          setErrorOpen(true);
+          setErrorMessage("Session expired. Please login again.")
+          navigate('/login')
+        }
       }
     }
+
+    // Close the delete confirmation modal
+    handleCloseDeleteModal();
   };
 
   //View Profile Function
@@ -299,7 +303,7 @@ export default function User({state}) {
 
         <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflow: 'auto', width: '100%' }}>
 
-        <MUI.Container sx={{mt: 4, mb: 4,  display: 'flex', alignItems: 'center' }}>
+        <MUI.Container sx={{mt: 4, mb: 4,  display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Search>
             <SearchIconWrapperV2>
               <MUI.SearchIcon />
@@ -311,25 +315,30 @@ export default function User({state}) {
               onChange={handleSearch} 
             />
           </Search>
-                          
-          <MUI.IconButton aria-label="filter">
-            <MUI.FilterListIcon />
-          </MUI.IconButton>
 
-          <MUI.FormControl>
+          <MUI.FormControl sx={{ minWidth: 120 }}>
             <MUI.Select
               value={filteredRole}
               onChange={(e) => setFilteredRole(e.target.value)} 
-              native
-              sx={{width: '100px', border: '1px solid rgba(0,0,0,0.2)',
-              boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Filter' }}
+              startAdornment={
+                <MUI.InputAdornment position="start">
+                  <MUI.FilterListIcon
+                    viewBox="0 0 24 24"
+                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                  />
+                </MUI.InputAdornment>
+              }
+              sx={{ borderRadius: '12px' }}
             >
-              <option value="All">All</option>
-              <option value="Administrator">Scholarship Administrator</option>
-              <option value="Scholar Manager">Scholar Manager</option>
-              <option value="Scholar">Scholar</option>
+              <MUI.MenuItem value="All">All</MUI.MenuItem>
+              <MUI.MenuItem value="Administrator">Scholarship Administrator</MUI.MenuItem>
+              <MUI.MenuItem value="Scholar Manager">Scholar Manager</MUI.MenuItem>
+              <MUI.MenuItem value="Scholar">Scholar</MUI.MenuItem>
             </MUI.Select>
           </MUI.FormControl>
+
           </MUI.Container>
 
 
@@ -402,11 +411,10 @@ export default function User({state}) {
                         <MUI.IconButton
                           type='button'
                           color="inherit"
-                          onClick={(event) => deleteUser(event, user.id)}
+                          onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
                           sx={{ textTransform: 'capitalize' }}
                         >
                           <MUI.DeleteIcon />
-
                         </MUI.IconButton>
 
                       </MUI.TableCell>
@@ -570,7 +578,7 @@ export default function User({state}) {
                         <MUI.InputAdornment position="end">
                           <MUI.IconButton onClick={handleTogglePassword} edge="end">
                             {showPassword ? 
-                            <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
+                              <MUI.VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : <MUI.VisibilityOffIcon sx={{ fontSize: '1.2rem' }}  />
                             }
                           </MUI.IconButton>
                         </MUI.InputAdornment>
@@ -580,6 +588,10 @@ export default function User({state}) {
                       required: {
                         value: true,
                         message: 'Password is required',
+                      },
+                      pattern: {
+                        value: PWD_REGEX,
+                        message: 'Password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character',
                       }
                     })}
                   />
@@ -621,7 +633,7 @@ export default function User({state}) {
                   )} 
                 </MUI.Grid>
 
-                <MUI.Grid id="userStatusGrid">
+                <MUI.Grid id="userStatusGrid" style={{ display: editUser ? 'block' : (watch('user_status') === '' ? 'block' : (watch('user_status') === 'Active' ? 'block' : 'none')) }}>
                   <MUI.InputLabel htmlFor="user_status" id='userStatusLabel'>Status</MUI.InputLabel>
                   <Controller
                     name="user_status"
@@ -641,8 +653,8 @@ export default function User({state}) {
                         >
                           <option value="" disabled>Select Status</option>
                           <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                          <option value="Revoked">Revoked</option>
+                          {editUser && <option value="Inactive">Inactive</option>}
+                          {editUser && <option value="Revoked">Revoked</option>}
                         </MUI.Select>
                       </MUI.FormControl>
                     )}
@@ -661,9 +673,9 @@ export default function User({state}) {
                 </MUI.Button>
                   <MUI.Button
                     color="primary" 
-                    type='submit' 
                     variant='contained'
                     id='addUserBtn'
+                    onClick={handleOpenModalUsers}
                     >
                     {editUser ? 'Save Changes' : 'Add user'}
                   </MUI.Button>
@@ -673,6 +685,63 @@ export default function User({state}) {
           <DevTool control={control} />
 
 
+          {/* Modal for Add and Update Users */}
+          <MUI.Dialog open={modalUsers} onClose={handleCloseModalUsers}>
+            <MUI.DialogTitle id="dialogTitle" mt={2}>{editUser ? 'Heads Up!' : 'New Scholar Alert'}</MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                {editUser ? "You're about to make some changes to a user's information. Everything look good?" : 'Ready to welcome a new user? Make sure all the details are correct'}
+              </MUI.Typography>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseModalUsers} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button  
+              onClick={handleSubmit(onSubmit)} 
+              type='submit' 
+              color="primary" 
+              variant="contained" 
+              sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}
+              >
+                {editUser ? 'Confirm' : 'Yes, Add User'}
+              </MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          {/* Modal for Delete Users */}
+          <MUI.Dialog open={deleteModal} onClose={handleCloseDeleteModal}>
+            <MUI.DialogTitle id="dialogTitle" mt={2}>
+              <MUI.WarningIcon sx={{color: '#CA3521', fontSize: '1.2rem'}}/> Deleting {selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}</MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                Heads up! This will permanently delete's <b>{selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}  </b> account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseDeleteModal} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button 
+                onClick={deleteUser} 
+                color="primary" 
+                variant="contained"
+                sx={{
+                  backgroundColor: '#CA3521', 
+                  borderRadius: '5px', 
+                  mb: 2, 
+                  mt: 2,
+                  '&:hover': {
+                    backgroundColor: '#CA3521', // Override hover color to stay red
+                  }
+                }}
+              >
+                Yes, Delete User
+              </MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          {/* Snackbar for Success */}
           <MUI.Snackbar
             open={alertOpen}
             autoHideDuration={5000}
@@ -684,6 +753,7 @@ export default function User({state}) {
             </MUI.MuiAlert>
           </MUI.Snackbar>
 
+          {/* Snackbar for Error */}
           <MUI.Snackbar
             open={errorOpen}
             autoHideDuration={5000}

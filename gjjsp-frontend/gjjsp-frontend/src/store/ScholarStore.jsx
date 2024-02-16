@@ -43,36 +43,22 @@ const useScholarStore = create((set) => ({
     school: [],
     setSchool: (school) => set({school}),
 
-    addScholar: (scholarName, scholarEmailAddress, scholarCategory, scholarStatus) =>
-    set((store) => ({
-      scholars: [
-        ...store.scholars,
-        { id: uuidv4(), scholarName, scholarEmailAddress, scholarCategory, scholarStatus },
-      ],
-      scholarsWithIndex: [
-        ...store.scholarsWithIndex,
-        { scholarName, scholarEmailAddress, scholarCategory, scholarStatus, originalIndex: store.scholars.length },
-      ],
-  })),
-
-    updateScholar: (scholarId, scholarName, scholarEmailAddress, scholarCategory, scholarStatus ) => 
-    set((store) => ({
-        scholars: store.scholars.map((scholar) => 
-        scholar.id === scholarId
-        ? { ...scholar, scholarName, scholarEmailAddress, scholarCategory, scholarStatus }
-        : scholar
-        ),
-    })),
-
-    deleteScholar: (scholarId) => 
-        set((store) => ({
-        scholars: store.scholars.filter((scholar) => scholar.id !== scholarId),
-        scholarsWithIndex: store.scholarsWithIndex.filter((scholar) => scholar.id !== scholarId),
-    })),
-
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
+
+    modalScholars: false,
+    setModalScholars: (modalScholars) => set({ modalScholars }),
+    handleOpenModalScholars: () => set({modalScholars: true}),
+    handleCloseModalScholars: () => set({modalScholars: false}),
+
+    deleteModal: false,
+    setDeleteModal: (deleteModal) => set({ deleteModal }),
+    handleOpenDeleteModal: () => set({deleteModal: true}),
+    handleCloseDeleteModal: () => set({deleteModal: false}),
+
+    scholarIdToDelete: null,
+    setScholarIdToDelete: (scholarIdToDelete) => set({ scholarIdToDelete }),
 
 }));
 
