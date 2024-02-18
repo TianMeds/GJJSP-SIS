@@ -8,6 +8,8 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\User;
+use App\Models\ProjectPartner;
 
 class ProjectPartnerDeleted extends Mailable
 {
@@ -16,9 +18,16 @@ class ProjectPartnerDeleted extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+
+    public $user;
+    public $deletedName; // Declare $deletedName variable
+    public $projectPartner;
+
+    public function __construct(User $user, $deletedName, ProjectPartner $projectPartner)
     {
-        //
+        $this->user = $user;
+        $this->deletedName = $deletedName;
+        $this->projectPartner = $projectPartner;
     }
 
     /**
@@ -37,8 +46,15 @@ class ProjectPartnerDeleted extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'mail.deletePartner',
         );
+    }
+
+    public function build()
+    {
+        return $this->subject('Project Partner Deleted')
+                    ->view('mail.deletePartner')
+                    ->with('deletedName', $this->deletedName);
     }
 
     /**

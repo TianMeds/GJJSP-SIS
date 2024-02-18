@@ -163,12 +163,28 @@ class ProjectPartnerController extends Controller
      */
     public function destroy(ProjectPartner $projectPartner, $id)
     {
+        $projectPartner = ProjectPartner::find($id);
+
+        $deletedName = $projectPartner->project_partner_name;
+
         $deleted = ProjectPartner::destroy($id);
         
         if($deleted === 0) {
             return response()->json(['message' => 'Project Partner not found'], 404);
         } elseif ($deleted === null) {
            return response()->json(['message' => 'Error deleting project partner'], 500);
+        }
+
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        try {
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new ProjectPartnerDeleted($user, $deletedName, $projectPartner));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' =>  $e->getMessage()], 500);
         }
 
         return response()->json(['message' => 'Project Partner deleted'], 200);
