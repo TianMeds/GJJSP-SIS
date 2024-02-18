@@ -48,7 +48,23 @@ const useDashboardStore = create((set) => ({
     term3Data: [],
     setTerm3Data: (term3Data) => set({term3Data}),
 
-    
+    scholarProfiles: [],
+    setScholarProfiles: (scholarProfiles) => set({scholarProfiles}),
+
+    schoolsData: [],
+    setSchoolsData: (schoolsData) => set({schoolsData}),
+
+    undergraduateData: [],
+    setUndergraduateData: (undergraduateData) => set({undergraduateData}),
+
+    renewalData: [],
+    setRenewalData: (renewalData) => set({renewalData}),
+
+    graduatingData: [],
+    setGraduatingData: (graduatingData) => set({graduatingData}),
+
+    alumniData: [],
+    setAlumniData: (alumniData) => set({alumniData}),
 
 }))
 

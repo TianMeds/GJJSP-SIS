@@ -66,6 +66,7 @@ export default function ScholarProfile() {
     scholarFamMembers,setScholarFamMembers, selectedScholarFamMember,setSelectedScholarFamMember, editScholarFamMembers, setEditScholarFamMembers,
     highschoolAcadDetails, setHighschoolAcadDetails, undergradAcadDetails, setUndergradAcadDetails, selectedHighschoolAcadDetail, setSelectedHighschoolAcadDetail,
     selectedUndergradAcadDetail, setSelectedUndergradAcadDetail, editHighschoolAcadDetails, setEditHighschoolAcadDetails, editUndergradAcadDetails, setEditUndergradAcadDetails,
+    scholarPhoto, setScholarPhoto,
   } = useScholarProfileStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
@@ -75,6 +76,13 @@ export default function ScholarProfile() {
   const [activeStep, setActiveStep] = useState(0);
   const currentStep = activeStep;
   const relevantStep = 1;
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setScholarPhoto(file);
+  };
+  
+
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -117,6 +125,7 @@ export default function ScholarProfile() {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
 };
+
 
   //Submit Form Scholar Data
   const onSubmitScholarProfileForm = async (data, event) => {
@@ -1158,6 +1167,27 @@ useEffect(() => {
                 </p>
             )}
           </MUI.Grid>
+          <MUI.Grid id="photoGrid" container alignItems="center">
+            <MUI.InputLabel htmlFor="scholar_photo_filepath" id="photoLabel">Photo</MUI.InputLabel>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <MUI.Paper elevation={1} sx={{ padding: '10px', width: '100%', height: '55px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr: 2 }}>
+                <MUI.Typography sx={{ color: '#777777' }}>{scholarPhoto ? scholarPhoto.name : 'Browse File'}</MUI.Typography>
+              </MUI.Paper>
+
+              <label htmlFor="scholar_photo_filepath" sx={{ cursor: 'pointer', margin: 0 }}>
+                <MUI.Button variant="contained" component="div" sx={{ height: '55px', backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer', padding: '10px', width: '100px' }}>
+                  <MUI.AddIcon /> Add File
+                </MUI.Button>
+                <input
+                  type="file"
+                  id="scholar_photo_filepath"
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+          </MUI.Grid>
+                            
 
 
 

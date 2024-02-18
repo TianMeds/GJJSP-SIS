@@ -28,6 +28,10 @@ const useScholarProfileStore = create((set) => ({
     handleOpenScholarProfile: () => set({scholarProfile: true}),
     handleCloseScholarProfile: () => set({scholarProfile: false}),
 
+    
+    scholarPhoto: null,
+    setScholarPhoto: (scholarPhoto) => set({ scholarPhoto }),
+
 
     editScholarProfile: false,
     setEditScholarProfile: (newEditScholarProfile) => set({editScholarProfile: newEditScholarProfile}),

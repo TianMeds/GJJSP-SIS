@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ScholarshipCategCollection;
 use App\Http\Resources\ScholarshipCategResource;
+use App\Models\User;
 use App\Models\ScholarshipCateg;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CategoryAdded;
+use App\Mail\CategoryUpdated;
+use App\Mail\CategoryDeleted;
 
 class ScholarshipCategController extends Controller
 {
@@ -40,10 +45,22 @@ class ScholarshipCategController extends Controller
             'benefactor',
             'scholarship_categ_status',
         ]));
-        
+    
+        // Retrieve users with roles 1 and 2
+        $users = User::whereIn('role_id', [1, 2])->get();
+    
+        try {
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new CategoryAdded($user, $scholarshipCateg));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' =>  $e->getMessage()], 500);
+        }
+    
         return new ScholarshipCategResource($scholarshipCateg);
     }
-
     /**
      * Display the specified resource.
      */
@@ -58,7 +75,24 @@ class ScholarshipCategController extends Controller
     public function update(Request $request, ScholarshipCateg $scholarshipCateg, $id)
     {
         $scholarshipCateg = ScholarshipCateg::find($id);
+
+        $previousName = $scholarshipCateg->scholarship_categ_name;
+
         $scholarshipCateg->update($request->all());
+        
+         // Retrieve users with roles 1 and 2
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        try {
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new CategoryUpdated($user, $previousName, $scholarshipCateg));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+        
         return new ScholarshipCategResource($scholarshipCateg);
     }
 
@@ -67,15 +101,31 @@ class ScholarshipCategController extends Controller
      */
     public function destroy(ScholarshipCateg $scholarshipCateg, $id)
     {
+        $scholarshipCateg = ScholarshipCateg::find($id);
+
+        $deletedName = $scholarshipCateg->scholarship_categ_name;
+        
         $deleted = ScholarshipCateg::destroy($id);
 
         if ($deleted === 0) {
-            return response()->json(['message' => 'User not found or already deleted'], 404);
+            return response()->json(['message' => 'Category not found or already deleted'], 404);
         } elseif ($deleted === null) {
-            return response()->json(['message' => 'Error deleting user'], 500);
+            return response()->json(['message' => 'Error deleting category'], 500);
+        }
+
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        try {
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new CategoryDeleted($user, $deletedName, $scholarshipCateg));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' =>  $e->getMessage()], 500);
         }
     
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return response()->json(['message' => 'Category deleted successfully'], 200);
     }
 
 

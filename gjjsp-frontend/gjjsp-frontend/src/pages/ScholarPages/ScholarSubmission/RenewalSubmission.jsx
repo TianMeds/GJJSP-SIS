@@ -36,28 +36,43 @@ export default function RenewalSubmission() {
   const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
   const {setLoading, setLoadingMessage} = useLoginStore();
 
+  const [error, setError] = useState(null);
+
   //React Hook form 
   const form  = useForm();
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
   const handleFileChange = (event, fileType) => {
-    const file = event.target.files[0];
-    
+    const files = event.target.files;
+    const allowedTypes = ['application/pdf']; // Allowed file types
+  
+    if (!files || files.length === 0) {
+      console.log('Required file');
+      return; // Stop execution if no file is selected
+    }
+  
+    const file = files[0];
+  
+    if (!allowedTypes.includes(file.type)) {
+      console.log('Invalid file type')
+      return; // Stop execution if file type is invalid
+    }
+  
+    setError(null); // Clear error if file type is valid
+  
     if (fileType === 'copyOfReportCard') {
       setCopyOfReportCard(file);
+      console.log(file)
     } else if (fileType === 'copyOfRegistrationForm') {
       setCopyOfRegistrationForm(file);
-    }
-    else if (fileType === 'scannedWrittenEssay') {
+    } else if (fileType === 'scannedWrittenEssay') {
       setScannedWrittenEssay(file);
       console.log(file);
-    }
-    else if (fileType === 'letterOfGratitude') {
+    } else if (fileType === 'letterOfGratitude') {
       setLetterOfGratitude(file);
     }
-  };
-
+  }
   const onSubmitRenewalForm = async (data, event) => {
     event.preventDefault();
     setLoading(true);
@@ -100,6 +115,27 @@ export default function RenewalSubmission() {
     }
   };
 
+  const getCurrentSchoolYear = () => {
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    return `${currentYear}-${nextYear}`;
+  };
+
+  const currentSchoolYear = getCurrentSchoolYear();
+
+  const [schoolYear, setSchoolYear] = useState('');
+  const [term, setTerm] = useState('');
+
+  const handleSchoolYearChange = (event) => {
+    setSchoolYear(event.target.value);
+    // Additional logic to update form fields based on the selected school year
+  };
+
+  const handleTermChange = (event) => {
+    setTerm(event.target.value);
+    // Additional logic to update form fields based on the selected term
+  };
+
 
   return (
     <Layout>
@@ -120,26 +156,38 @@ export default function RenewalSubmission() {
                  
                   <MUI.Grid id="schoolYearGrid">
                     <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
-                      <Controller
-                        name="school_yr_submitted"
-                        id='school_yr_submitted'
-                        control={control}
-                        defaultValue=""
-                        render={({ field }) => (
-                          <MUI.Select
-                            native
-                            {...field}
-                            sx={{border: '1px solid rgba(0,0,0,0.2)',
-                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                          >
-                            <option value="">Select SY</option>
-                            <option value="2023-2024">SY 2023-2024</option>
-                            <option value="2022-2023">SY 2022-2023</option>
-                            <option value="2021-2022">SY 2021-2022</option>
-                            
-                          </MUI.Select>
-                        )}
-                      />
+                    <Controller
+                      name="school_yr_submitted"
+                      id="school_yr_submitted"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <MUI.Select
+                          native
+                          {...field}
+                          value={schoolYear}
+                          onChange={handleSchoolYearChange}
+                          sx={{
+                            border: '1px solid rgba(0,0,0,0.2)',
+                            boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
+                            borderRadius: '15px',
+                            height: '50px'
+                          }}
+                        >
+                          <option value="">Select SY</option>
+                          {[...Array(16).keys()].map((_, index) => {
+                            const currentYear = new Date().getFullYear() - index - 1;
+                            if (currentYear < 2008) return null; // Skip years before 2008
+                            const nextYear = currentYear + 1;
+                            return (
+                              <option key={`${currentYear}-${nextYear}`} value={`${currentYear}-${nextYear}`}>
+                                {`SY ${currentYear}-${nextYear}`}
+                              </option>
+                            );
+                          })}
+                        </MUI.Select>
+                      )}
+                    />
                   </MUI.Grid>
 
                   <MUI.Grid id="termGrid">
@@ -281,17 +329,32 @@ export default function RenewalSubmission() {
                               <MUI.Typography sx={{ color: '#777777' }}>{copyOfReportCard ? copyOfReportCard.name : 'Browse File'}</MUI.Typography>
                             </MUI.Paper>
 
-                            <label htmlFor="copyOfReportCard" sx={{ cursor: 'pointer' }}>
+                            <MUI.InputLabel htmlFor="copyOfReportCard" sx={{ cursor: 'pointer' }}>
                               <MUI.Button variant="contained" component="div" sx={{ backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer',padding: '10px', width: '100px' }}>
                                 <MUI.AddIcon/> Add File
                               </MUI.Button>
-                              <input
+                              <MUI.Input
                                 type="file"
                                 id="copyOfReportCard"
                                 style={{ display: 'none' }}
-                                onChange={(event) => handleFileChange(event, 'copyOfReportCard')}
+                                onChange={(event) => {
+                                  if (event.target.files && event.target.files.length > 0) {
+                                    handleFileChange(event, 'copyOfReportCard');
+                                  }
+                                }}
+                               
                               />
-                            </label>
+                            </MUI.InputLabel>
+
+                            {errors.copyOfReportCard && (
+                              <p id='errMsg'>
+                                  <MUI.InfoIcon className='infoErr' />
+                                  {errors.copyOfReportCard?.message}
+                              </p>
+                            )
+                            }
+
+                             
                           </MUI.Grid>
 
                         </MUI.TableCell>
@@ -399,11 +462,6 @@ export default function RenewalSubmission() {
                   
                   Submit
                 </MUI.Button>
-
-
-                  <MUI.Button variant='text' sx={{color: '#091E42', ml: { xs: 2, sm: 2 }, mb: { xs: 1, sm: 0 } }}>
-                    Save for now
-                  </MUI.Button>
 
                 </MUI.Box>
               </MUI.Grid>

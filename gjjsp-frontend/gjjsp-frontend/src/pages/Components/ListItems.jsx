@@ -121,17 +121,7 @@ export const SP_ListItems = (
     <CustomListItem to="/scholar-dashboard" icon={<MUI.DashboardIcon />} secondary="Dashboard" />
     <DropdownMenu2/>
   
-  {/* -------------------- Quick Actions Drawer Option --------------------*/}
-  <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-    Quick Action
-  </MUI.ListSubheader>
-      <CustomListItem to='/ask' 
-        icon={<MUI.Box component='img' 
-        sx={{height: 40, width: 60, marginLeft: '-20px'}} 
-        alt="The house from the offer."
-        src="https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/AI%20LOGO.png" /> } 
-        secondary="Generate Report"  
-      />
+
 </React.Fragment>
 );
 

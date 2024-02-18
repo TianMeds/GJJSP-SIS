@@ -148,6 +148,15 @@ function App() {
           </Suspense>
           }
         />
+
+        <Route 
+          path="ask" 
+          element={
+          <Suspense fallback="Scholarlink Loading...">
+            <LazyAsk/>
+          </Suspense>
+          }
+        />
       
         <Route 
           path="notification" 
@@ -279,15 +288,6 @@ function App() {
           element={
           <Suspense fallback="Scholarlink Loading...">
             <LazyCreate/>
-          </Suspense>
-          }
-        />
-
-        <Route 
-          path="ask" 
-          element={
-          <Suspense fallback="Scholarlink Loading...">
-            <LazyAsk/>
           </Suspense>
           }
         />

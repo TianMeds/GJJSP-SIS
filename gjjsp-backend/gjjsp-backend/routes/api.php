@@ -130,6 +130,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'update']);
     Route::get('renewal-document' , [RenewalDocumentController::class, 'scholarSubmission']);
     Route::get('total-renewal' , [RenewalDocumentController::class, 'totalRenewalDocuments']);
+    Route::get('/scholar-renewal-documents', [RenewalDocumentController::class, 'scholarRenewalDocuments']);
 
     Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);

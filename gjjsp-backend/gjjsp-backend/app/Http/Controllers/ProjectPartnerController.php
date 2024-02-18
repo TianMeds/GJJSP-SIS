@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ProjectPartnerCollection;
 use App\Http\Resources\ProjectPartnerResource;
+use App\Models\User;
 use App\Models\ProjectPartner;
 use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ProjectPartnerAdded;
+use App\Mail\ProjectPartnerUpdated;
+use App\Mail\ProjectPartnerDeleted;
 
 class ProjectPartnerController extends Controller
 {

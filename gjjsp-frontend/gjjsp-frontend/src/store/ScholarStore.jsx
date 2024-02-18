@@ -60,6 +60,7 @@ const useScholarStore = create((set) => ({
     scholarIdToDelete: null,
     setScholarIdToDelete: (scholarIdToDelete) => set({ scholarIdToDelete }),
 
+
 }));
 
 export default useScholarStore;
