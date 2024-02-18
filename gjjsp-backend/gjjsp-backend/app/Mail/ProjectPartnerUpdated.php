@@ -8,6 +8,8 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\User;
+use App\Models\ProjectPartner;
 
 class ProjectPartnerUpdated extends Mailable
 {
@@ -16,9 +18,16 @@ class ProjectPartnerUpdated extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+
+    public $user;
+    public $previousName; // Declare $previousName variable
+    public $projectPartner;
+
+    public function __construct(User $user, $previousName, ProjectPartner $projectPartner)
     {
-        //
+        $this->user = $user;
+        $this->previousName = $previousName;
+        $this->projectPartner = $projectPartner;
     }
 
     /**
@@ -37,8 +46,15 @@ class ProjectPartnerUpdated extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'mail.updatePartner',
         );
+    }
+
+    public function build()
+    {
+        return $this->subject('Project Partner Updated')
+                    ->view('mail.updatePartner')
+                    ->with('previousName', $this->previousName);
     }
 
     /**

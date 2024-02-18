@@ -100,9 +100,12 @@ class ProjectPartnerController extends Controller
      */
     public function update(Request $request, ProjectPartner $projectPartner, $id)
     {
+
         try {
             // Find the project partner by ID
             $projectPartner = ProjectPartner::findOrFail($id);
+
+            $previousName = $projectPartner->project_partner_name;
             
             // Check if school_id is 'other'
             if ($request->has('school_id') && $request->input('school_id') === 'other') {
@@ -114,6 +117,19 @@ class ProjectPartnerController extends Controller
             
             // Update the project partner with the request data
             $projectPartner->update($request->all());
+
+             // Retrieve users with roles 1 and 2
+            $users = User::whereIn('role_id', [1, 2])->get();
+
+            try {
+                // Send email to each user
+                foreach ($users as $user) {
+                    Mail::to($user->email_address)->send(new ProjectPartnerUpdated($user, $previousName, $projectPartner));
+                }
+            } catch (\Exception $e) {
+                // Log or handle the error
+                return response()->json(['error' =>  $e->getMessage()], 500);
+            }
 
             // Return the updated project partner as a resource
             return new ProjectPartnerResource($projectPartner);
