@@ -39,38 +39,52 @@ class ProjectPartnerController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    try {
-        // Check if school_id is 'other'
-        if ($request->has('school_id') && $request->input('school_id') === 'other') {
-            // Create a new school entry
-            $school = $this->storeSchool($request);
-            // Set the school_id of the project partner to the newly created school's ID
-            $request->merge(['school_id' => $school->id]);
+    {
+        try {
+            // Check if school_id is 'other'
+            if ($request->has('school_id') && $request->input('school_id') === 'other') {
+                // Create a new school entry
+                $school = $this->storeSchool($request);
+                // Set the school_id of the project partner to the newly created school's ID
+                $request->merge(['school_id' => $school->id]);
+            }
+
+            // Create the project partner
+            $projectPartner = ProjectPartner::create($request->only([
+                'scholarship_categ_id',
+                'project_partner_name',
+                'project_partner_mobile_num',
+                'school_id',
+            ]));
+
+            // Retrieve users with roles 1 and 2
+            $users = User::whereIn('role_id', [1, 2])->get();
+
+            try {
+                // Send email to each user
+                foreach ($users as $user) {
+                    Mail::to($user->email_address)->send(new ProjectPartnerAdded($user, $projectPartner));
+                }
+            } catch (\Exception $e) {
+                // Log or handle the error
+                return response()->json(['error' =>  $e->getMessage()], 500);
+            }
+
+
+            // Return the created project partner as a resource
+            return new ProjectPartnerResource($projectPartner);
+        } catch (\Exception $e) {
+            // Log the exception for further investigation
+            \Log::error('Error in store method: ' . $e->getMessage());
+
+            // Return an error response
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'method' => 'POST'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        // Create the project partner
-        $projectPartner = ProjectPartner::create($request->only([
-            'scholarship_categ_id',
-            'project_partner_name',
-            'project_partner_mobile_num',
-            'school_id',
-        ]));
-
-        // Return the created project partner as a resource
-        return new ProjectPartnerResource($projectPartner);
-    } catch (\Exception $e) {
-        // Log the exception for further investigation
-        \Log::error('Error in store method: ' . $e->getMessage());
-
-        // Return an error response
-        return response()->json([
-            'status' => false,
-            'message' => $e->getMessage(),
-            'method' => 'POST'
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
 
 
     /**
