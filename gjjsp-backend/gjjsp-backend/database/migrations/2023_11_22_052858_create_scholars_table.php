@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('scholars', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->integer('scholarship_type_id');
+            $table->integer('scholarship_categ_id');
             $table->integer('project_partner_id');
             $table->string('scholar_photo_filepath');
             $table->enum('gender', ['Male', 'Female']);
