@@ -79,7 +79,7 @@ class ScholarController extends Controller
                 'id' => $scholar->renewal_document_id,
                 'submission_status' => $scholar->submission_status,
             ]
-            
+
         ]);
 
         return $scholarResource;
@@ -106,17 +106,17 @@ class ScholarController extends Controller
     {
         try {
             $scholar = Scholar::where('user_id', $user_id)->first();
-    
+
             if (!$scholar) {
                 return response()->json(['message' => 'Scholar not found or already deleted'], 404);
             }
-    
+
             $scholar->delete();
-    
+
             return response()->json(['message' => 'Scholar deleted successfully'], 200);
         } catch (\Exception $e) {
             \Log::error('Error in destroy method: ' . $e->getMessage());
-    
+
             return response()->json([
                 'status' => false,
                 'message' => 'Error deleting scholar',
@@ -124,7 +124,7 @@ class ScholarController extends Controller
             ], 500);
         }
     }
-    
+
     public function restoreScholar($id)
     {
         $scholar = Scholar::onlyTrashed()->findOrFail($id);
@@ -164,12 +164,12 @@ class ScholarController extends Controller
         try {
             // Retrieve the authenticated user's ID
             $userId = Auth::id();
-    
+
             // Find the scholar by ID and make sure it belongs to the authenticated user
             $scholar = Scholar::where('id', $id)
                 ->where('user_id', $userId)
                 ->firstOrFail();
-    
+
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem',
@@ -177,13 +177,13 @@ class ScholarController extends Controller
                 'home_visit_sched', 'fb_account', 'street', 'zip_code', 'region_name', 'province_name',
                 'cities_municipalities_name', 'barangay_name',
             ]));
-    
+
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
         } catch (\Exception $e) {
             // Log the exception for further investigation
             \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
-    
+
             return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
         }
     }
@@ -192,7 +192,7 @@ class ScholarController extends Controller
         try {
             // Find the scholar by ID
             $scholar = Scholar::where('user_id', $user_id)->firstOrFail();
-            
+
             // Check if school_id is 'other'
             if ($request->has('school_id') && $request->input('school_id') === 'other') {
                 // Create a new school entry
@@ -200,24 +200,24 @@ class ScholarController extends Controller
                 // Set the school_id of the scholar to the newly created school's ID
                 $request->merge(['school_id' => $school->id]);
             }
-            
+
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'scholarship_categ_id', 'project_partner_id', 'scholar_status_id', 'school_id',
             ]));
-    
+
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
         } catch (\Exception $e) {
             // Log the exception for further investigation
             \Log::error('Error in updateOtherScholarProfile: ' . $e->getMessage());
-    
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
                 'method' => 'PUT'
             ], Response::HTTP_NOT_FOUND);
-        } 
+        }
     }
 
     public function storeSchool(Request $request)
