@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
@@ -17,13 +17,6 @@ import usePartnerStore from '../../store/PartnerStore';
 
 //Debugger
 import { DevTool } from "@hookform/devtools";
-
-const projectPartners = [
-  '1',
-  '2',
-  '3',
-  '4',
-]
 
 const FormValues ={
   scholarship_categ_name: '',
@@ -45,7 +38,7 @@ export default function Scholarship({state}) {
 
   const {setLoading, setLoadingMessage} = useLoginStore();
 
-  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId, modalCateg, handleOpenModalCateg, handleCloseModalCateg, setModalCateg, deleteModal, setDeleteModal, projectIdToDelete, setProjectIdToDelete,  } = useScholarshipStore();
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId, modalCateg, handleOpenModalCateg, handleCloseModalCateg, setModalCateg, deleteModal, setDeleteModal, projectIdToDelete, setProjectIdToDelete, projectIdToRestore, setProjectIdToRestore, restoreModal, setRestoreModal  } = useScholarshipStore();
 
   const {partners, partner, setPartners, selectedProjectPartner, setSelectedProjectPartner, selectedProjectPartnerId, setSelectedProjectPartnerId} = usePartnerStore();
 
@@ -77,12 +70,7 @@ export default function Scholarship({state}) {
     }
     fetchProjectPartners();
   },[]);
-
-  const handleProjectChange = (event) => {
-    const selectedId = event.target.value;
-    setSelectedProjectPartnerId(selectedId);
-  };
-
+-
   
   //GET CATEGORIES DATA 
   useEffect(() => {
@@ -172,6 +160,7 @@ export default function Scholarship({state}) {
         handleCloseScholarship();
         handleCloseModalCateg();
       }
+
       const response = await axios.get('/api/scholarships', {
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -187,6 +176,7 @@ export default function Scholarship({state}) {
         setAlertMessage("Failed to fetch scholarship category data");
       }
       form.reset(FormValues);
+      setLoading(false);
     }
     catch(error){
       if(error.response?.status === 422){
@@ -206,8 +196,10 @@ export default function Scholarship({state}) {
         setErrorOpen(true);
         setErrorMessage("Something went wrong");
       }
+      setLoading(false);
     }
   };
+
 
   //Update Scholarship categories data
   const updateCategories = (projectId) => {
@@ -218,6 +210,75 @@ export default function Scholarship({state}) {
     handleOpenScholarship();
     form.reset(selectedCategories);
   }
+
+  const handleOpenRestoreModal = (projectId) => {
+    setProjectIdToRestore(projectId); // Set the projectIdToRestore state
+    setRestoreModal(true); // Open the restore modal
+  };
+
+  const handleCloseRestoreModal = () => {
+    setProjectIdToRestore(null); // Reset the projectIdToRestore state
+    setRestoreModal(false); // Close the restore modal
+  };
+
+  const restoreCategories = async (projectId) => {
+    setLoading(true);
+    setLoadingMessage('Restoring category')
+    setAlertOpen(true);
+    setAlertMessage('Restoring category...');
+    try {
+      const authToken = getAuthToken();
+      const restoreResponse = await axios.get(`/api/restoreScholarships/${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      if (restoreResponse.status === 200) {
+        setAlertMessage('Category restored');
+        setAlertOpen(true);
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to restore category');
+      }
+
+      const response = await axios.get('/api/scholarships', {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setProjects(response.data.data);
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("You've been logged out");
+      } else if (error.response?.status === 404) {
+        setErrorOpen(true);
+        setErrorMessage('Category not found');
+      } else if (error.response?.status === 403) {
+        setErrorOpen(true);
+        setErrorMessage('Unauthorized access');
+      } else if (error.response?.status === 500) {
+        setErrorOpen(true);
+        setErrorMessage('Server Error');
+      } else if (!error.response) {
+        setErrorOpen(true);
+        setErrorMessage('Network Error: Failed to reach the server');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('An unexpected error occurred');
+      }
+      setLoading(false);
+    }
+  };
+
 
   //DELETE CATEGORIES DATA
   const deleteCategories = async (event, id) => {
@@ -252,7 +313,7 @@ export default function Scholarship({state}) {
       }
   
       setAlertOpen(true)
-      setAlertMessage('User Deleted');
+      setAlertMessage('Category Deleted');
       setLoading(false);
     } catch (error) {
       if (error.response?.status === 401) {
@@ -275,6 +336,7 @@ export default function Scholarship({state}) {
         setErrorMessage('An unexpected error occurred');
       }
     }
+    setLoading(false);
   };
 
   const handleCancelEdit = () => {
@@ -282,6 +344,8 @@ export default function Scholarship({state}) {
     setEditCategories(false);
     handleCloseScholarship();
   };
+
+
   
   return (
     <Layout>
@@ -352,46 +416,65 @@ export default function Scholarship({state}) {
               project.scholarship_categ_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               project.benefactor.toLowerCase().includes(searchQuery.toLowerCase())
             )
-           .map((project, index) => (
-            <MUI.Grid key={index} item xs={12} sm={6} md={4}>
-              <MUI.Card sx={{ maxWidth: 345, flex: '1 1 30%' }}>
-                <MUI.CardContent sx={{textAlign: 'center', alignItems: 'center' }}>
-                  
-                  <MUI.SchoolOutlinedIcon sx={{fontSize: 100, color: '#1e88e5'}}/>
-                  <MUI.Typography gutterBottom variant="h4" component="div" sx={{fontWeight: 'bold'}}>
-                    {project.scholarship_categ_name}
-                  </MUI.Typography>
+            .map((project, index) => (
+              <MUI.Grid key={index} item xs={12} sm={6} md={4}>
+                <MUI.Card sx={{ maxWidth: 345 }}>
+                  <MUI.CardContent sx={{ textAlign: 'center', alignItems: 'center' }}>
+                    <MUI.SchoolOutlinedIcon sx={{ fontSize: 100, color: '#1e88e5' }} />
+                    <MUI.Typography gutterBottom variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                      {project.scholarship_categ_name}
+                    </MUI.Typography>
+                    <MUI.Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '16px', margin: 2 }}>
+                      {project.benefactor}
+                    </MUI.Typography>
+                    <MUI.Typography variant="body2" color="text.secondary" sx={{ fontSize: '18px' }}>
+                      {project.scholarship_categ_status}
+                    </MUI.Typography>
 
-                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontStyle: 'italic', fontSize: '16px', margin: 2}}>
-                    {project.benefactor}
-                  </MUI.Typography>
-
-                  <MUI.Typography variant="body2" color="text.secondary" sx={{fontSize: '18px'}}>
-                    {project.scholarship_categ_status}
-                  </MUI.Typography>
-
-                
-                  <MUI.Button
-                  variant="contained"
-                  sx={{
-                    borderRadius: '10px', 
-                    borderColor: 'primary.main',
-                    textTransform: 'capitalize',  
-                    m: 3,
-                  }}
-                  onClick={() => updateCategories(project.id)}
-                >
-                  <MUI.Typography variant='h5'>
-                  See for Information
-                  </MUI.Typography>
-                </MUI.Button>
-
-
-                </MUI.CardContent>
-              </MUI.Card>
-            </MUI.Grid>
-            )
-          )}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                      <div style={{ marginRight: '10px', flexGrow: 1 }}>
+                        <MUI.Button
+                          variant="contained"
+                          sx={{
+                            borderRadius: '10px',
+                            borderColor: 'primary.main',
+                            textTransform: 'capitalize',
+                            width: '100%', // Set width to 100%
+                          }}
+                          onClick={() => updateCategories(project.id)}
+                        >
+                          <MUI.Typography variant='h5'>
+                            See for Information
+                          </MUI.Typography>
+                        </MUI.Button>
+                      </div>
+                      {project.deleted_at !== null && role_id === 1 && (
+                        <div style={{ flexGrow: 1 }}>
+                          <MUI.Button
+                            variant="contained"
+                            sx={{
+                              borderRadius: '10px',
+                              borderColor: 'primary.main',
+                              textTransform: 'capitalize',
+                              width: '100%', 
+                              backgroundColor: '#43a047',
+                              '&:hover': {
+                                backgroundColor: '#43a047', // Change color on hover
+                              },
+                            }}
+                            onClick={() => handleOpenRestoreModal(project.id)}
+                          >
+                            <MUI.Typography variant='h5'>
+                              Restore Category
+                            </MUI.Typography>
+                          </MUI.Button>
+                        </div>
+                      )}
+                    </div>
+                  </MUI.CardContent>
+                </MUI.Card>
+              </MUI.Grid>
+            ))}
         </MUI.Grid>
 
          {/* Add User Dialog */}
@@ -516,25 +599,30 @@ export default function Scholarship({state}) {
               </MUI.Grid>
 
               {editCategories && role_id === 1 && (
-                <MUI.Grid id="deleteGrid">
-                  <MUI.Typography id="deleteLabel" sx={{color: 'red'}}>Danger Zone</MUI.Typography>
-                  <MUI.Button
-                    variant="contained"
-                    color="error"
-                    sx={{
-                      borderRadius: '5px', 
-                      borderColor: 'primary.main',
-                      textTransform: 'capitalize',  
-                    }}
-                  >
-                    <MUI.Typography variant='h6' sx={{color: 'white'}} onClick={handleOpenDeleteModal}>
-                      Delete this category 
-                    </MUI.Typography>
-                  </MUI.Button>
-
-                  <MUI.Typography sx={{fontSize: '12px', mt: 2}}>This will permanently delete this category and may affect other data</MUI.Typography>
+                <MUI.Grid>
+                    <MUI.Typography id="deleteLabel" sx={{ color: 'red' }}>Danger Zone</MUI.Typography>
+                        <MUI.Grid id="deleteGrid">
+                            <MUI.Button
+                                variant="contained"
+                                color="error"
+                                sx={{
+                                    borderRadius: '5px',
+                                    borderColor: 'primary.main',
+                                    textTransform: 'capitalize',
+                                }}
+                                onClick={handleOpenDeleteModal}
+                            >
+                                <MUI.Typography variant='h6' sx={{ color: 'white' }}>
+                                    Delete Category
+                                </MUI.Typography>
+                            </MUI.Button>
+                            <MUI.Typography sx={{ fontSize: '12px', mt: 2 }}>
+                                This will permanently delete this category and may affect other data.
+                            </MUI.Typography>
+                        </MUI.Grid>
                 </MUI.Grid>
-              )}  
+              )}
+
             </MUI.DialogContent>
 
               <MUI.DialogActions>
@@ -558,6 +646,37 @@ export default function Scholarship({state}) {
                   </MUI.Button>
               </MUI.DialogActions>
 
+        </MUI.Dialog>
+
+        <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
+          <MUI.DialogTitle id="dialogTitle">Heads Up!</MUI.DialogTitle>
+          <MUI.DialogContent>
+            <MUI.Typography  variant='h5' ml={1} sx={{color: '#44546F'}}>
+              You're about to restore this scholarship category. Are you sure you want to proceed?
+            </MUI.Typography>
+          </MUI.DialogContent>
+          <MUI.DialogActions>
+            <MUI.Button onClick={handleCloseRestoreModal} color="primary">
+              Cancel
+            </MUI.Button>
+            <MUI.Button
+              onClick={() => {
+                // Call restoreCategories function passing projectIdToRestore
+                restoreCategories(projectIdToRestore); 
+                handleCloseRestoreModal(); // Close the modal
+              }}
+              color="primary"
+              variant='contained'
+              sx={{
+                backgroundColor: '#43a047',
+                  '&:hover': {
+                        backgroundColor: '#43a047', // Change color on hover
+                    },
+              }}
+            >
+              Yes, Restore Category
+            </MUI.Button>
+          </MUI.DialogActions>
         </MUI.Dialog>
         
 
@@ -591,25 +710,26 @@ export default function Scholarship({state}) {
         {/* Modal for Delete Users */}
 
         <MUI.Dialog open={deleteModal} onClose={handleCloseDeleteModal}>
-          <MUI.DialogTitle id="dialogTitle" mt={2}>
+          <MUI.DialogTitle id="dialogTitle" mt={2}  >
             <MUI.WarningIcon sx={{color: '#CA3521', fontSize: '1.2rem'}}/>  Delete Category
           </MUI.DialogTitle>
           
           <MUI.DialogContent>
-            <MUI.Typography  variant='h5' ml={1} sx={{color: '#44546F'}}>
+            <MUI.Typography  variant='h5' ml={1} sx={{color: '#CA3521'}}>
               Heads up! This will permanently delete's {selectedCategories?.scholarship_categ_name} category. Are you sure you want to proceed?
             </MUI.Typography>
           </MUI.DialogContent>
 
-          <MUI.DialogActions>
-            <MUI.Button onClick={handleCloseDeleteModal} color="primary">
+          <MUI.DialogActions >
+            <MUI.Button onClick={handleCloseDeleteModal} color="primary" sx={{mb: 2}}>
               Cancel
             </MUI.Button>
 
             <MUI.Button
             onClick={(event) => deleteCategories(event, currentProjectId)}
-            color="primary"
+            color="error"
             variant='contained'
+            sx={{mb: 2}}
             >
               Yes, Delete Category
             </MUI.Button>

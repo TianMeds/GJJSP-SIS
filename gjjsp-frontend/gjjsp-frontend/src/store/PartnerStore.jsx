@@ -47,6 +47,11 @@ const usePartnerStore = create((set) => ({
     handleOpenDeleteModalPartner: () => set({deleteModalPartner: true}),
     handleCloseDeleteModalPartner: () => set({deleteModalPartner: false}),
 
+    restoreModalPartner: false,
+    setRestoreModalPartner: (restoreModalPartner) => set({ restoreModalPartner }),
+    partnerIdToRestore: null,
+    setPartnerIdToRestore: (partnerIdToRestore) => set({ partnerIdToRestore }),
+
     partnerIdToDelete: null,
     setPartnerIdToDelete: (partnerIdToDelete) => set({ partnerIdToDelete }),
     

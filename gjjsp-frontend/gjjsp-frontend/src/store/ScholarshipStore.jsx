@@ -45,12 +45,23 @@ const useScholarshipStore = create((set) => ({
     handleOpenDeleteModal: () => set({deleteModal: true}),
     handleCloseDeleteModal: () => set({deleteModal: false}),
 
+    restoreModal: false,
+    setRestoreModal: (restoreModal) => set({ restoreModal }),
+    handleOpenRestoreModal: () => set({restoreModal: true}),
+    handleCloseRestoreModal: () => set({restoreModal: false}),
+
     projectIdToDelete: null,
     setProjectIdToDelete: (projectIdToDelete) => set({ projectIdToDelete }),
+
+    projectIdToRestore: null,
+    setProjectIdToRestore: (projectIdToRestore) => set({ projectIdToRestore }),
  
    /* Function for Opening Add Project Dialog */
     handleOpenScholarship: () => set({project: true}),
     handleCloseScholarship: () => set({project: false}),
+
+    isDeleted: false,
+    setIsDeleted: (newIsDeleted) => set({ isDeleted: newIsDeleted }),
    
 }))
 
