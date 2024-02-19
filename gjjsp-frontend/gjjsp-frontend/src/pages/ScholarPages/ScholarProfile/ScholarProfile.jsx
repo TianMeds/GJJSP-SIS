@@ -140,9 +140,24 @@ export default function ScholarProfile() {
     };
 
     const formattedData = {
-        ...data,
+        gender: data.gender,
+        religion: data.religion,
         birthdate: formatDate(data.birthdate),
-        home_visit_sched: formatDate(data.home_visit_sched),
+        birthplace: data.birthplace,
+        civil_status: data.civil_status,
+        num_fam_mem: data.num_fam_mem,
+        school_yr_started: data.school_yr_started,
+        school_yr_graduated: data.school_yr_graduated,
+        school_id: data.school_id,
+        program: data.program,
+        home_visit_sched: data.home_visit_sched,
+        fb_account: data.fb_account,
+        region_name: data.region_name,
+        province_name: data.province_name,
+        cities_municipalities_name: data.cities_municipalities_name,
+        barangay_name: data.barangay_name,
+        street: data.street,
+        zip_code: data.zip_code,
     };
 
     const scholarFamMemData = {
@@ -291,6 +306,7 @@ export default function ScholarProfile() {
           setErrorMessage("Complete all fields");
           setLoading(false);
         }
+      setLoading(false);
     }
 };
 

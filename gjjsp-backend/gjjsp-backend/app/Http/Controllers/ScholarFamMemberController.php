@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ScholarProfileUpdated;
 
 class ScholarFamMemberController extends Controller
 {
@@ -55,6 +57,9 @@ class ScholarFamMemberController extends Controller
                 $scholarFamMem = ScholarFamMember::where('scholar_id', $scholar->id)->first();
     
                 if ($scholarFamMem) {
+
+                    $originalFamMemberData = $scholarFamMem->toArray();
+
                     $scholarFamMem->update($request->only([
                         'father_name',
                         'mother_name',
@@ -64,6 +69,21 @@ class ScholarFamMemberController extends Controller
                         'income',
                         'fam_mem_mobile_num',
                     ]));
+
+                    $updatedScholarFamMem = [];
+                    foreach ($request->all() as $keyFamMem => $valueFamMem) {
+                        if ($originalFamMemberData[$keyFamMem] !== $valueFamMem) {
+                            $updatedScholarFamMem[$keyFamMem] = $valueFamMem;
+                        }
+                    }
+
+                    $users = User::whereIn('role_id', [1, 2])->get();
+
+                    // Send email notification to each user
+                    foreach ($users as $user) {
+                        Mail::to($user->email_address)->send(new ScholarProfileUpdated($user, $updatedScholarFamMem, $scholar));
+                    }
+
                     return new ScholarFamMemberResource($scholarFamMem);
                 } else {
                     return response()->json(['message' => 'Scholar Family Information not found'], Response::HTTP_NOT_FOUND);

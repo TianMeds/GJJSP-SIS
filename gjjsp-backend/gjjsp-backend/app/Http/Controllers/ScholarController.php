@@ -12,6 +12,11 @@ use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ScholarUpdated;
+use App\Mail\ScholarDeleted;
+use App\Mail\ScholarProfileUpdated;
+use App\Mail\ScholarProfileDeleted;
 
 class ScholarController extends Controller
 {
@@ -96,6 +101,14 @@ class ScholarController extends Controller
             'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
             'fb_account',
         ]));
+
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        // Send email notification to each user
+        foreach ($users as $user) {
+            Mail::to($user->email_address)->send(new ScholarUpdated($user, $scholar));
+        }
+
         return new ScholarResource($scholar);
     }
 
@@ -169,6 +182,8 @@ class ScholarController extends Controller
             $scholar = Scholar::where('id', $id)
                 ->where('user_id', $userId)
                 ->firstOrFail();
+
+            $originalScholarData = $scholar->toArray();
     
             // Update the scholar with the request data
             $scholar->update($request->only([
@@ -177,6 +192,20 @@ class ScholarController extends Controller
                 'home_visit_sched', 'fb_account', 'street', 'zip_code', 'region_name', 'province_name',
                 'cities_municipalities_name', 'barangay_name',
             ]));
+
+            $updatedFields = [];
+            foreach ($request->all() as $key => $value) {
+                if ($originalScholarData[$key] !== $value) {
+                    $updatedFields[$key] = $value;
+                }
+            }
+            $users = User::whereIn('role_id', [1, 2])->get();
+
+            // Send email notification to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new ScholarProfileUpdated($user, $updatedFields, $scholar));
+            }
+    
     
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
@@ -184,7 +213,7 @@ class ScholarController extends Controller
             // Log the exception for further investigation
             \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
     
-            return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' =>  $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
     }
     public function updateOtherScholarProfile(Request $request, $user_id)
@@ -192,6 +221,8 @@ class ScholarController extends Controller
         try {
             // Find the scholar by ID
             $scholar = Scholar::where('user_id', $user_id)->firstOrFail();
+
+            $user = $scholar->user;
             
             // Check if school_id is 'other'
             if ($request->has('school_id') && $request->input('school_id') === 'other') {
@@ -200,12 +231,22 @@ class ScholarController extends Controller
                 // Set the school_id of the scholar to the newly created school's ID
                 $request->merge(['school_id' => $school->id]);
             }
-            
+
+            $originalData = $scholar->toArray();
+
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'scholarship_categ_id', 'project_partner_id', 'scholar_status_id', 'school_id',
             ]));
-    
+
+            $updatedFields = [];
+            foreach ($request->all() as $key => $value) {
+                if ($originalData[$key] !== $value) {
+                    $updatedFields[$key] = $value;
+                }
+            }
+            Mail::to($user->email_address)->send(new ScholarUpdated($user, $updatedFields, $scholar));
+        
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
         } catch (\Exception $e) {

@@ -32,10 +32,12 @@ export default function Scholar({state}) {
   //Zustand hooks 
   const {getAuthToken,alertOpen, setAlertOpen, errorOpen, setErrorOpen,alertMessage, setAlertMessage, errorMessage, setErrorMessage} = useAuthStore();
 
-  const {scholars, scholar, setScholars,editScholar, setEditScholar,  scholarsData, setScholarsData, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool, modalScholars, setModalScholars,
+  const {scholars, scholar, setScholars,editScholar, setEditScholar, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool, modalScholars, setModalScholars,
   handleOpenModalScholars, handleCloseModalScholars, deleteModal, setDeleteModal,
  scholarIdToDelete, setScholarIdToDelete
 } = useScholarStore();
+
+  const [scholarsData, setScholarsData] = useState([]);
 
   const { setLoading, setLoadingMessage} = useLoginStore();
 
@@ -61,10 +63,10 @@ export default function Scholar({state}) {
         setLoadingMessage("Updating Scholar");
 
         let updatedData = {
-          ...data,
           scholarship_categ_id: parseInt(data.scholarship_categ_id),
           project_partner_id: parseInt(data.project_partner_id),
-          scholar_status_id: parseInt(data.scholar_status_id)
+          scholar_status_id: parseInt(data.scholar_status_id),
+          school_id: parseInt(data.school_id)
         };
   
         if (data.school_id === 'other') {
