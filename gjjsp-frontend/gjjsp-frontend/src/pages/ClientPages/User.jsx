@@ -22,7 +22,7 @@ const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,24}$/;
 const CONTACT_REGEX = /^\+?63\d{10}$/
 
 //Reseting Form Values 
@@ -122,10 +122,12 @@ export default function User({state}) {
     if(error.response?.status === 422){
       setErrorOpen(true)
       setErrorMessage("Please fill up all the required fields");
+      setLoading(false);
     }
     else if(error.response?.status === 409){
       setErrorOpen(true)
       setErrorMessage("Email already been taken");
+      setLoading(false);
     }
     else if(error.response?.status === 500){
       setErrorMessage("Server Error");
@@ -139,6 +141,7 @@ export default function User({state}) {
     else{
       setErrorOpen(true);
       setErrorMessage("Something went wrong");
+      setLoading(false);
     }
   } 
 };

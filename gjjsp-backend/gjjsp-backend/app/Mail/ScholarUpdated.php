@@ -9,9 +9,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-use App\Models\ProjectPartner;
+use App\Models\Scholar;
 
-class ProjectPartnerDeleted extends Mailable
+class ScholarUpdated extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -20,14 +20,14 @@ class ProjectPartnerDeleted extends Mailable
      */
 
     public $user;
-    public $deletedName; // Declare $deletedName variable
-    public $projectPartner;
-
-    public function __construct(User $user, $deletedName, ProjectPartner $projectPartner)
+    public $updatedFields;
+    public $scholar;
+    
+    public function __construct(User $user, array $updatedFields, Scholar $scholar)
     {
         $this->user = $user;
-        $this->deletedName = $deletedName;
-        $this->projectPartner = $projectPartner;
+        $this->updatedFields = $updatedFields;
+        $this->scholar = $scholar;
     }
 
     /**
@@ -36,7 +36,7 @@ class ProjectPartnerDeleted extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Project Partner Deleted',
+            subject: 'Scholar Updated',
         );
     }
 
@@ -46,15 +46,13 @@ class ProjectPartnerDeleted extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.deletePartner',
+            view: 'mail.scholar-updated',
         );
     }
 
     public function build()
     {
-        return $this->subject('Project Partner Deleted')
-                    ->view('mail.deletePartner')
-                    ->with('deletedName', $this->deletedName);
+        return $this->from('tianmeds.business@gmail.com')->view('mail.scholar-updated');
     }
 
     /**

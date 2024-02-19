@@ -12,6 +12,11 @@ use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ScholarUpdated;
+use App\Mail\ScholarDeleted;
+use App\Mail\ScholarProfileUpdated;
+use App\Mail\ScholarProfileDeleted;
 
 class ScholarController extends Controller
 {
@@ -96,6 +101,14 @@ class ScholarController extends Controller
             'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
             'fb_account',
         ]));
+
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        // Send email notification to each user
+        foreach ($users as $user) {
+            Mail::to($user->email_address)->send(new ScholarUpdated($user, $scholar));
+        }
+
         return new ScholarResource($scholar);
     }
 

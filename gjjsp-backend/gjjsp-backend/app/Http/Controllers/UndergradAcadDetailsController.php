@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ScholarProfileUpdated;
 
 class UndergradAcadDetailsController extends Controller
 {
@@ -58,11 +60,29 @@ class UndergradAcadDetailsController extends Controller
                 $undergradAcadDetails = UndergradAcadDetails::where('scholar_id', $scholar->id)->first();
     
                 if ($undergradAcadDetails) {
+
+                    $originalUndergradAcadDetails = $undergradAcadDetails->toArray();
+
                     $undergradAcadDetails->update($request->only([
                         'undergrad_sy',
                         'current_yr_level',
                         'gwa_current_school_yr',
                     ]));
+
+                    $updatedUndergradAcadDetails = [];
+                    foreach ($request->all() as $key => $value) {
+                        if ($originalUndergradAcadDetails[$key] !== $value) {
+                            $updatedUndergradAcadDetails[$key] = $value;
+                        }
+                    }
+
+                    $users = User::whereIn('role_id', [1, 2])->get();
+
+                    // Send email notification to each user
+                    foreach ($users as $user) {
+                        Mail::to($user->email_address)->send(new ScholarProfileUpdated($user, $updatedUndergradAcadDetails, $scholar));
+                    }
+
     
                     return new UndergradAcadDetailsResource($undergradAcadDetails);
                 }
