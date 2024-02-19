@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\CategoryAdded;
 use App\Mail\CategoryUpdated;
 use App\Mail\CategoryDeleted;
+use App\Mail\ScholarshipRestored;
 
 class ScholarshipCategController extends Controller
 {
@@ -20,7 +21,16 @@ class ScholarshipCategController extends Controller
      */
     public function index()
     {
-        return response()->json(new ScholarshipCategCollection(ScholarshipCateg::all()), Response::HTTP_OK);
+        $user = auth()->user();
+
+        // Check if the user's role_id is 1
+        if ($user->role_id == 1) {
+            // If role_id is 1, return all data including soft deleted
+            return response()->json(new ScholarshipCategCollection(ScholarshipCateg::withTrashed()->get()), Response::HTTP_OK);
+        } else {
+            return response()->json(new ScholarshipCategCollection(ScholarshipCateg::all()), Response::HTTP_OK);
+        }
+       
     }
 
     /**
@@ -131,14 +141,36 @@ class ScholarshipCategController extends Controller
 
     public function restoreScholarship(ScholarshipCateg $scholarshipCateg, $id)
     {
-        $restored = ScholarshipCateg::withTrashed()->where('id', $id)->restore();
+        $scholarshipCateg = ScholarshipCateg::withTrashed()->find($id);
 
-        if ($restored === 0) {
-            return response()->json(['message' => 'Scholarship Category not found or already restored'], 404);
-        } elseif ($restored === null) {
-            return response()->json(['message' => 'Error restoring Scholarship Category '], 500);
+        if (!$scholarshipCateg) {
+            return response()->json(['message' => 'Scholarship Category not found'], 404);
         }
     
-        return response()->json(['message' => 'Scholarship Category  restored successfully'], 200);
+        // Get the name of the scholarship category before restoration
+        $restoredName = $scholarshipCateg->scholarship_categ_name;
+    
+        // Restore the scholarship category
+        $restored = $scholarshipCateg->restore();
+    
+        if (!$restored) {
+            return response()->json(['message' => 'Error restoring Scholarship Category'], 500);
+        }
+    
+        // Send email notification
+        try {
+            // Retrieve users who need to be notified
+            $users = User::whereIn('role_id', [1, 2])->get();
+            
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new ScholarshipRestored($user, $restoredName, $scholarshipCateg));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    
+        return response()->json(['message' => 'Scholarship Category restored successfully', 'restored_name' => $restoredName], 200);
     }
 }

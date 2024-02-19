@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ProjectPartnerAdded;
 use App\Mail\ProjectPartnerUpdated;
 use App\Mail\ProjectPartnerDeleted;
+use App\Mail\PartnerRestored;
 
 class ProjectPartnerController extends Controller
 {
@@ -21,7 +22,15 @@ class ProjectPartnerController extends Controller
      */
     public function index()
     {
-        return response()->json(new ProjectPartnerCollection(ProjectPartner::all()), Response::HTTP_OK);
+        $user = auth()->user();
+
+        // Check if the user's role_id is 1
+        if ($user->role_id == 1) {
+            // If role_id is 1, return all data including soft deleted
+            return response()->json(new ProjectPartnerCollection(ProjectPartner::withTrashed()->get()), Response::HTTP_OK);
+        } else {
+            return response()->json(new ProjectPartnerCollection(ProjectPartner::all()), Response::HTTP_OK);
+        }
     }
 
     /**
@@ -192,14 +201,40 @@ class ProjectPartnerController extends Controller
 
     public function restoreProjectPartner(ProjectPartner $projectPartner, $id)
     {
-        $restored = ProjectPartner::withTrashed()->where('id', $id)->restore();
-
-        if($restored === 0) {
+        // Find the project partner by its ID and include trashed models
+        $projectPartner = ProjectPartner::withTrashed()->find($id);
+    
+        // If the project partner is not found, return a 404 response
+        if (!$projectPartner) {
             return response()->json(['message' => 'Project Partner not found'], 404);
-        } elseif ($restored === null) {
-           return response()->json(['message' => 'Error restoring project partner'], 500);
         }
-
-        return response()->json(['message' => 'Project Partner restored'], 200);
+    
+        // Get the name of the project partner before restoration
+        $restoredName = $projectPartner->project_partner_name;
+    
+        // Restore the project partner
+        $restored = $projectPartner->restore();
+    
+        // If there is an error restoring the project partner, return a 500 response
+        if (!$restored) {
+            return response()->json(['message' => 'Error restoring Project Partner'], 500);
+        }
+    
+        // Send email notification
+        try {
+            // Retrieve users who need to be notified
+            $users = User::whereIn('role_id', [1, 2])->get();
+            
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new PartnerRestored($user, $restoredName, $projectPartner));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    
+        // Return a success response with a message and the name of the restored project partner
+        return response()->json(['message' => 'Project Partner restored successfully', 'restored_name' => $restoredName], 200);
     }
 }

@@ -11,8 +11,10 @@ import {useNavigate} from 'react-router-dom';
 import axios from '../../api/axios';
 import useLoginStore from '../../store/LoginStore';
 import useAuthStore from '../../store/AuthStore';
+import useAuth from '../../hooks/useAuth';
 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
+const CONTACT_REGEX = /^\+?63\d{10}$/
 
 const FormValues = {
   project_partner_name: '',
@@ -26,6 +28,9 @@ export default function Partner({state}) {
   const { register, control, handleSubmit, formState, reset, watch, validate} = form
   const { errors } = formState;
   const navigate = useNavigate();
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
   
   const { 
     partners,
@@ -44,7 +49,7 @@ export default function Partner({state}) {
     schools, 
     setSchools,
     categories,
-    setCategories, modalPartner, setPartnerModal, handleOpenModalPartner, handleCloseModalPartner, deleteModalPartner, setDeleteModalPartner,  partnerIdToDelete, setPartnerIdToDelete
+    setCategories, modalPartner, setPartnerModal, handleOpenModalPartner, handleCloseModalPartner, deleteModalPartner, setDeleteModalPartner,  partnerIdToDelete, setPartnerIdToDelete, restoreModalPartner, setRestoreModalPartner, partnerIdToRestore, setPartnerIdToRestore,
   } = usePartnerStore();  
 
   const {setLoading, setLoadingMessage} = useLoginStore();
@@ -312,6 +317,71 @@ export default function Partner({state}) {
   handleCloseDeleteModalPartner()
   }
   
+  const restorePartner = async (partnerId) => {
+    setLoading(true);
+    setLoadingMessage('Restoring partner');
+    setAlertOpen(true);
+    setAlertMessage('Please wait while restoring partner');
+    try{
+      const authToken = getAuthToken();
+      const restoreResponse = await axios.get(`/api/restoreProjectPartners/${partnerId}`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      if (restoreResponse.status === 200) {
+        setAlertMessage('Partner restored');
+        setAlertOpen(true);
+      }
+      else{
+        setErrorMessage('Something went wrong while restoring partner');
+        setErrorOpen(true);
+      }
+
+      const response = await axios.get('/api/project-partners', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+    
+      if (response.status === 200) {
+        setPartners(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Project partners list updated');
+      }
+      else{
+        setAlertOpen(true);
+        setAlertMessage('Something went wrong while fetching project partners list');
+      }
+
+      setLoading(false);
+
+    }
+    catch(err){
+      if(err.response?.status === 401){
+        setErrorOpen(true);
+        setErrorMessage("You've been logout");
+        navigate('/login')
+      }
+      else{
+        setErrorOpen(true); 
+        setErrorMessage('Something went wrong');
+      }
+    setLoading(false);
+    }
+  }
+
+  const handleOpenRestoreModal = (partnerId) => {
+    setPartnerIdToRestore(partnerId);
+    setRestoreModalPartner(true);
+  }
+
+  const handleCloseRestoreModal = () => {
+    setPartnerIdToRestore(null);
+    setRestoreModalPartner(false);
+  }
+    
   const handleCancelPartner = () => {
     form.reset(FormValues);
     setEditPartner(false);
@@ -412,9 +482,32 @@ export default function Partner({state}) {
                           Edit
                         </MUI.Button>
 
-                        <MUI.Button onClick={(event) => handleOpenDeleteModalPartner(partner.id, partner.project_partner_name)} variant='contained' color='error'>
-                          Delete
-                        </MUI.Button>
+                        {partner.deleted_at !== null && role_id === 1 ? (
+                          <MUI.Button
+                            variant="contained"
+                            sx={{
+                              borderRadius: '10px',
+                              borderColor: 'primary.main',
+                              textTransform: 'capitalize',
+                              width: '100%', 
+                              backgroundColor: '#43a047',
+                              '&:hover': {
+                                backgroundColor: '#43a047', // Change color on hover
+                              },
+                            }}
+                            onClick={() => handleOpenRestoreModal(partner.id)}
+                          >
+                            Restore
+                          </MUI.Button>
+                        ) : (
+                          <MUI.Button 
+                            onClick={(event) => handleOpenDeleteModalPartner(partner.id, partner.project_partner_name)} 
+                            variant='contained' 
+                            color='error'
+                          >
+                            Delete
+                          </MUI.Button>
+                        )}
 
                       </MUI.TableCell>
                     </MUI.TableRow>
@@ -433,13 +526,15 @@ export default function Partner({state}) {
             <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
             <MUI.DialogContent>
               
-              <MUI.Grid id="partnerNameGrid">
+              <MUI.Grid id="projectPartnerNameGrid" sx={{ ml: 0.5 }}>
                 <MUI.InputLabel htmlFor="project_partner_name" id="partnerNameLabel">Name</MUI.InputLabel>
                 <MUI.TextField
                   type='text'
                   id="project_partner_name"
-                  placeholder='Christian Medallada'
+                  placeholder='Asia Pacific College'
                   fullWidth
+                  autoComplete='off'
+      
 
                   {...register('project_partner_name', {
                     required: {
@@ -465,7 +560,7 @@ export default function Partner({state}) {
                 <MUI.TextField
                   type='text'
                   id="project_partner_mobile_num"
-                  placeholder='09123456789'
+                  placeholder='639123456789'
                   fullWidth
 
                   {...register('project_partner_mobile_num', {
@@ -473,6 +568,10 @@ export default function Partner({state}) {
                       value: true,
                       message: 'Mobile Number is required'
                     },
+                    pattern: {
+                      value: CONTACT_REGEX,
+                      message: 'Enter your mobile number in 63 format with no spaces and symbol'
+                    }
                   })}
                 />
                 {errors.project_partner_mobile_num && (
@@ -513,8 +612,8 @@ export default function Partner({state}) {
                 )}
               </MUI.Grid>
 
-              <MUI.Grid id="schoolGrid">
-                <MUI.InputLabel htmlFor="school_id" id="schoolLabel">School</MUI.InputLabel>
+              <MUI.Grid id="partnerSchoolGrid">
+                <MUI.InputLabel htmlFor="school_id" id="partnerSchoolLabel">School</MUI.InputLabel>
                 <Controller
                   name="school_id"
                   control={control}
@@ -565,14 +664,18 @@ export default function Partner({state}) {
                 {watch('school_id') === 'other' && (
                   <MUI.Grid id="addSchoolGrid">
                     <MUI.InputLabel htmlFor="school_type" id="addSchoolLabel">School Type</MUI.InputLabel>
-                    <MUI.TextField
+                    <MUI.Select
                       id="school_type"
-                      type="text"
                       {...register('school_type', {
                         required: 'School is required',
                       })}
                       sx={{ width: '100%', borderRadius: '8px', mb: 2 }}
-                    />
+                      native
+                    >
+                      <option value="">Select School Type</option>
+                      <option value="Public">Public</option>
+                      <option value="Private">Private</option>
+                    </MUI.Select>
                     {errors.school_type && (
                       <p id='errMsg'> <MUI.InfoIcon className='infoErr'/>{errors.school_type?.message}</p>
                     )}
@@ -641,7 +744,7 @@ export default function Partner({state}) {
             </MUI.DialogTitle>
 
             <MUI.DialogContent>
-              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#CA3521'}}>
               Heads up! This will permanently delete's <b>{selectedPartner ? `${selectedPartner.project_partner_name}` : ''}  </b> account. Are you sure you want to proceed?
               </MUI.Typography>
             </MUI.DialogContent>
@@ -666,6 +769,38 @@ export default function Partner({state}) {
               </MUI.Button>
             </MUI.DialogActions>
           </MUI.Dialog>
+
+          {/* -------- Restore Partner Dialog ----------*/}
+          <MUI.Dialog open={restoreModalPartner} onClose={handleCloseRestoreModal}>
+          <MUI.DialogTitle id="dialogTitle">Heads Up!</MUI.DialogTitle>
+          <MUI.DialogContent>
+            <MUI.Typography  variant='h5' ml={1} sx={{color: '#44546F'}}>
+              You're about to restore this project partner. Are you sure you want to proceed?
+            </MUI.Typography>
+          </MUI.DialogContent>
+          <MUI.DialogActions>
+            <MUI.Button onClick={handleCloseRestoreModal} color="primary">
+              Cancel
+            </MUI.Button>
+            <MUI.Button
+              onClick={() => {
+                restorePartner(partnerIdToRestore); 
+                handleCloseRestoreModal(); 
+              }}
+              variant='contained'
+              sx={{
+                backgroundColor: '#43a047',
+                '&:hover': {
+                  backgroundColor: '#43a047', // Change color on hover
+                },
+              }}
+
+              
+            >
+              Yes, Restore Partner
+            </MUI.Button>
+          </MUI.DialogActions>
+        </MUI.Dialog>
 
           <MUI.Snackbar
             open={alertOpen}
