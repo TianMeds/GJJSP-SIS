@@ -52,7 +52,8 @@ class ScholarUpdated extends Mailable
 
     public function build()
     {
-        return $this->from('tianmeds.business@gmail.com')->view('mail.scholar-updated');
+        return $this->subject('Scholar Profile Updated')
+                    ->view('mail.scholar-updated');
     }
 
     /**

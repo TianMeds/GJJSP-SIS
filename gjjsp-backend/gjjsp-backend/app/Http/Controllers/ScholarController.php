@@ -221,8 +221,6 @@ class ScholarController extends Controller
         try {
             // Find the scholar by ID
             $scholar = Scholar::where('user_id', $user_id)->firstOrFail();
-
-            $user = $scholar->user;
             
             // Check if school_id is 'other'
             if ($request->has('school_id') && $request->input('school_id') === 'other') {
@@ -231,22 +229,29 @@ class ScholarController extends Controller
                 // Set the school_id of the scholar to the newly created school's ID
                 $request->merge(['school_id' => $school->id]);
             }
-
+            
+            // Get the original scholar data
             $originalData = $scholar->toArray();
-
+            
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'scholarship_categ_id', 'project_partner_id', 'scholar_status_id', 'school_id',
             ]));
-
+    
+            // Identify the fields that were updated
             $updatedFields = [];
             foreach ($request->all() as $key => $value) {
                 if ($originalData[$key] !== $value) {
                     $updatedFields[$key] = $value;
                 }
             }
+    
+            // Retrieve the user associated with the scholar
+            $user = $scholar->user;
+    
+            // Send email notification
             Mail::to($user->email_address)->send(new ScholarUpdated($user, $updatedFields, $scholar));
-        
+    
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
         } catch (\Exception $e) {
