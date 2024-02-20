@@ -70,7 +70,7 @@ class Scholar extends Model
 
     public function getScholarStatusNameAttribute()
     {
-        return $this->scholarStatus->scholar_status_name;
+        return $this->scholarStatus->scholar_status_name;  
     }
 
     public function getUserFirstNameAttribute()
@@ -101,27 +101,7 @@ class Scholar extends Model
         return $this->scholarship_categs->scholarship_categ_name;
     }
 
-// For Export
 
-public function scholarshipCateg()
-{
-    return $this->belongsTo(ScholarshipCateg::class);
-}
-
-public function projectPartner()
-{
-    return $this->belongsTo(ProjectPartner::class);
-}
-
-public function scholarStatusName()
-{
-    return $this->belongsTo(ScholarStatus::class);
-}
-
-public function school()
-{
-    return $this->belongsTo(School::class);
-}
 
     protected $guarded;
 }
