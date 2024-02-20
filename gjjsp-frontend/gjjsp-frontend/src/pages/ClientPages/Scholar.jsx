@@ -435,7 +435,7 @@ export default function Scholar({state}) {
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Email</MUI.TableCell>
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholarship Category</MUI.TableCell>
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar Status</MUI.TableCell>
-                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem', textAlign: 'center'}}>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
@@ -489,21 +489,31 @@ export default function Scholar({state}) {
                       </MUI.TableCell>
                       
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
-                        <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
-                          <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}} />
-                        </MUI.IconButton>
 
-                        <MUI.IconButton color="inherit" onClick={() => updateScholar(scholar.id)}>
-                          <MUI.BorderColorIcon />
-                        </MUI.IconButton>
-
-                        <MUI.IconButton
-                          color="inherit"
-                          sx={{ textTransform: 'capitalize' }}
-                          onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)}
+                        <MUI.Button
+                          onClick={() => viewScholarProfile(scholar.id)}
+                          variant='contained'
                         >
-                          <MUI.DeleteIcon />
-                        </MUI.IconButton>
+                          View
+                        </MUI.Button>
+
+                        <MUI.Button 
+                          onClick={() => updateScholar(scholar.id)}
+                          variant='contained'
+                          sx={{backgroundColor: '#0C66E4', ml: 2}}
+                        >
+                          Edit
+                        </MUI.Button>
+
+
+                        <MUI.Button 
+                          onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)}
+                          sx={{ textTransform: 'capitalize', ml: 2 }}
+                          variant='contained'
+                          color='error'
+                        >
+                          Delete
+                        </MUI.Button>
                       </MUI.TableCell>
                     </MUI.TableRow>
                       ) : null
