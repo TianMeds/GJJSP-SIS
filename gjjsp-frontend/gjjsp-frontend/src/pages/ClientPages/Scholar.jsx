@@ -365,11 +365,7 @@ export default function Scholar({state}) {
               <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Scholars</MUI.Typography>
                         
               <MUI.Box>     
-                {/* Add User Button */}
-                <MUI.Button variant="contained" component={Link} to='/notification' id='addButton' sx={{mr:4}} >
-                  <MUI.NotificationsIcon  sx={{transform: 'rotate(45deg)', mr: 1}}/>
-                  <MUI.Typography variant='body2'>Send reminder</MUI.Typography>
-                </MUI.Button>
+                
 
                 
               <MUI.Button variant='contained' component={Link} to="/export"  id='addButton' sx={{mr: 4}}>
