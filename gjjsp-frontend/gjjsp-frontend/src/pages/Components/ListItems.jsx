@@ -53,7 +53,7 @@ export const SMP_ListItems = (
       Management
     </MUI.ListSubheader>
   
-      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholars" />
+      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholar" />
       <DropdownMenu/>
       <DropdownMenu3/>
 
@@ -88,7 +88,7 @@ export const SAP_ListItems = (
     </MUI.ListSubheader>
 
       <CustomListItem to="/user" icon={<MUI.GroupsOutlinedIcon />} secondary="Users" />
-      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholars" />
+      <CustomListItem to="/scholar" icon={<MUI.PeopleAltOutlinedIcon />} secondary="Scholar" />
       <DropdownMenu/>
       <DropdownMenu3/>
 

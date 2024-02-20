@@ -1,4 +1,4 @@
-import React, {useEffect,lazy, Suspense} from 'react'
+import React, {useEffect,lazy, Suspense, useState} from 'react'
 import axios from '../../api/axios';
 
 //Components
@@ -18,6 +18,7 @@ import { DevTool } from "@hookform/devtools";
 import {useNavigate} from 'react-router-dom';
 import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
+import useAuth from '../../hooks/useAuth';
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -53,6 +54,12 @@ export default function User({state}) {
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
 
   const navigate = useNavigate();
+
+  const [emailError, setEmailError] = useState("");
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
+  
 
   // Post Data to API 
   const onSubmit = async (data, event) => {
@@ -120,8 +127,9 @@ export default function User({state}) {
   catch (error) {
 
     if(error.response?.status === 422){
+      setEmailError("Email already taken");
       setErrorOpen(true)
-      setErrorMessage("Please fill up all the required fields");
+      setErrorMessage("Email already been taken");
       setLoading(false);
     }
     else if(error.response?.status === 409){
@@ -143,6 +151,8 @@ export default function User({state}) {
       setErrorMessage("Something went wrong");
       setLoading(false);
     }
+
+    handleCloseModalUsers();
   } 
 };
 
@@ -250,6 +260,57 @@ export default function User({state}) {
     // Close the delete confirmation modal
     handleCloseDeleteModal();
   };
+
+  const restoreUser = async (userId) => {
+    setLoading(true);
+    setLoadingMessage("Restoring user");
+    setAlertOpen(true);
+    setAlertMessage('Restoring user...');
+    try {
+      const authToken = getAuthToken();
+      const restoreResponse = await axios.get(`/api/restore/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (restoreResponse.status === 200) {
+        setAlertOpen(true);
+        setAlertMessage('User restored');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to restore user');
+      }
+
+      const response = await axios.get('/api/users', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setUsers(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+
+      setLoading(false);
+
+    } catch (error) {
+      if (error.response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+      setLoading(false);
+    }
+  };
+
+
+
 
   //View Profile Function
   const viewProfile = (userId) => {
@@ -401,6 +462,7 @@ export default function User({state}) {
                         <MUI.IconButton color="inherit" onClick={() => viewProfile(user.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
+                        
 
                         <MUI.IconButton
                           color="inherit"
@@ -410,15 +472,28 @@ export default function User({state}) {
 
                         </MUI.IconButton>
 
-
-                        <MUI.IconButton
-                          type='button'
-                          color="inherit"
-                          onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
-                          sx={{ textTransform: 'capitalize' }}
-                        >
-                          <MUI.DeleteIcon />
-                        </MUI.IconButton>
+                        {user.deleted_at !== null && role_id === 1 ? (
+                          <MUI.IconButton
+                            variant="contained"
+                            sx={{
+                              borderRadius: '10px',
+                              borderColor: 'primary.main',
+                              textTransform: 'capitalize',
+                            }}
+                            onClick={() => restoreUser(user.id)}
+                          >
+                            <MUI.RestoreIcon />
+                          </MUI.IconButton>
+                        ) : (
+                          <MUI.IconButton
+                            type='button'
+                            color="inherit"
+                            onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
+                            sx={{ textTransform: 'capitalize' }}
+                          >
+                            <MUI.DeleteIcon />
+                          </MUI.IconButton>
+                        )}
 
                       </MUI.TableCell>
                     </MUI.TableRow>
@@ -562,9 +637,14 @@ export default function User({state}) {
                         message: 'Please enter a valid email address',
                       }
                     })}
+
                   />
                   {errors.email_address && (
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
+                  )}
+
+                  {emailError && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {emailError}</p>
                   )}
                 </MUI.Grid>
 

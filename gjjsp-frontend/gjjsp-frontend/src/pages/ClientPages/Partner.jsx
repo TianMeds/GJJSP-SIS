@@ -478,35 +478,38 @@ export default function Partner({state}) {
                       </MUI.TableCell>
                       <MUI.TableCell sx={{ border: 'none', color: '#2684ff', display: 'flex', gap: '8px' }}>
 
-                        <MUI.Button onClick={() => updatePartner(partner.id)} variant='contained' sx={{backgroundColor: '#0C66E4'}}>
-                          Edit
-                        </MUI.Button>
+
+                        <MUI.IconButton
+                          onClick={() => updatePartner(partner.id)} 
+                          variant='contained'
+                          color='primary'
+                        >
+                          <MUI.BorderColorIcon />
+                        </MUI.IconButton>
 
                         {partner.deleted_at !== null && role_id === 1 ? (
-                          <MUI.Button
-                            variant="contained"
-                            sx={{
-                              borderRadius: '10px',
-                              borderColor: 'primary.main',
-                              textTransform: 'capitalize',
-                              width: '100%', 
-                              backgroundColor: '#43a047',
-                              '&:hover': {
-                                backgroundColor: '#43a047', // Change color on hover
-                              },
-                            }}
-                            onClick={() => handleOpenRestoreModal(partner.id)}
-                          >
-                            Restore
-                          </MUI.Button>
+                        <MUI.IconButton
+                          variant="contained"
+                          sx={{
+                            borderRadius: '10px',
+                            borderColor: 'primary.main',
+                            textTransform: 'capitalize',
+
+                          }}
+                          onClick={() => handleOpenRestoreModal(partner.id)}
+                        >
+                          <MUI.RestoreIcon />
+                        </MUI.IconButton>
                         ) : (
-                          <MUI.Button 
-                            onClick={(event) => handleOpenDeleteModalPartner(partner.id, partner.project_partner_name)} 
-                            variant='contained' 
-                            color='error'
+
+                          <MUI.IconButton
+                          onClick={(event) => handleOpenDeleteModalPartner(partner.id, partner.project_partner_name)} 
+                          variant='contained' 
+                          color='error'
                           >
-                            Delete
-                          </MUI.Button>
+                            <MUI.DeleteIcon />
+                          </MUI.IconButton>
+
                         )}
 
                       </MUI.TableCell>

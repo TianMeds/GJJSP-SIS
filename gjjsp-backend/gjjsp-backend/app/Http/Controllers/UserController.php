@@ -21,7 +21,16 @@ class UserController extends Controller
      */
     public function index()
     {
-        return response()->json(new UserCollection(User::all()),Response::HTTP_OK);
+        $user = auth()->user();
+
+        // Check if the user's role_id is 1
+        if ($user->role_id == 1) {
+            // If role_id is 1, return all data including soft deleted
+            return response()->json(new UserCollection(User::withTrashed()->get()), Response::HTTP_OK);
+        } else {
+            // If role_id is not 1, return only active users
+            return response()->json(new UserCollection(User::all()), Response::HTTP_OK);
+        }
     }
 
     /**
