@@ -15,10 +15,5 @@ class ScholarExportController extends Controller
     $toYear = $request->input('toYear');
     return (new ScholarsExport($fromYear, $toYear))->download('scholars.xlsx');
 }
-// public function exportScholars(Request $request)
-// {
-//     // Temporarily return a simple response to test
-//     return response()->json(['message' => 'This is a test response']);
-// }
 
 }
