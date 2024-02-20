@@ -13,6 +13,8 @@ use Illuminate\Http\Response;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\UserDeleted;
+use App\Mail\UserRestored;
 
 class UserController extends Controller
 {
@@ -112,12 +114,30 @@ class UserController extends Controller
      */
     public function destroy(User $user, $id)
     {
+        $user = User::find($id);
+
+        $deletedName = $user->first_name . ' ' . $user->last_name;
+
         $deleted = User::destroy($id);
 
         if ($deleted === 0) {
             return response()->json(['message' => 'User not found or already deleted'], 404);
         } elseif ($deleted === null) {
             return response()->json(['message' => 'Error deleting user'], 500);
+        }
+
+        $user->update(['user_status' => 'Revoked']);
+
+        $users = User::whereIn('role_id', [1, 2])->get();
+
+        try {
+            // Send email to each user
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new UserDeleted($user, $deletedName));
+            }
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     
         return response()->json(['message' => 'User deleted successfully'], 200);
@@ -126,14 +146,41 @@ class UserController extends Controller
 
     public function restore(User $user, $id)
     {
-        $restored = User::withTrashed()->where('id', $id)->restore();
+        // Find the user by its ID and include trashed models
+        $user = User::withTrashed()->find($id);
 
-        if ($restored === 0) {
+        // If the user is not found, return a 404 response
+        if (!$user) {
             return response()->json(['message' => 'User not found or already restored'], 404);
-        } elseif ($restored === null) {
+        }
+
+        $restoredName = $user->first_name . ' ' . $user->last_name;
+
+        // Restore the user
+        $restored = $user->restore();
+
+        // If there is an error restoring the user, return a 500 response
+        if (!$restored) {
             return response()->json(['message' => 'Error restoring user'], 500);
         }
-    
+
+        $user->update(['user_status' => 'Active']);
+
+
+        // Send email notification to the restored user
+        try {
+            $users = User::whereIn('role_id', [1, 2])->get();
+
+            foreach ($users as $user) {
+                Mail::to($user->email_address)->send(new UserRestored($user, $restoredName));
+            }
+
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+        // Return a success response with a message indicating successful restoration
         return response()->json(['message' => 'User restored successfully'], 200);
     }
 

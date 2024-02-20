@@ -28,6 +28,7 @@ class UserResource extends JsonResource
             'scholarship_categ_id' => $this->scholar->pluck('scholarship_categ_id')->all(),
             'project_partner_id' => $this->scholar->pluck('project_partner_id')->all(),
             'school_id' => $this->scholar->pluck('school_id')->all(),
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

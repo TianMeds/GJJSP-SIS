@@ -46,7 +46,7 @@ export default function User({state}) {
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
     selectedUser, setSelectedUser, setAvatarInitial, modalUsers, setModalUsers, handleOpenModalUsers, handleCloseModalUsers, deleteModal, setDeleteModal,
-    userIdToDelete, setUserIdToDelete
+    userIdToDelete, setUserIdToDelete, restoreModal, setRestoreModal, userIdToRestore, setUserIdToRestore
   } = useUserStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
@@ -268,7 +268,7 @@ export default function User({state}) {
     setAlertMessage('Restoring user...');
     try {
       const authToken = getAuthToken();
-      const restoreResponse = await axios.get(`/api/restore/${userId}`, {
+      const restoreResponse = await axios.get(`/api/restoreUser/${userId}`, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -309,7 +309,15 @@ export default function User({state}) {
     }
   };
 
+  const handleOpenRestoreModal = (userId) => {
+    setUserIdToRestore(userId);
+    setRestoreModal(true);
+  };
 
+  const handleCloseRestoreModal = () => {
+    setUserIdToRestore(null);
+    setRestoreModal(false);
+  };
 
 
   //View Profile Function
@@ -480,7 +488,7 @@ export default function User({state}) {
                               borderColor: 'primary.main',
                               textTransform: 'capitalize',
                             }}
-                            onClick={() => restoreUser(user.id)}
+                            onClick={() => handleOpenRestoreModal(user.id)}
                           >
                             <MUI.RestoreIcon />
                           </MUI.IconButton>
@@ -822,6 +830,43 @@ export default function User({state}) {
                 Yes, Delete User
               </MUI.Button>
             </MUI.DialogActions>
+          </MUI.Dialog>
+
+          <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
+            <MUI.DialogTitle id="dialogTitle" mt={2}>
+              Heads Up!
+            </MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                You're about to restore a user's account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseRestoreModal} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button
+                onClick={() => {
+                  restoreUser(userIdToRestore);
+                  handleCloseRestoreModal();
+                }}
+                color="primary"
+                variant="contained"
+                sx={{
+                  borderRadius: '5px',
+                  mb: 2,
+                  mt: 2,
+                  backgroundColor: '#43a047',
+                  '&:hover': {
+                    backgroundColor: '#43a047', // Change color on hover
+                  },
+                }}
+              >
+                Yes, Restore User
+              </MUI.Button>
+            </MUI.DialogActions>
+
           </MUI.Dialog>
 
           {/* Snackbar for Success */}

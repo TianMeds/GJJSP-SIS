@@ -24,6 +24,12 @@ const useUserStore = create((set) => ({
 
     userIdToDelete: null,
     setUserIdToDelete: (userIdToDelete) => set({ userIdToDelete }),
+
+    restoreModal: false,
+    setRestoreModal: (restoreModal) => set({ restoreModal }),
+
+    userIdToRestore: null,
+    setUserIdToRestore: (userIdToRestore) => set({ userIdToRestore }),
     
     //Hooks for Get User Data
     users: [],

@@ -44,7 +44,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/profile', [UserController::class, 'profile']);
     Route::put('/profile/{id}', [UserController::class, 'updateProfile']);
     Route::get('/userScholar', [UserController::class, 'getUserRoles']);
-    Route::get('/restore/{id}', [UserController::class, 'restore']);
+    Route::get('/restoreUser/{id}', [UserController::class, 'restore']);
     Route::get('/userScholars', [UserController::class, 'getScholars']);
 
     //Scholars Route
