@@ -1,4 +1,4 @@
-import React, {useEffect,lazy, Suspense} from 'react'
+import React, {useEffect,lazy, Suspense, useState} from 'react'
 import axios from '../../api/axios';
 
 //Components
@@ -53,6 +53,9 @@ export default function User({state}) {
   const {getAuthToken, alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, setErrorOpen, errorMessage, setErrorMessage} = useAuthStore();
 
   const navigate = useNavigate();
+
+  const [emailError, setEmailError] = useState("");
+  
 
   // Post Data to API 
   const onSubmit = async (data, event) => {
@@ -120,8 +123,9 @@ export default function User({state}) {
   catch (error) {
 
     if(error.response?.status === 422){
+      setEmailError("Email already taken");
       setErrorOpen(true)
-      setErrorMessage("Please fill up all the required fields");
+      setErrorMessage("Email already been taken");
       setLoading(false);
     }
     else if(error.response?.status === 409){
@@ -143,6 +147,8 @@ export default function User({state}) {
       setErrorMessage("Something went wrong");
       setLoading(false);
     }
+
+    handleCloseModalUsers();
   } 
 };
 
@@ -562,9 +568,14 @@ export default function User({state}) {
                         message: 'Please enter a valid email address',
                       }
                     })}
+
                   />
                   {errors.email_address && (
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
+                  )}
+
+                  {emailError && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {emailError}</p>
                   )}
                 </MUI.Grid>
 
