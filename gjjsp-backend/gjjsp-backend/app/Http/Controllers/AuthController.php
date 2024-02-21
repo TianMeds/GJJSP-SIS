@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Role;
 use App\Models\ScholarFamMember;
-use App\Models\HighschoolAcadDetails;   
+use App\Models\HighschoolAcadDetails;
 use App\Models\UndergradAcadDetails;
 use App\Models\RenewalDocument;
 use App\Models\GraduatingDocument;
@@ -36,13 +36,12 @@ class AuthController extends Controller
 
         // Extract the password before hashing it - For sending Credential
         $plainPassword = $fields['password'];
-        $phoneNumber = $fields['user_mobile_num']; 
 
         $user = User::create([
             'first_name' => $fields['first_name'],
             'middle_name' => $fields['middle_name'],
             'last_name' => $fields['last_name'],
-            'user_mobile_num' => $phoneNumber,
+            'user_mobile_num' => $fields['user_mobile_num'],
             'email_address' => $fields['email_address'],
             'password' => bcrypt($plainPassword),
             'role_id' => $fields['role_id'],
@@ -74,7 +73,7 @@ class AuthController extends Controller
 
         }
 
-        
+
         if ($user) {
 
             try {
@@ -87,7 +86,7 @@ class AuthController extends Controller
                 $message = 'Hello from GJJSP! Your account has been created successfully.';
 
                 $response = $client->sms()->send(
-                    new \Vonage\SMS\Message\SMS($phoneNumber, 'GJJSP', $message)
+                    new \Vonage\SMS\Message\SMS($user->user_mobile_num, 'GJJSP', $message)
                 );
 
                 $smsMessage = $response->current();
@@ -109,11 +108,11 @@ class AuthController extends Controller
                 $user->delete();
                 return response()->json([
                     'status' => false,
-                    'message' => 'Could not send user credentials or SMS. Please try again ',
+                    'message' => $err->getMessage(),
                     'method' => 'POST',
                 ], 500);
             }
-        } 
+        }
 
         return response()->json([
             'status' => false,
@@ -150,7 +149,7 @@ class AuthController extends Controller
         ];
 
         $roleName = $roles_name[$role] ?? 'unknown';
-        
+
         $remember_token = $user->createToken('remember_token', expiresAt: now()->addMinute(30))->plainTextToken;
         $expires_at = now()->addMinute(30)->format('Y-m-d H:i:s');
         $response = [
@@ -172,18 +171,18 @@ class AuthController extends Controller
         ], 200);
     }
 
- 
+
     /* public function refreshToken(Request $request)
     {
         if (!$request->user()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-    
+
         $request->user()->tokens()->delete(); // Revoke all user's tokens
-    
+
         $remember_token = $request->user()->createToken('remember_token')->plainTextToken;
         $expiresAt = now()->addMinute(30)->format('Y-m-d H:i:s');
-    
+
         return response()->json([
             'remember_token' => $remember_token,
             'expires_at' => $expiresAt
