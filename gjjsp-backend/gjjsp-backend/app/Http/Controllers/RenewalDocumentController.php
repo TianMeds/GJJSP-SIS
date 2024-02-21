@@ -7,6 +7,7 @@ use App\Http\Resources\ScholarResoure;
 use App\Http\Resources\RenewalDocumentCollection;
 use App\Models\RenewalDocument;
 use App\Models\Scholar;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,8 @@ use App\Http\Requests\RenewalDocumentRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\RenewalDocumentReminder;
+use Illuminate\Support\Facades\Mail;
 
 
 class RenewalDocumentController extends Controller
@@ -158,6 +161,30 @@ class RenewalDocumentController extends Controller
         }
     }
 
+
+    public function sendReminders(Request $request, $id)
+    {
+        // Find the renewal document by its ID
+        $renewalDocument = RenewalDocument::find($id);
+
+        // Check if the renewal document exists
+        if (!$renewalDocument) {
+            return response()->json(['message' => 'Renewal Document not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Find the user associated with the renewal document
+        $user = User::find($renewalDocument->user_id);
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Send renewal document reminder email
+        Mail::to($user->email_address)->send(new RenewalDocumentReminder($renewalDocument, $user));
+
+        return response()->json(['message' => 'Renewal Document Reminder sent successfully'], Response::HTTP_OK);
+    }
 
     // public function store(Request $request)
     // {

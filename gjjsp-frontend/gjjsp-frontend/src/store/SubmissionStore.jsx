@@ -50,6 +50,17 @@ const useSubmissionStore = create((set) => ({
     renewalValues: [],
     setRenewalValues: (newRenewalValues) => set({renewalValues: newRenewalValues}),
 
+    //Table Values for Graduating
+    graduatingForms: [],
+    graduatingForm: false,
+    setGraduatingForms: (newGraduatingForms) => set({graduatingForms: newGraduatingForms}),
+
+    modalGraduating: false,
+    setModalGraduating: (modalGraduating) => set({ modalGraduating }),
+    graduatingIdToSend: null,
+    setGraduatingIdToSend: (graduatingIdToSend) => set({ graduatingIdToSend }),
+
+
     //Get Values of the Submission
     submissionValues: [],
     submissionValue: false,
@@ -69,16 +80,6 @@ const useSubmissionStore = create((set) => ({
     submission: false,
     setSubmissions: (newSubmissions) => set({submissions: newSubmissions}),
 
-    //Table Pagination
-    page: 0,
-    setPage: (newPage) => set({ page: newPage }),
-  
-    rowsPerPage: 5,
-    setRowsPerPage: (newRowsPerPage) => set({ rowsPerPage: newRowsPerPage }),
-  
-    pressedRows: [],
-    setPressedRows: (newPressedRows) => set({ pressedRows: newPressedRows }),
-
     setSubmission: (newSubmission) => set({submission: newSubmission}),
     setSubmissionManage: (newSubmissionManage) => set({submissionManage: newSubmissionManage}),
     setSubmissionStatusOpen: (newSubmissionStatusOpen) => set({submissionStatusOpen: newSubmissionStatusOpen}),
@@ -93,6 +94,18 @@ const useSubmissionStore = create((set) => ({
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
+
+    //Submission Form
+    renewalSubmission: [],
+    setRenewalSubmission: (newRenewalSubmission) => set({renewalSubmission: newRenewalSubmission}),
+    
+    modalRenewal: false,
+    setModalRenewal: (modalRenewal) => set({ modalRenewal }),
+
+    renewalIdToSend: null,
+    setRenewalIdToSend: (renewalIdToSend) => set({ renewalIdToSend }),
+
+
 }))
 
 export default useSubmissionStore;

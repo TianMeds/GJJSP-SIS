@@ -131,9 +131,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('renewal-document' , [RenewalDocumentController::class, 'scholarSubmission']);
     Route::get('total-renewal' , [RenewalDocumentController::class, 'totalRenewalDocuments']);
     Route::get('/scholar-renewal-documents', [RenewalDocumentController::class, 'scholarRenewalDocuments']);
+    Route::put('/send-reminders/{id}', [RenewalDocumentController::class, 'sendReminders']);
+    
 
     Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
+    Route::put('/graduating-reminders/{id}', [GraduatingFormController::class, 'sendReminders']);
 
     //School Route 
     Route::apiResource('/schools', SchoolController::class)->only(['index', 'show']);
@@ -147,7 +150,6 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
-
 Route::post('/generate-prompt', [PromptController::class, 'generate']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import theme from '../../context/theme';
 import HistoryIcon from '@mui/icons-material/History';
 import axios from '../../api/axios';
 
 import useLoginStore from '../../store/LoginStore';
 import useAuthStore from '../../store/AuthStore';
+import useSubmissionStore from '../../store/SubmissionStore';
 import { Search, SearchIconWrapperV2,StyledInputBaseV2 } from '../../component/Layout/SidebarNavbar/Styles';
 
 //React Hook Form
@@ -20,6 +21,96 @@ export default function GraduatingSubmitted() {
     const form  = useForm();
     const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
     const { errors } = formState;
+
+    const navigate = useNavigate();
+
+    const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
+    const {setLoading, setLoadingMessage } = useLoginStore();
+    const {graduatingForms, setGraduatingForms, modalGraduating, setModalGraduating, graduatingIdToSend, setGraduatingIdToSend} = useSubmissionStore();
+
+
+    const handleOpenModalGraduating = (id) => {
+        setGraduatingIdToSend(id);
+        setModalGraduating(true);
+    }
+
+    const handleCloseModalGraduating = () => {
+        setGraduatingIdToSend(null);
+        setModalGraduating(false);
+    }
+
+    useEffect(() => {
+        const fetchScholars= async () => {
+            try {
+                const authToken = getAuthToken();
+            
+                const response = await axios.get('/api/graduating-documents', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+            
+                if (response.status === 200) {
+                    setGraduatingForms(response.data.data);
+                    setAlertOpen(true);
+                    setAlertMessage('Graduating forms fetched successfully.');
+                }
+                else{
+                   setErrorOpen(true);
+                     setErrorMessage('Failed to fetch graduating forms.');
+                }
+            }
+            catch(error){
+                if(error.response.status === 401) {
+                    navigate('/login')
+                }
+                else{
+                    setErrorMessage('Unable to fetch graduating forms. Please try again.');
+                    setErrorOpen(true);
+                }
+            }
+        }
+        fetchScholars();
+    }, []);
+
+    const sendReminder = async () => {
+        try { 
+            const authToken = getAuthToken();
+
+            setLoading(true);
+            setLoadingMessage('Sending reminders...');
+            setAlertOpen(true);
+            setAlertMessage('Sending Reminder.');
+
+            const response = await axios.put(`/api/graduating-reminders/${graduatingIdToSend}`, null, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.status === 200) {
+                setAlertMessage('Reminder sent successfully.');
+                setAlertOpen(true);
+            }
+            else{
+                setErrorMessage('Failed to send reminder.');
+                setErrorOpen(true);
+            }
+
+            setLoading(false);
+            handleCloseModalGraduating();
+        }
+
+        catch(error){
+            if(error.response.status === 401) {
+                navigate('/login')
+            }
+            else{
+                setErrorMessage('Unable to send reminder. Please try again.');
+                setErrorOpen(true);
+            }
+        }
+    }
 
   return (
     <Layout>
@@ -132,20 +223,14 @@ export default function GraduatingSubmitted() {
                         </MUI.TableRow>
                     </MUI.TableHead>
                         <MUI.TableBody>
-                        {/* {users
-                            .filter((user) => {
-                            return filteredRole === 'All' ? true : (
-                                user.role_id === (roleMapping[filteredRole] || null)
-                            );
-                            })
-                            .filter((user) => 
-                            (user.email_address && user.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
-                            ((`${user.first_name} ${user.middle_name} ${user.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
-                            )
-                            .map((user, index) => ( */}
-                            <MUI.TableRow  className='user' >
-                            <MUI.TableCell sx={{border: 'none'}}  className='name'>Christian Medallada</MUI.TableCell>
-                            <MUI.TableCell sx={{border: 'none'}}  className='email'>For Approval</MUI.TableCell>
+                            {graduatingForms.map((graduatingForm, index) => (
+                            <MUI.TableRow key={index} className='user' >
+                            <MUI.TableCell sx={{border: 'none'}}  className='name'>
+                            {`${graduatingForm.user_first_name} ${graduatingForm.user_middle_name || ""} ${graduatingForm.user_last_name}`}
+                            </MUI.TableCell>
+                            <MUI.TableCell sx={{border: 'none'}}  className='submission_status'>
+                               {graduatingForm.submission_status}
+                            </MUI.TableCell>
                             
                             <MUI.TableCell sx={{border: 'none'}}  className='role'>
                                 <MUI.IconButton color="inherit" component={Link} to='/graduating-view' sx={{ml: 2}}>
@@ -161,7 +246,7 @@ export default function GraduatingSubmitted() {
 
                             <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
-                                <MUI.Button variant='contained'>
+                                <MUI.Button variant='contained' onClick={() => handleOpenModalGraduating(graduatingForm.id)}>
                                     <MUI.NotificationsIcon/>
                                     <MUI.Typography variant='h5'>
                                         Send Reminders
@@ -170,11 +255,69 @@ export default function GraduatingSubmitted() {
 
                             </MUI.TableCell>
                             </MUI.TableRow>
-                        {/* ))} */}
+                        ))}
                         </MUI.TableBody>
                     </MUI.Table>
                     <MUI.Divider sx={{width:'100%'}}/>
-                </MUI.TableContainer>   
+                </MUI.TableContainer> 
+
+
+                <MUI.Dialog open={modalGraduating} onClose={handleCloseModalGraduating} >
+                    <MUI.DialogTitle id="dialogTitle" mt={2}>
+                        Send Reminders
+                    </MUI.DialogTitle>
+                    <MUI.DialogContent>
+                    <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                        You are about to send reminders to {graduatingForms.user_first_name} {graduatingForms.user_middle_name || ""} {graduatingForms.user_last_name} for their graduating submission. Are you sure you want to proceed?
+                    </MUI.Typography>
+                    </MUI.DialogContent>
+
+                    <MUI.DialogActions>
+                    <MUI.Button  color="primary" onClick={handleCloseModalGraduating}>
+                        Cancel
+                    </MUI.Button>
+                    <MUI.Button
+                        color="primary"
+                        variant="contained"
+                        sx={{
+                        borderRadius: '5px',
+                        mb: 2,
+                        mt: 2,
+                        backgroundColor: '#43a047',
+                        '&:hover': {
+                            backgroundColor: '#43a047', // Change color on hover
+                        },
+                        }}
+                        onClick={sendReminder}
+                    >
+                        Send Reminder
+                    </MUI.Button>
+                    </MUI.DialogActions>
+
+                </MUI.Dialog>
+
+
+                <MUI.Snackbar
+                    open={alertOpen}
+                    autoHideDuration={5000}
+                    onClose={() => setAlertOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+                    {alertMessage}
+                    </MUI.MuiAlert>
+                </MUI.Snackbar>
+
+                <MUI.Snackbar
+                    open={errorOpen}
+                    autoHideDuration={5000}
+                    onClose={() => setErrorOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+                    {errorMessage}
+                    </MUI.MuiAlert>
+                </MUI.Snackbar>
 
         </MUI.Container>
     </MUI.ThemeProvider>

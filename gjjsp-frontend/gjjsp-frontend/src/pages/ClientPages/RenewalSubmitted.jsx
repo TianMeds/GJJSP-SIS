@@ -25,10 +25,22 @@ export default function RenewalSubmitted() {
     //Zustand Calls
     const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
     const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
-    const { renewalForms, setRenewalForms, renewalForm, selectedSubmission, setSelectedSubmission, submissionValues, setSubmissionValues, submissionValue  } = useSubmissionStore();
+    const { renewalForms, setRenewalForms, renewalForm, selectedSubmission, setSelectedSubmission, submissionValues, setSubmissionValues, submissionValue, renewalSubmission, setRenewalSubmission, modalRenewal, setModalRenewal, renewalIdToSend, setRenewalIdToSend  } = useSubmissionStore();
 
     const navigate = useNavigate();
     //Get Scholars Data
+
+    const  handleOpenModalRenewal = (id) => {
+        setRenewalIdToSend(id);
+        setModalRenewal(true);
+    }
+
+    const handleCloseModalRenewal = () => {
+        setRenewalIdToSend(null);
+        setModalRenewal(false);
+    }
+
+
 
     useEffect(() => {
         const fetchScholars= async () => {
@@ -42,19 +54,69 @@ export default function RenewalSubmitted() {
                 });
             
                 if (response.status === 200) {
-                    console.log(response.data.data);
                     setRenewalForms(response.data.data);
+                    setAlertOpen(true);
+                    setAlertMessage('Renewal forms fetched successfully.');
                 }
                 else{
-                    console.log(response);
+                   setErrorOpen(true);
+                     setErrorMessage('Failed to fetch renewal forms.');
                 }
             }
             catch(error){
-                console.log(error);
+                if(error.response.status === 401) {
+                    navigate('/login')
+                }
+                else{
+                    setErrorMessage('Unable to fetch renewal forms. Please try again.');
+                    setErrorOpen(true);
+                }
             }
         }
         fetchScholars();
     }, []);
+
+    const sendReminder = async () => {
+        try {
+            const authToken = getAuthToken();
+            if (!authToken) {
+                console.error("Authentication token is missing.");
+                return;
+            }
+            
+            setLoading(true);
+            setLoadingMessage('Sending reminders...');
+            setAlertOpen(true);
+            setAlertMessage('Sending reminders...');
+    
+            const response = await axios.put(`/api/send-reminders/${renewalIdToSend}`, null, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+    
+            if (response.status === 200) {
+                setRenewalSubmission(response.data.data);
+                setAlertMessage('Reminders sent successfully.');
+                setAlertOpen(true);
+            } else {
+               setErrorMessage('Failed to send reminders.');
+                setErrorOpen(true);
+            }
+            setLoading(false);
+            handleCloseModalRenewal();
+        } catch (error) {
+            if(error.response.status === 401) {
+                navigate('/login')
+            }
+            else{
+                setErrorMessage('Unable to send reminders. Please try again.');
+                setErrorOpen(true);
+            }
+        setLoading(false);
+
+        }
+    };
 
 
       //View Submission Function
@@ -210,7 +272,7 @@ export default function RenewalSubmitted() {
 
                             <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
 
-                                <MUI.Button variant='contained'>
+                                <MUI.Button variant='contained' onClick={() => handleOpenModalRenewal(renewalForm.id)}>
                                     <MUI.NotificationsIcon/>
                                     <MUI.Typography variant='h5'>
                                         Send Reminders
@@ -224,6 +286,62 @@ export default function RenewalSubmitted() {
                     </MUI.Table>
                     <MUI.Divider sx={{width:'100%'}}/>
                 </MUI.TableContainer>   
+
+                <MUI.Dialog open={modalRenewal} onClose={handleCloseModalRenewal} >
+                    <MUI.DialogTitle id="dialogTitle" mt={2}>
+                        Send Reminders
+                    </MUI.DialogTitle>
+                    <MUI.DialogContent>
+                    <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                        You are about to send reminders to {renewalForms.user_first_name} {renewalForms.user_middle_name || ""} {renewalForms.user_last_name} for their renewal submission. Are you sure you want to proceed?
+                    </MUI.Typography>
+                    </MUI.DialogContent>
+
+                    <MUI.DialogActions>
+                    <MUI.Button  color="primary" onClick={handleCloseModalRenewal}>
+                        Cancel
+                    </MUI.Button>
+                    <MUI.Button
+                        color="primary"
+                        variant="contained"
+                        sx={{
+                        borderRadius: '5px',
+                        mb: 2,
+                        mt: 2,
+                        backgroundColor: '#43a047',
+                        '&:hover': {
+                            backgroundColor: '#43a047', // Change color on hover
+                        },
+                        }}
+                        onClick={sendReminder}
+                    >
+                        Send Reminder
+                    </MUI.Button>
+                    </MUI.DialogActions>
+
+                </MUI.Dialog>
+
+                <MUI.Snackbar
+                    open={alertOpen}
+                    autoHideDuration={5000}
+                    onClose={() => setAlertOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <MUI.MuiAlert onClose={() => setAlertOpen(false)} variant="filled" severity="success" sx={{ width: '100%' }}>
+                    {alertMessage}
+                    </MUI.MuiAlert>
+                </MUI.Snackbar>
+
+                <MUI.Snackbar
+                    open={errorOpen}
+                    autoHideDuration={5000}
+                    onClose={() => setErrorOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <MUI.MuiAlert onClose={() => setErrorOpen(false)} variant='filled' severity='error' sx={{width: '100%'}}>
+                    {errorMessage}
+                    </MUI.MuiAlert>
+                </MUI.Snackbar>
 
             </MUI.Container>
         </MUI.ThemeProvider>

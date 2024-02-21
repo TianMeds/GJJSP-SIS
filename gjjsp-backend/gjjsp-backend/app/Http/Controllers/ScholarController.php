@@ -25,7 +25,12 @@ class ScholarController extends Controller
      */
     public function index()
     {
-        $scholars = Scholar::with('user','scholarStatus', 'scholarship_categs', 'renewal_documents')->get();
+        $scholars = Scholar::with('user', 'scholarStatus', 'scholarship_categs', 'renewal_documents')
+            ->whereHas('user', function ($query) {
+                $query->whereNull('deleted_at');
+            })
+            ->get();
+
         return response()->json(new ScholarCollection($scholars), Response::HTTP_OK);
     }
 

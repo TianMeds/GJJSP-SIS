@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\GraduatingFormResource;
 use App\Http\Resources\GraduatingFormCollection;
 use App\Models\GraduatingDocument;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GraduatingDocumentReminder;
+
 
 class GraduatingFormController extends Controller
 {
@@ -133,6 +137,31 @@ class GraduatingFormController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function sendReminders(Request $request, $id)
+    {
+        // Find the renewal document by its ID
+        $graduatingDocument = GraduatingDocument::find($id);
+
+        // Check if the renewal document exists
+        if (!$graduatingDocument) {
+            return response()->json(['message' => 'Graduating Document not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Find the user associated with the renewal document
+        $user = User::find($graduatingDocument->user_id);
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Send renewal document reminder email
+        Mail::to($user->email_address)->send(new GraduatingDocumentReminder($graduatingDocument, $user));
+
+        return response()->json(['message' => 'Graduating Document Reminder sent successfully'], Response::HTTP_OK);
     }
 
     /**
