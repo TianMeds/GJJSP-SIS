@@ -1,4 +1,4 @@
-import React, {useEffect,lazy, Suspense, useState} from 'react'
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import axios from '../../api/axios';
 
 //Components
@@ -18,13 +18,14 @@ import { DevTool } from "@hookform/devtools";
 import {useNavigate} from 'react-router-dom';
 import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
-import useAuth from '../../hooks/useAuth';
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,24}$/;
-const CONTACT_REGEX = /^\+?63\d{10}$/
+const CONTACT_REGEX = /^\d{10}$/;
+
+
 
 //Reseting Form Values 
 const FormValues = {
@@ -41,7 +42,7 @@ const FormValues = {
 export default function User({state}) {
 
   const form  = useForm();
-  const { register, control, handleSubmit, formState, reset, watch, validate} = form
+  const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
@@ -55,17 +56,12 @@ export default function User({state}) {
 
   const navigate = useNavigate();
 
-  const [emailError, setEmailError] = useState("");
-
-  const {auth} = useAuth();
-  const role_id = auth?.user?.role_id || '';
-  
-
   // Post Data to API 
   const onSubmit = async (data, event) => {
     event.preventDefault();
     const authToken = useAuthStore.getState().getAuthToken();
-  
+    const fullMobileNumber = `63${String(data.user_mobile_num).replace(/^63/, '')}`;
+     // data.user_mobile_num = fullMobileNumber;
     const config = {
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -73,13 +69,16 @@ export default function User({state}) {
       },
     };
   
+
+  
   try {
+   
     if(editUser) {
       setAlertOpen(true);
       setAlertMessage('Updating user...');
       setLoading(true);
       setLoadingMessage("Updating user")
-      const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
+      const reponse  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       handleCloseModalUsers();
       setEditUser(false)
@@ -97,7 +96,7 @@ export default function User({state}) {
         first_name: data.first_name,
         middle_name: data.middle_name,
         last_name: data.last_name,
-        user_mobile_num: data.user_mobile_num,
+        user_mobile_num: fullMobileNumber,
         email_address: data.email_address,
         password: data.password,
         role_id: data.role_id,
@@ -127,9 +126,8 @@ export default function User({state}) {
   catch (error) {
 
     if(error.response?.status === 422){
-      setEmailError("Email already taken");
       setErrorOpen(true)
-      setErrorMessage("Email already been taken");
+      setErrorMessage("Please fill up all the required fields");
       setLoading(false);
     }
     else if(error.response?.status === 409){
@@ -151,8 +149,6 @@ export default function User({state}) {
       setErrorMessage("Something went wrong");
       setLoading(false);
     }
-
-    handleCloseModalUsers();
   } 
 };
 
@@ -352,6 +348,28 @@ export default function User({state}) {
     'Scholar': 3,
   };
 
+  // For mobile number validation
+
+  const handleMobileNumberChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+    // This will update the value and if 'shouldValidate' is true, it will trigger validation
+    setValue('user_mobile_num', value, { shouldValidate: true });
+  };
+  
+  // const handleMobileNumberChange = (e) => {
+  //   // Extract only the numeric values entered by the user
+  //   let value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+  
+  //   // If the value already starts with '63', we strip it for the visual representation
+  //   if (value.startsWith('63')) {
+  //     value = value.slice(2);
+  //   }
+  
+  //   // Update the form state with the full mobile number including the '63' prefix
+  //   setValue('user_mobile_num', `63${value}`, { shouldValidate: true });
+  // };
+  
+  
 
   
   return (
@@ -470,7 +488,6 @@ export default function User({state}) {
                         <MUI.IconButton color="inherit" onClick={() => viewProfile(user.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
-                        
 
                         <MUI.IconButton
                           color="inherit"
@@ -480,6 +497,15 @@ export default function User({state}) {
 
                         </MUI.IconButton>
 
+
+                        <MUI.IconButton
+                          type='button'
+                          color="inherit"
+                          onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
+                          sx={{ textTransform: 'capitalize' }}
+                        >
+                          <MUI.DeleteIcon />
+                        </MUI.IconButton>
                         {user.deleted_at !== null && role_id === 1 ? (
                           <MUI.IconButton
                             variant="contained"
@@ -533,7 +559,7 @@ export default function User({state}) {
                     <MUI.TextField 
                       type='text'
                       id='first_name'
-                      placeholder='Name' 
+                      placeholder="Enter user's first name" 
                       fullWidth 
                       
                       {...register("first_name", {
@@ -560,7 +586,7 @@ export default function User({state}) {
                     <MUI.TextField 
                       type='text'
                       id='middle_name'
-                      placeholder='Name' 
+                      placeholder="Enter user's middle name (Optional)"
                       fullWidth 
 
                       {...register("middle_name", {
@@ -583,7 +609,7 @@ export default function User({state}) {
                     <MUI.TextField 
                       type='text'
                       id='last_name'
-                      placeholder='Name' 
+                      placeholder="Enter user's last name" 
                       fullWidth 
                       
                       {...register("last_name", {
@@ -607,25 +633,35 @@ export default function User({state}) {
 
                 <MUI.Grid id="userMobileNumGrid">
                   <MUI.InputLabel htmlFor="user_mobile_num" id="userMobileNumLabel">Mobile Number</MUI.InputLabel>
-                  <MUI.TextField 
-                    type='text'
-                    id='user_mobile_num'
-                    placeholder='63XXX-XXXX-XXX' 
-                    fullWidth 
-                    {...register("user_mobile_num", {
-                      required: {
-                        value: true,
-                        message: 'Mobile Number is required',
-                      },
-                      pattern: {
-                        value: CONTACT_REGEX,
-                        message: 'Enter your mobile number in 63 format with no spaces and symbol',
-                      }
-                    })}
-                  />
-                  {errors.user_mobile_num && (
-                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.user_mobile_num?.message}</p>
-                  )}
+                  <MUI.TextField
+        type="text"
+        name="user_mobile_num"
+        id="user_mobile_num"
+        placeholder="9XXXXXXXXX"
+        fullWidth
+        InputProps={{
+          startAdornment: <MUI.InputAdornment position="start">+63</MUI.InputAdornment>,
+        }}
+        value={watch('user_mobile_num')?.replace(/^63/, '') || ''}// Use an empty string as the fallback value
+        onInput={handleMobileNumberChange}
+        error={!!errors.user_mobile_num}
+        {...register("user_mobile_num", {
+          required: {
+            value: true,
+            message: 'Mobile Number is required',
+          },
+          pattern: {
+            value: CONTACT_REGEX,
+            message: 'Please enter a valid mobile number',
+          }
+        })}
+      />
+      {errors.user_mobile_num && (
+          <p id='errMsg'><MUI.InfoIcon className='infoErr'/>{errors.user_mobile_num.message}</p>
+      )}
+
+
+
                 </MUI.Grid>
 
                 <MUI.Grid id="emailAddressGrid">
@@ -633,7 +669,7 @@ export default function User({state}) {
                   <MUI.TextField 
                     type='email'
                     id='email_address'
-                    placeholder='Email Address' 
+                    placeholder="Enter user's email address"
                     fullWidth 
                     {...register("email_address", {
                       required: {
@@ -645,14 +681,9 @@ export default function User({state}) {
                         message: 'Please enter a valid email address',
                       }
                     })}
-
                   />
                   {errors.email_address && (
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
-                  )}
-
-                  {emailError && (
-                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {emailError}</p>
                   )}
                 </MUI.Grid>
 

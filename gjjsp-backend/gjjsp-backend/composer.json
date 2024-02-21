@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.8",
         "laravel/vonage-notification-channel": "^3.2",
         "phpoffice/phpspreadsheet": "^2.0",
+        "maatwebsite/excel": "^3.1",
         "vonage/client": "^4.0"
     },
     "require-dev": {
