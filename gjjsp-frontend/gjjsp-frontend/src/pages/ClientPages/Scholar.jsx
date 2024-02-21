@@ -353,6 +353,138 @@ export default function Scholar({state}) {
         return "";
     }
   };
+
+
+  // Export Data consts and states here
+  
+
+  const [showModal, setShowModal] = useState(false);
+  const [fromYear, setFromYear] = useState(null);
+  const [toYear, setToYear] = useState(null);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // Get current month
+  const [availableToYears, setAvailableToYears] = useState([]); // Track dynamic ToYear options
+  const [exportConfirmModalOpen, setExportConfirmModalOpen] = useState(false);
+  const [exportMessage, setExportMessage] = useState("");
+
+
+
+  // Get current year with Philippine timezone (replace with your library)
+  useEffect(() => {
+    const philippineDate = new Date().toLocaleString('ph-PH', { timeZone: 'Asia/Manila' });
+    setCurrentYear(new Date(philippineDate).getFullYear());
+    setCurrentMonth(new Date(philippineDate).getMonth()); // Update current month state
+  }, []);
+
+  const handleOpenModal = () => {
+    setFromYear(null);
+    setToYear(null);
+    setAvailableToYears([]); // Reset available ToYear options
+    setShowModal(true);
+  };
+
+  const handleFromYearChange = (event) => {
+    const selectedYear = event.target.value;
+    setFromYear(selectedYear);
+    setToYear(null); // Reset the ToYear on FromYear change
+  
+    if (selectedYear === 'all') {
+      setAvailableToYears(['all']);
+    } else {
+    let nextYearOptions = [];
+    for (let year = selectedYear + 1; year <= currentYear; year++) {
+      // If we're in the current year and it's before April, don't add the current school year
+      if (year === currentYear && currentMonth < 3) {
+        break;
+      }
+      nextYearOptions.push(year);
+    }
+    // If 'From' year is before the current year or it's past April, add the option for "This School Year only"
+    if (selectedYear < currentYear || (selectedYear === currentYear && currentMonth >= 3)) {
+      nextYearOptions.unshift(selectedYear); // Adds the selected "From" year as the first option
+    }
+    setAvailableToYears(nextYearOptions);
+  }
+  };
+
+  const handleToYearChange = (event) => {
+    setToYear(event.target.value);
+  };
+
+  const handleExport = () => {
+    // Trigger loading state
+    setLoading(true);
+    setLoadingMessage("Exporting Scholar Information, please wait...");
+  
+    // When "All School Years" is selected
+    if (fromYear === "all") {
+      console.log('Exporting data from All School Years');
+      exportData('all');
+    }
+    // When specific "From" and "To" years are selected
+    else if (fromYear && toYear) {
+      console.log(`Exporting data from SY ${fromYear}-${toYear}`);
+      exportData(fromYear, toYear);
+    } else {
+      // If required selections are not made, display an error message
+      console.error("Please select both 'From' and 'To' academic years.");
+      // Stop loading and show error message
+      setLoading(false);
+      setErrorOpen(true);
+      setErrorMessage("Please select both 'From' and 'To' academic years.");
+    }
+  };
+  
+  const exportData = (fromYear, toYear = null) => {
+    const apiUrl = '/api/export-scholars'; // Your API endpoint for exports
+    const params = toYear ? { fromYear, toYear } : { fromYear }; // Adjust params based on selection
+  
+    axios({
+      url: apiUrl, 
+      method: 'GET',
+      params: params,
+      responseType: 'blob', 
+    })
+    .then((response) => {
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = fromYear === "all" ? 'Scholars_All_Years.xlsx' : `Scholars_${fromYear}_${toYear}.xlsx`;
+      link.setAttribute('download', fileName); 
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      link.parentNode.removeChild(link); // Clean up
+  
+      // Stop loading and show success message
+      setLoading(false);
+      setAlertOpen(true);
+      setAlertMessage("Export successful!");
+    })
+    .catch((error) => {
+      console.error('Export error:', error);
+      // Stop loading and show error message
+      setLoading(false);
+      setErrorOpen(true);
+      setErrorMessage("Export failed. Please try again.");
+    });
+  };
+  
+
+  const yearOptions = Array.from({ length: (currentMonth >= 3 ? currentYear : currentYear - 1) - 1990 }, (_, i) => 1990 + i);
+
+  const handleExportClick = () => {
+    let message = '';
+    if (fromYear === "all") {
+      message = "Scholar Information for all School Years will be exported. Are you sure?";
+    } else {
+      message = `Scholar Information from S.Y ${fromYear}-${parseInt(fromYear) + 1} until S.Y ${toYear}-${parseInt(toYear) + 1} will be exported. Are you sure?`;
+    }
+    setExportMessage(message); // Set the prepared message
+    setExportConfirmModalOpen(true); // Open the confirmation modal
+  };
+
   
   return (
     <Layout>
@@ -368,10 +500,111 @@ export default function Scholar({state}) {
                 
 
                 
-              <MUI.Button variant='contained' component={Link} to="/export"  id='addButton' sx={{mr: 4}}>
-                <MUI.FileUploadOutlinedIcon sx={{mr: 1}}/>
-                <MUI.Typography variant='body2'>Export Data</MUI.Typography>
-              </MUI.Button>
+              {/* Button to trigger opening the export modal */}
+             <MUI.Button
+  variant="contained"
+  id="exportDataButton"
+  onClick={handleOpenModal}
+>
+  <MUI.FileUploadOutlinedIcon sx={{ mr: 1 }} />
+  <MUI.Typography variant="body2">Export Data</MUI.Typography>
+</MUI.Button>
+
+{/* ------------------ Dialog Box of the  Export ---------------*/ }    
+
+<MUI.Dialog open={showModal} onClose={() => setShowModal(false)} fullWidth maxWidth="sm">
+  <MUI.DialogTitle id="dialogTitle">Export Scholar Information</MUI.DialogTitle>
+  <MUI.Typography variant='body2' id="dialogLabel">Please select the range of school years for which you would like to export.</MUI.Typography>
+  <MUI.DialogContent>
+    <MUI.Grid container spacing={2} sx={{ mb: 4 }}>
+      <MUI.Grid item xs={12} sm={6}>
+      <MUI.TextField
+  select
+  label="From *"
+  value={fromYear}
+  onChange={handleFromYearChange}
+  fullWidth
+>
+ 
+  <MUI.MenuItem value="all">
+    All School Years
+  </MUI.MenuItem>
+  {yearOptions.map((year) => (
+    <MUI.MenuItem key={year} value={year}>
+      S.Y {year}-{year + 1}
+    </MUI.MenuItem>
+  ))}
+</MUI.TextField>
+
+      </MUI.Grid>
+      <MUI.Grid item xs={12} sm={6}>
+     
+      <MUI.TextField
+  select
+  label="To *"
+  value={toYear}
+  onChange={handleToYearChange}
+  disabled={ !fromYear || availableToYears.length === 0 || fromYear === "all"}
+  fullWidth
+>
+{fromYear && availableToYears.includes(fromYear) && (
+      <MUI.MenuItem key="selectedYear" value={fromYear}>
+        From the selected School Year only
+      </MUI.MenuItem>
+    )}
+  {availableToYears
+    .filter(
+      (year) =>
+        !(year === currentYear || year === currentYear + 1) &&
+        !(year === currentYear - 1 && currentMonth < 4)
+    )
+    .map((year) => (
+      <MUI.MenuItem key={year} value={year}>
+        S.Y {year}-{year + 1}
+      </MUI.MenuItem>
+    ))}
+    
+</MUI.TextField>
+
+      </MUI.Grid>
+    </MUI.Grid>
+    <MUI.DialogActions>
+      <MUI.Button onClick={() => setShowModal(false)}>Cancel</MUI.Button>
+      <MUI.Button onClick={handleExportClick} variant="contained"
+      disabled={!fromYear || (!toYear && fromYear !== "all")} // Disable if no selection in "From" or if no selection in "To" unless "All School Years" is selected in "From"
+      >Export</MUI.Button>
+    </MUI.DialogActions>
+  </MUI.DialogContent>
+</MUI.Dialog>
+
+  {/* ------------------ End of Dialog Box of the  Export ---------------*/ }     
+
+  {/* ------------------- Confirmation Dialog Box Export ------------- */}
+  <MUI.Dialog open={exportConfirmModalOpen} onClose={() => setExportConfirmModalOpen(false)}>
+  <MUI.DialogTitle id="dialogTitle" mt={2}>{'Confirm Export'}</MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+              {exportMessage}
+              </MUI.Typography>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              
+      <MUI.Button onClick={() => setExportConfirmModalOpen(false)} color="primary">Cancel</MUI.Button>
+      
+    <MUI.Button onClick={() => {
+      // Call the export function
+      handleExport();
+      // Close the modal
+      setExportConfirmModalOpen(false);
+      setShowModal(false);
+    }} color="primary" variant="contained"
+    type='submit' 
+    sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}>
+      Yes, Export
+    </MUI.Button>
+  </MUI.DialogActions>
+</MUI.Dialog>
+
               
               </MUI.Box>  
 
@@ -435,7 +668,7 @@ export default function Scholar({state}) {
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Email</MUI.TableCell>
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholarship Category</MUI.TableCell>
                   <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar Status</MUI.TableCell>
-                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem', textAlign: 'center'}}>Action</MUI.TableCell>
+                  <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
                 </MUI.TableRow>
               </MUI.TableHead>
                 <MUI.TableBody>
@@ -489,31 +722,21 @@ export default function Scholar({state}) {
                       </MUI.TableCell>
                       
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
+                        <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
+                          <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}} />
+                        </MUI.IconButton>
 
-                        <MUI.Button
-                          onClick={() => viewScholarProfile(scholar.id)}
-                          variant='contained'
-                        >
-                          View
-                        </MUI.Button>
+                        <MUI.IconButton color="inherit" onClick={() => updateScholar(scholar.id)}>
+                          <MUI.BorderColorIcon />
+                        </MUI.IconButton>
 
-                        <MUI.Button 
-                          onClick={() => updateScholar(scholar.id)}
-                          variant='contained'
-                          sx={{backgroundColor: '#0C66E4', ml: 2}}
-                        >
-                          Edit
-                        </MUI.Button>
-
-
-                        <MUI.Button 
+                        <MUI.IconButton
+                          color="inherit"
+                          sx={{ textTransform: 'capitalize' }}
                           onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)}
-                          sx={{ textTransform: 'capitalize', ml: 2 }}
-                          variant='contained'
-                          color='error'
                         >
-                          Delete
-                        </MUI.Button>
+                          <MUI.DeleteIcon />
+                        </MUI.IconButton>
                       </MUI.TableCell>
                     </MUI.TableRow>
                       ) : null
