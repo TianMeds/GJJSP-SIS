@@ -9,9 +9,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-use App\Models\Scholar;
 
-class ScholarUpdated extends Mailable
+
+class UserDeleted extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -20,15 +20,13 @@ class ScholarUpdated extends Mailable
      */
 
     public $user;
-    public $updatedFields;
-    public $scholar;
-    
-    public function __construct(User $user, array $updatedFields, Scholar $scholar)
+    public $deletedName;
+    public function __construct(User $user, $deletedName)
     {
         $this->user = $user;
-        $this->updatedFields = $updatedFields;
-        $this->scholar = $scholar;
+        $this->deletedName = $deletedName;
     }
+    
 
     /**
      * Get the message envelope.
@@ -36,7 +34,7 @@ class ScholarUpdated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Scholar Updated',
+            subject: 'User Deleted',
         );
     }
 
@@ -46,14 +44,15 @@ class ScholarUpdated extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.scholar-updated',
+            view: 'mail.deleteuser',
         );
     }
 
     public function build()
     {
-        return $this->subject('Scholar Profile Updated')
-                    ->view('mail.scholar-updated');
+        return $this->subject('User Deleted')
+                    ->view('mail.deleteuser')
+                    ->with('deletedName', $this->deletedName);
     }
 
     /**

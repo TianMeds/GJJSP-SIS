@@ -209,7 +209,6 @@ export default function Scholar({state}) {
 
         if (response.status === 200) {
           setScholarsData(response.data.data); 
-          console.log(response.data.data);
           setAlertOpen(false);
           setAlertMessage("Updated Scholars List")
         } else {
@@ -256,7 +255,7 @@ export default function Scholar({state}) {
           }
         });
 
-        const response = await axios.get('/api/scholars', {
+        const response = await axios.get('/api/userScholars', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }

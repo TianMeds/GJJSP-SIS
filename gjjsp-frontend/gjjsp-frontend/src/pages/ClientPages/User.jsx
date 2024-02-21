@@ -47,7 +47,7 @@ export default function User({state}) {
 
   const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
     selectedUser, setSelectedUser, setAvatarInitial, modalUsers, setModalUsers, handleOpenModalUsers, handleCloseModalUsers, deleteModal, setDeleteModal,
-    userIdToDelete, setUserIdToDelete
+    userIdToDelete, setUserIdToDelete, restoreModal, setRestoreModal, userIdToRestore, setUserIdToRestore
   } = useUserStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage, setErrMsg} = useLoginStore();
@@ -257,6 +257,65 @@ export default function User({state}) {
     handleCloseDeleteModal();
   };
 
+  const restoreUser = async (userId) => {
+    setLoading(true);
+    setLoadingMessage("Restoring user");
+    setAlertOpen(true);
+    setAlertMessage('Restoring user...');
+    try {
+      const authToken = getAuthToken();
+      const restoreResponse = await axios.get(`/api/restoreUser/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (restoreResponse.status === 200) {
+        setAlertOpen(true);
+        setAlertMessage('User restored');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to restore user');
+      }
+
+      const response = await axios.get('/api/users', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setUsers(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+
+      setLoading(false);
+
+    } catch (error) {
+      if (error.response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleOpenRestoreModal = (userId) => {
+    setUserIdToRestore(userId);
+    setRestoreModal(true);
+  };
+
+  const handleCloseRestoreModal = () => {
+    setUserIdToRestore(null);
+    setRestoreModal(false);
+  };
+
+
   //View Profile Function
   const viewProfile = (userId) => {
     const selectedUser = users.find((user) => user.id === userId);
@@ -447,6 +506,28 @@ export default function User({state}) {
                         >
                           <MUI.DeleteIcon />
                         </MUI.IconButton>
+                        {user.deleted_at !== null && role_id === 1 ? (
+                          <MUI.IconButton
+                            variant="contained"
+                            sx={{
+                              borderRadius: '10px',
+                              borderColor: 'primary.main',
+                              textTransform: 'capitalize',
+                            }}
+                            onClick={() => handleOpenRestoreModal(user.id)}
+                          >
+                            <MUI.RestoreIcon />
+                          </MUI.IconButton>
+                        ) : (
+                          <MUI.IconButton
+                            type='button'
+                            color="inherit"
+                            onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
+                            sx={{ textTransform: 'capitalize' }}
+                          >
+                            <MUI.DeleteIcon />
+                          </MUI.IconButton>
+                        )}
 
                       </MUI.TableCell>
                     </MUI.TableRow>
@@ -780,6 +861,43 @@ export default function User({state}) {
                 Yes, Delete User
               </MUI.Button>
             </MUI.DialogActions>
+          </MUI.Dialog>
+
+          <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
+            <MUI.DialogTitle id="dialogTitle" mt={2}>
+              Heads Up!
+            </MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                You're about to restore a user's account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseRestoreModal} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button
+                onClick={() => {
+                  restoreUser(userIdToRestore);
+                  handleCloseRestoreModal();
+                }}
+                color="primary"
+                variant="contained"
+                sx={{
+                  borderRadius: '5px',
+                  mb: 2,
+                  mt: 2,
+                  backgroundColor: '#43a047',
+                  '&:hover': {
+                    backgroundColor: '#43a047', // Change color on hover
+                  },
+                }}
+              >
+                Yes, Restore User
+              </MUI.Button>
+            </MUI.DialogActions>
+
           </MUI.Dialog>
 
           {/* Snackbar for Success */}

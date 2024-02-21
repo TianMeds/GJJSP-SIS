@@ -9,25 +9,22 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-use App\Models\Scholar;
 
-class ScholarUpdated extends Mailable
+
+class UserRestored extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-
     public $user;
-    public $updatedFields;
-    public $scholar;
-    
-    public function __construct(User $user, array $updatedFields, Scholar $scholar)
+    public $restoredName;
+
+    public function __construct(User $user, $restoredName)
     {
         $this->user = $user;
-        $this->updatedFields = $updatedFields;
-        $this->scholar = $scholar;
+        $this->restoredName = $restoredName;
     }
 
     /**
@@ -36,7 +33,7 @@ class ScholarUpdated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Scholar Updated',
+            subject: 'User Restored',
         );
     }
 
@@ -46,14 +43,15 @@ class ScholarUpdated extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.scholar-updated',
+            view: 'mail.restoreuser',
         );
     }
 
     public function build()
     {
-        return $this->subject('Scholar Profile Updated')
-                    ->view('mail.scholar-updated');
+        return $this->subject('User Restored')
+                    ->view('mail.restoreuser')
+                    ->with('restoredName', $this->restoredName);
     }
 
     /**
