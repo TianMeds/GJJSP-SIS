@@ -599,7 +599,7 @@ export default function Scholar({state}) {
     }} color="primary" variant="contained"
     type='submit' 
     sx={{backgroundColor: '#0C66E4', borderRadius: '5px', mb: 2, mt: 2 }}>
-      Yes, Export
+      Yes, Export now
     </MUI.Button>
   </MUI.DialogActions>
 </MUI.Dialog>
