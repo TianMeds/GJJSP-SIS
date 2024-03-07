@@ -14,12 +14,17 @@ return new class extends Migration
         Schema::create('graduating_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('scholar_id')->nullable()->constrained('scholars');
-            $table->string('future_company')->nullable();
-            $table->string('future_company_location')->nullable();
-            $table->string('future_position')->nullable();
-            $table->string('meeting_benefactor_sched')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->string('graduateName')->nullable();
+            $table->string('schoolGraduated')->nullable();
+            $table->string('addressSchool')->nullable();
+            $table->string('yearEnteredGraduated')->nullable();
+            $table->string('program')->nullable();
+            $table->string('street')->nullable();
+            $table->string('user_email_address')->nullable();
+            $table->string('user_mobile_num')->nullable();
+            $table->string('futurePlan')->nullable();
             $table->string('school_yr_submitted')->nullable();
-            $table->string('term_submitted')->nullable();
             $table->string('copyOfReportCard')->nullable();
             $table->string('copyOfRegistrationForm')->nullable();
             $table->string('scannedWrittenEssay')->nullable();

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import * as MUI from '../../import';
 import Layout from '../../component/Layout/SidebarNavbar/Layout';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,7 +26,9 @@ export default function GraduatingSubmitted() {
 
     const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
     const {setLoading, setLoadingMessage } = useLoginStore();
-    const {graduatingForms, setGraduatingForms, modalGraduating, setModalGraduating, graduatingIdToSend, setGraduatingIdToSend} = useSubmissionStore();
+    const {graduatingForms, setGraduatingForms, modalGraduating, setModalGraduating, graduatingIdToSend, setGraduatingIdToSend, filteredSubmission, setFilteredSubmission, searchQuery, handleSearch, selectedSubmission, setSelectedSubmission, passYear, setPassYear} = useSubmissionStore();
+
+    const [schoolYears, setSchoolYears] = useState([]);
 
 
     const handleOpenModalGraduating = (id) => {
@@ -39,12 +41,32 @@ export default function GraduatingSubmitted() {
         setModalGraduating(false);
     }
 
+    const getCurrentSchoolYear = () => {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+
+        const startYear = currentMonth < 4 ? currentYear - 1 : currentYear;
+        const endYear = startYear + 1;
+
+        return `${startYear}-${endYear}`;
+    };
+
+    useEffect(() => {
+        const currentSY = getCurrentSchoolYear();
+        if(!schoolYears.includes(currentSY)) {
+            setSchoolYears(prevSchoolYears => {
+                const updatedYears = [currentSY, ...prevSchoolYears];
+                return updatedYears.slice(0, 2);
+            })
+        }
+    }, [schoolYears]);
+
     useEffect(() => {
         const fetchScholars= async () => {
             try {
                 const authToken = getAuthToken();
             
-                const response = await axios.get('/api/graduating-documents', {
+                const response = await axios.get('/api/scholars', {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
@@ -112,6 +134,23 @@ export default function GraduatingSubmitted() {
         }
     }
 
+    const selectedYear = watch("school_yr_submitted");
+
+    const viewSubmission = (submissionId, schoolYear) => {
+        const selectedSubmission = graduatingForms.find((graduatingForm) => graduatingForm.id === submissionId);
+
+        if (selectedSubmission) {
+            setSelectedSubmission(selectedSubmission);
+            setPassYear(schoolYear);
+            navigate('/graduating-view');
+        }
+
+        else {
+            setErrorMessage('Unable to view submission. Please try again.');
+            setErrorOpen(true);
+        }
+    };
+
   return (
     <Layout>
     <MUI.ThemeProvider theme={theme}>
@@ -128,45 +167,24 @@ export default function GraduatingSubmitted() {
 
                     
                         <MUI.Grid id="schoolYearGrid">
-                            <MUI.InputLabel htmlFor="schoolYear" id="schoolYearLabel"></MUI.InputLabel>
+                            <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
                             <Controller
-                                name="schoolYear"
+                                name="school_yr_submitted"
+                                id="school_yr_submitted"
                                 control={control}
-                                defaultValue=""
+                                defaultValue={schoolYears[0]}
                                 render={({ field }) => (
                                 <MUI.Select
                                     native
                                     {...field}
-                                    id='schoolYear'
                                     sx={{border: '1px solid rgba(0,0,0,0.2)',
                                     boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
                                 >
-                                    <option value="SY 2023-2024">SY 2023-2024</option>
-                                    <option value="SY 2022-2023">SY 2022-2023</option>
-                                    <option value="SY 2021-2022">SY 2021-2022</option>
+                                    <option value="">Select SY</option>
+                                    {schoolYears.map(year => (
+                                        <option key={year} value={year}>{`SY ${year}`}</option>
+                                    ))}
                                     
-                                </MUI.Select>
-                                )}
-                            />
-                        </MUI.Grid>
-
-                        <MUI.Grid id="termGrid">
-                            <MUI.InputLabel htmlFor="term" id="termLabel"></MUI.InputLabel>
-                            <Controller
-                                name="term"
-                                control={control}
-                                defaultValue=""
-                                render={({ field }) => (
-                                <MUI.Select
-                                    native
-                                    {...field}
-                                    id='term'
-                                    sx={{border: '1px solid rgba(0,0,0,0.2)',
-                                    boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
-                                >
-                                    <option value="Term 1">Term 1</option>
-                                    <option value="Term 2">Term 2</option>
-                                    <option value="Term 3">Term 3</option>
                                 </MUI.Select>
                                 )}
                             />
@@ -174,8 +192,9 @@ export default function GraduatingSubmitted() {
                     </MUI.Grid>
                 </MUI.Grid>
 
-                <MUI.Grid container  ml={2} mt={8} mb={8} sx={{display: 'flex'}}>
-                    <MUI.Grid item>
+                <MUI.Grid sx={{ borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflow: 'auto', width: '100%' }}>
+
+                <MUI.Container sx={{mt: 4, mb: 4,  display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Search>
                             <SearchIconWrapperV2>
                                 <MUI.SearchIcon />
@@ -183,83 +202,129 @@ export default function GraduatingSubmitted() {
                             <StyledInputBaseV2
                                 placeholder="Search for names, groups, or email addresses"
                                 inputProps={{ 'aria-label': 'search' }}
+                                value={searchQuery}
+                                onChange={handleSearch}
                             />
                         </Search>
-                    </MUI.Grid>
 
-                    <MUI.Grid item>
-                        <MUI.IconButton aria-label="filter">
-                            <MUI.FilterListIcon />
-                        </MUI.IconButton>
-                    </MUI.Grid>
-
-                    <MUI.Grid item>
-                        <MUI.FormControl>
+                        <MUI.FormControl sx={{ minWidth: 120 }}>
                             <MUI.Select
-                                native
-                                sx={{ width: '100%', border: '1px solid rgba(0,0,0,0.2)', boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px' }}
+                            value={filteredSubmission}
+                            onChange={(e) => setFilteredSubmission(e.target.value)} 
+                            displayEmpty
+                            inputProps={{ 'aria-label': 'Filter' }}
+                            startAdornment={
+                                <MUI.InputAdornment position="start">
+                                <MUI.FilterListIcon
+                                    viewBox="0 0 24 24"
+                                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                                />
+                                </MUI.InputAdornment>
+                            }
+                            sx={{ borderRadius: '12px' }}
                             >
-                                <option value="All">All</option>
-                                <option value="For Approval">For Approval</option>
-                                <option value="Approved">Approved</option>
-                                <option value="For Resubmission">For Resubmission</option>
-                                <option value="No Submission">No Submission</option>
+                            <MUI.MenuItem value="All">All</MUI.MenuItem>
+                            <MUI.MenuItem value="For Approval">For Approval</MUI.MenuItem>
+                            <MUI.MenuItem value="Approved">Approved</MUI.MenuItem>
+                            <MUI.MenuItem value="For Resubmission">For Resubmission</MUI.MenuItem>
                             </MUI.Select>
                         </MUI.FormControl>
-                    </MUI.Grid>
-                </MUI.Grid>
-
+                </MUI.Container>
             </MUI.Grid>
 
-                <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2' }}>
-                    <MUI.Table> 
+            <MUI.TableContainer sx={{ backgroundColor: '#fbf3f2' }}>
+                <MUI.Table> 
                     <MUI.TableHead>
                         <MUI.TableRow>
-                        <MUI.TableCell>Scholar's Name</MUI.TableCell>
-                        <MUI.TableCell>Status</MUI.TableCell>
-                        <MUI.TableCell>View Submission</MUI.TableCell>
-                        <MUI.TableCell>Remarks</MUI.TableCell>
-                        <MUI.TableCell>Action</MUI.TableCell>
+                            <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar's Name</MUI.TableCell>
+                            <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Status</MUI.TableCell>
+                            <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>View Submission</MUI.TableCell>
+                            <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
                         </MUI.TableRow>
                     </MUI.TableHead>
-                        <MUI.TableBody>
-                            {graduatingForms.map((graduatingForm, index) => (
-                            <MUI.TableRow key={index} className='user' >
-                            <MUI.TableCell sx={{border: 'none'}}  className='name'>
-                            {`${graduatingForm.user_first_name} ${graduatingForm.user_middle_name || ""} ${graduatingForm.user_last_name}`}
-                            </MUI.TableCell>
-                            <MUI.TableCell sx={{border: 'none'}}  className='submission_status'>
-                               {graduatingForm.submission_status}
-                            </MUI.TableCell>
-                            
-                            <MUI.TableCell sx={{border: 'none'}}  className='role'>
-                                <MUI.IconButton color="inherit" component={Link} to='/graduating-view' sx={{ml: 2}}>
-                                    <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
-                                </MUI.IconButton>
-                            </MUI.TableCell>
+                    <MUI.TableBody>
+                        {graduatingForms
+                        .filter((graduatingForm) => (
+                            filteredSubmission === 'All' ? true : (
+                                Object.entries(graduatingForm.graduating).some(([schoolYear, submissions]) => (
+                                    schoolYear === selectedYear && submissions.some((submission) => submission.submission_status === filteredSubmission)
+                                ))
+                            )
+                        ))
+                        .filter((graduatingForm) => {
+                            if (selectedYear === '') {
+                                return true;
+                            }
+                            else {
+                                return Object.keys(graduatingForm.graduating).some((schoolYear) => schoolYear === selectedYear);
+                            }
+                        })
 
-                            <MUI.TableCell sx={{border: 'none'}}  className='status'>
-                                <MUI.IconButton color="inherit">
-                                    <MUI.AddCommentOutlinedIcon />
-                                </MUI.IconButton>
-                            </MUI.TableCell>
-
-                            <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
-
-                                <MUI.Button variant='contained' onClick={() => handleOpenModalGraduating(graduatingForm.id)}>
-                                    <MUI.NotificationsIcon/>
-                                    <MUI.Typography variant='h5'>
-                                        Send Reminders
-                                    </MUI.Typography>  
-                                </MUI.Button>
-
-                            </MUI.TableCell>
-                            </MUI.TableRow>
+                        .filter((graduatingForm) => (
+                            (`${graduatingForm.user_first_name} ${graduatingForm.user_middle_name || ""} ${graduatingForm.user_last_name}`).toLowerCase().includes(searchQuery?.toLowerCase())
+                        ))
+                        .map((graduatingForm, index) => (
+                            <React.Fragment key={index}>
+                                {Object.entries(graduatingForm.graduating).map(([schoolYear, submissions]) => (
+                                    selectedYear === schoolYear && (
+                                        submissions.map((submission, submissionIndex) => (
+                                            <MUI.TableRow key={`${index}-${schoolYear}-${submissionIndex}`} className='user' >
+                                                <MUI.TableCell>{`${graduatingForm.user_first_name} ${graduatingForm.user_middle_name || ''} ${graduatingForm.user_last_name}`}</MUI.TableCell>
+                                                <MUI.TableCell>
+                                                {submission.submission_status === 'For Approval' ? (
+                                                    <span className='For_Approval'>For Approval</span>
+                                                ) : submission.submission_status === 'Approved' ? (
+                                                    <span className='Approved'>Approved</span>
+                                                ) : submission.submission_status === 'For Resubmission' ? (
+                                                    <span className='For_Resubmission'>For Resubmission</span>
+                                                ) : (
+                                                    <span className='No_Submission'>No Submission</span>
+                                                )}
+                                                </MUI.TableCell>
+                                                <MUI.TableCell>
+                                                    <MUI.IconButton color="inherit" onClick={() => viewSubmission(graduatingForm.id, schoolYear)}>
+                                                        <MUI.TableChartIcon sx={{ transform: 'rotate(90deg)' }} />
+                                                    </MUI.IconButton>
+                                                </MUI.TableCell>
+                                                <MUI.TableCell sx={{ color: '#2684ff' }}>
+                                                    <MUI.Button variant='contained' onClick={() => handleOpenModalGraduating(graduatingForm.id)}>
+                                                        <MUI.NotificationsIcon/>
+                                                        <MUI.Typography variant='h5'>Send Reminders</MUI.Typography>  
+                                                    </MUI.Button>
+                                                </MUI.TableCell>
+                                            </MUI.TableRow>
+                                        ))
+                                    )
+                                ))}
+                                {/* Render a row indicating no submission if there are no submissions */}
+                                {Object.keys(graduatingForm.graduating).length === 0 && (
+                                    <MUI.TableRow key={`${index}-no-submission`} className='user' >
+                                        <MUI.TableCell>{`${graduatingForm.user_first_name} ${graduatingForm.user_middle_name || ''} ${graduatingForm.user_last_name}`}</MUI.TableCell>
+                                        <MUI.TableCell>
+                                        <span className='No_Submission'>No Submission</span>
+                                        </MUI.TableCell>
+                                        <MUI.TableCell>
+                                            <MUI.IconButton color="inherit" onClick={() => viewSubmission(graduatingForm.id, schoolYear)}>
+                                                <MUI.TableChartIcon sx={{ transform: 'rotate(90deg)' }} />
+                                            </MUI.IconButton>
+                                        </MUI.TableCell>
+                                        <MUI.TableCell sx={{ color: '#2684ff' }}>
+                                            <MUI.Button variant='contained' onClick={() => handleOpenModalGraduating(graduatingForm.id)}>
+                                                <MUI.NotificationsIcon/>
+                                                <MUI.Typography variant='h5'>Send Reminders</MUI.Typography>  
+                                            </MUI.Button>
+                                        </MUI.TableCell>
+                                    </MUI.TableRow>
+                                )}
+                            </React.Fragment>
                         ))}
-                        </MUI.TableBody>
-                    </MUI.Table>
-                    <MUI.Divider sx={{width:'100%'}}/>
-                </MUI.TableContainer> 
+                    </MUI.TableBody>
+                </MUI.Table>
+                <MUI.Divider sx={{ width: '100%' }}/>
+            </MUI.TableContainer>
+
+</MUI.Grid>
+
 
 
                 <MUI.Dialog open={modalGraduating} onClose={handleCloseModalGraduating} >

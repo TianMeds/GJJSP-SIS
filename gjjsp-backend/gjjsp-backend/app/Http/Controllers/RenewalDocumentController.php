@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\RenewalDocumentResource;
 use App\Http\Resources\ScholarResoure;
 use App\Http\Resources\RenewalDocumentCollection;
+use App\Http\Resources\RemarksResource;
 use App\Models\RenewalDocument;
 use App\Models\Scholar;
 use App\Models\User;
+use App\Models\Remarks;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -59,12 +61,28 @@ class RenewalDocumentController extends Controller
     public function store(Request $request)
     {
         try {
-            // Define the validation rules
+
+            $user = auth()->user();
+        
+            // Ensure we get a single scholar associated with the user
+            $scholar = $user->scholar()->first();
+
+            // Check if a scholar exists
+            if (!$scholar) {
+                return response()->json(['error' => 'Scholar not found for the authenticated user'], 404);
+            }
+
+            // Get the scholar id
+            $scholarId = $scholar->id;
+            
+            // Get the user id
+            $userId = $user->id;
+
             $rules = [
-                'copyOfReportCard' => 'required|mimes:pdf',
-                'copyOfRegistrationForm' => 'required|mimes:pdf',
-                'scannedWrittenEssay' => 'required|mimes:pdf',
-                'letterOfGratitude' => 'required|mimes:pdf',
+                'copyOfReportCard' => 'required|mimes:pdf,doc,docx|max:5120',
+                'copyOfRegistrationForm' => 'required|mimes:pdf|max:5120',
+                'scannedWrittenEssay' => 'required|mimes:pdf|max:5120',
+                'letterOfGratitude' => 'required|mimes:pdf |max:5120',
                 ];
     
             // Validate the request
@@ -79,12 +97,13 @@ class RenewalDocumentController extends Controller
             // If validation passes, proceed with file upload logic
     
             $status = $request->input('status', 'Renewal');
-            $user = auth()->user();
             $studentName = $user->first_name . ' ' . $user->last_name;
             $fileNames = [];
     
             // Create a single instance of the RenewalDocument model
             $submission = new RenewalDocument();
+            $submission->user_id = $userId; // Assign the user id
+            $submission->scholar_id = $scholarId; 
             $submission->gwa_value = $request->input('gwa_value');
             $submission->gwa_remarks = $request->input('gwa_remarks');
             $submission->school_yr_submitted = $request->input('school_yr_submitted');
@@ -94,7 +113,7 @@ class RenewalDocumentController extends Controller
             foreach (['copyOfReportCard', 'copyOfRegistrationForm', 'scannedWrittenEssay', 'letterOfGratitude'] as $fileType) {
                 if ($request->hasFile($fileType)) {
                     $file = $request->file($fileType);
-                    $fileName = $status . '_' . $studentName . '_' . $file->getClientOriginalName();  // New filename
+                    $fileName = $status . '_' . $studentName . '_' . $request->input('term_submitted') . '_' . $file->getClientOriginalName();
     
                     // Upload the file to Nextcloud only if it doesn't already exist
                     $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/RenewalDocuments/';
@@ -111,7 +130,7 @@ class RenewalDocumentController extends Controller
                 
                             // Check if the file was successfully uploaded to Nextcloud
                             if ($response->successful()) {
-                                $submission->{$fileType} = $fileName;
+                                $submission->{$fileType} = $nextcloudApiUrl;
                                 $fileNames[$fileType] = $nextcloudApiUrl;
                             } else {
                                 // Log the response and request details for debugging
@@ -162,46 +181,105 @@ class RenewalDocumentController extends Controller
     }
 
 
-    public function sendReminders(Request $request, $id)
+    public function updateSubmissionStatus(Request $request, $scholarId) 
     {
-        // Find the renewal document by its ID
-        $renewalDocument = RenewalDocument::find($id);
-
-        // Check if the renewal document exists
-        if (!$renewalDocument) {
-            return response()->json(['message' => 'Renewal Document not found'], Response::HTTP_NOT_FOUND);
+        try {
+            // Find the Renewal Document object by scholar ID
+            $renewalDocument = RenewalDocument::where('scholar_id', $scholarId)->first();
+    
+            if (!$renewalDocument) {
+                return response()->json([
+                    'message' => 'Renewal Document not found for the scholar',
+                ], 404);
+            }
+            
+            // Get the ID of the logged-in user
+            $loggedInUserId = Auth::id();
+    
+            // Update the Renewal Document Data with this request
+            $renewalDocument->update([
+                'submission_status' => $request->input('submission_status'),
+                'updated_by' => $loggedInUserId, // Set the updated_by field with the ID of the logged-in user
+            ]);
+    
+            // Return a success response
+            return new RenewalDocumentResource($renewalDocument);
+        } catch (\Exception $e) {
+            // Return an error response
+            return response()->json([
+                'message' => 'Error updating Renewal Document',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Find the user associated with the renewal document
-        $user = User::find($renewalDocument->user_id);
-
-        // Check if the user exists
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        // Send renewal document reminder email
-        Mail::to($user->email_address)->send(new RenewalDocumentReminder($renewalDocument, $user));
-
-        return response()->json(['message' => 'Renewal Document Reminder sent successfully'], Response::HTTP_OK);
     }
+    
+
+
+    // public function sendReminders(Request $request, $id)
+    // {
+    //     // Find the renewal document by its ID
+    //     $renewalDocument = RenewalDocument::find($id);
+
+    //     // Check if the renewal document exists
+    //     if (!$renewalDocument) {
+    //         return response()->json(['message' => 'Renewal Document not found'], Response::HTTP_NOT_FOUND);
+    //     }
+
+    //     // Find the user associated with the renewal document
+    //     $user = User::find($renewalDocument->user_id);
+
+    //     // Check if the user exists
+    //     if (!$user) {
+    //         return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+    //     }
+
+    //     // Send renewal document reminder email
+    //     Mail::to($user->email_address)->send(new RenewalDocumentReminder($renewalDocument, $user));
+
+    //     return response()->json(['message' => 'Renewal Document Reminder sent successfully'], Response::HTTP_OK);
+    // }
 
     // public function store(Request $request)
     // {
     //     try {
-
     //         $user = Auth::user();
-
-    //         $scholarId = $user->scholar->id;
-    //         // Generate unique filenames
-    //         $copyOfReportCardName = Str::random(32) . '.' . $request->copyOfReportCard->getClientOriginalExtension();
-    //         $copyOfRegistrationFormName = Str::random(32) . '.' . $request->copyOfRegistrationForm->getClientOriginalExtension();
-    //         $scannedWrittenEssayName = Str::random(32) . '.' . $request->scannedWrittenEssay->getClientOriginalExtension();
-    //         $letterOfGratitudeName = Str::random(32) . '.' . $request->letterOfGratitude->getClientOriginalExtension();
     
-    //         $submission = null;
-
-    //         // Create Renewal Document
+    //         // Ensure we get a single scholar associated with the user
+    //         $scholar = $user->scholar()->first();
+    
+    //         // Check if a scholar exists
+    //         if (!$scholar) {
+    //             return response()->json(['error' => 'Scholar not found for the authenticated user'], 404);
+    //         }
+    
+    //         $scholarId = $scholar->id;
+    //         $userName = 'renewal_' . $user->first_name . '_' . $user->last_name;
+    
+    //         // Set Nextcloud API endpoint and credentials
+    //         $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/index.php/s/fmiD2kZdNaa3PKT';
+    //         $nextcloudUsername = 'cbmedallada';
+    //         $nextcloudPassword = 'sm@llLamp50';
+            
+    
+    //         // Prepare array to store filenames
+    //         $fileNames = [];
+    
+    //         // Iterate over file types and process each
+    //         foreach (['copyOfReportCard', 'copyOfRegistrationForm', 'scannedWrittenEssay', 'letterOfGratitude'] as $fileType) {
+    //             if ($request->hasFile($fileType)) {
+    //                 $file = $request->file($fileType);
+    //                 $renewalFileName = $userName . '_' . $file->getClientOriginalName();
+    
+    //                 // Save file to Nextcloud
+    //                 $nextcloudApiUrl = $nextcloudEndpoint . $renewalFileName;
+    //                 Storage::disk('public')->putFileAs($nextcloudEndpoint, $file, $renewalFileName);
+    
+    //                 // Store filename
+    //                 $fileNames[$fileType] = $nextcloudApiUrl;
+    //             }
+    //         }
+    
+    //         // Create Renewal Document with all files attached
     //         $submission = RenewalDocument::create([
     //             'scholar_id' => $scholarId,
     //             'user_id' => $user->id,
@@ -209,73 +287,26 @@ class RenewalDocumentController extends Controller
     //             'gwa_remarks' => $request->gwa_remarks,
     //             'school_yr_submitted' => $request->school_yr_submitted,
     //             'term_submitted' => $request->term_submitted,
-    //             'copyOfReportCard' => $copyOfReportCardName,
-    //             'copyOfRegistrationForm' => $copyOfRegistrationFormName,
-    //             'scannedWrittenEssay' => $scannedWrittenEssayName,
-    //             'letterOfGratitude' => $letterOfGratitudeName,
+    //             'copyOfReportCard' => $fileNames['copyOfReportCard'] ?? null,
+    //             'copyOfRegistrationForm' => $fileNames['copyOfRegistrationForm'] ?? null,
+    //             'scannedWrittenEssay' => $fileNames['scannedWrittenEssay'] ?? null,
+    //             'letterOfGratitude' => $fileNames['letterOfGratitude'] ?? null,
     //             'submission_status' => 'For Approval',
-                
+    //         ]);
+
+    //         $remarks = Remarks::create([
+    //             'scholar_id' => $scholarId,
+    //             'renewal_document_id' => $submission->id,
+    //             'remarks_message' => $request->remarks_message, // Assuming this field comes from the request
+    //             'sent_datetime' => now(), // Assuming you want to set the current datetime
     //         ]);
     
-    //         // Set Nextcloud API endpoint and credentials
-    //         $nextcloudEndpoint = 'https://nextcloud.apc.edu.ph/remote.php/dav/files/cbmedallada/RenewalDocuments/';
-    //         $nextcloudUsername = 'cbmedallada';
-    //         $nextcloudPassword = 'sm@llLamp50';
-    
-    //         // Save Document in Storage Folder
-    //         Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->copyOfReportCard, $copyOfReportCardName);
-    //         Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->copyOfRegistrationForm, $copyOfRegistrationFormName);
-    //         Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->scannedWrittenEssay, $scannedWrittenEssayName);
-    //         Storage::disk('public')->putFileAs($nextcloudEndpoint, $request->letterOfGratitude, $letterOfGratitudeName);
-
-    //         $status = $request->input('status', 'renewal');
-    
-    //         // Iterate over file types and process each
-    //         foreach (['copyOfReportCard', 'copyOfRegistrationForm', 'scannedWrittenEssay', 'letterOfGratitude'] as $fileType) {
-    //             if ($request->hasFile($fileType)) {
-    //                 $file = $request->file($fileType);
-    //                 ${$fileType} = $status . '_' . $file->getClientOriginalName();  // dynamic variable name
-    
-    //                 $nextcloudApiUrl = $nextcloudEndpoint . ${$fileType};
-    
-    //                 $fileContent = file_get_contents($file);
-    
-    //                 try {
-    //                     $response = Http::withBasicAuth($nextcloudUsername, $nextcloudPassword)
-    //                         ->attach(
-    //                             'file',  // 'file' is the name of the field expected by the server
-    //                             file_get_contents($file),
-    //                             ${$fileType}  // Filename to be used in the request
-    //                         )
-    //                         ->put($nextcloudApiUrl);
-    
-    //                     // Check if the file was successfully uploaded to Nextcloud
-    //                     if ($response->successful()) {
-    //                         // Treat each file as a separate input
-    //                         $submission->{$fileType} = ${$fileType};
-    //                         $fileNames[$fileType] = $nextcloudApiUrl;
-    //                     } else {
-    //                         // Log the response and request details for debugging
-    //                         Log::error('Nextcloud API Request Failed:');
-    //                         Log::error('Request URL: ' . $nextcloudApiUrl);
-    //                         Log::error('Response Status: ' . $response->status());
-    //                         Log::error('Response Body: ' . $response->body());
-    
-    //                         return response()->json(["message" => "Failed to upload file to Nextcloud"], 500);
-    //                     }
-    //                 } catch (\Exception $apiException) {
-    //                     // Log the API request exception for debugging
-    //                     Log::error('Nextcloud API Request Exception: ' . $apiException->getMessage());
-    //                     Log::error('Nextcloud API Request Exception Trace: ' . $apiException->getTraceAsString());
-    
-    //                     // Re-throw the exception to let it propagate for further analysis
-    //                     throw $apiException;
-    //                 }
-    //             }
-    //         }
-    
     //         // Return JSON response
-    //         return new RenewalDocumentResource($submission);
+    //         return response()->json([
+    //             'submission' => new RenewalDocumentResource($submission),
+    //             'remarks' => new RemarksResource($remarks),
+    //         ]);
+
     //     } catch (\Exception $e) {
     //         // Return JSON response
     //         return response()->json([
@@ -284,6 +315,7 @@ class RenewalDocumentController extends Controller
     //         ], 500);
     //     }
     // }
+    
     
 
     /**

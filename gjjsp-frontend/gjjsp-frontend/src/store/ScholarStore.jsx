@@ -60,6 +60,11 @@ const useScholarStore = create((set) => ({
     scholarIdToDelete: null,
     setScholarIdToDelete: (scholarIdToDelete) => set({ scholarIdToDelete }),
 
+    restoreModal: false,
+    setRestoreModal: (restoreModal) => set({ restoreModal }),
+
+    scholarIdToRestore: null,
+    setScholarIdToRestore: (scholarIdToRestore) => set({ scholarIdToRestore }),
 
 }));
 

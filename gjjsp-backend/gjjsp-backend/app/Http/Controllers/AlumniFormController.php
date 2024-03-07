@@ -27,21 +27,24 @@ class AlumniFormController extends Controller
      */
     public function store(Request $request)
     {
-
         try {
+            // Retrieve the authenticated user
+            $user = auth()->user();
 
-            // Retrieve the authenticated user's ID
+            $scholar = $user->scholar()->first();
 
-            $user = Auth::user();
-        
-            // Assuming you have a relationship between users and scholars, 
-            // retrieve the scholar_id of the authenticated user
-            $scholarId = $user->scholar->id;
+            if (!$scholar) {
+                return response()->json(['error' => 'Scholar not found for the authenticated user'], 404);
+            }
+
+            $scholarId = $scholar->id;
+
+            $userId = $user->id;
             
-            // Create the AlumniForm with the scholar_id included
+            // Create the AlumniForm with the scholar_id and user_id included
             $alumniForm = AlumniForm::create([
                 'scholar_id' => $scholarId,
-                'user_id' => $user->id,
+                'user_id' => $userId,
                 'year_submitted' => $request->year_submitted,
                 'company_name' => $request->company_name,
                 'position_in_company' => $request->position_in_company,
@@ -50,9 +53,10 @@ class AlumniFormController extends Controller
                 'exam_passed_date' => $request->exam_passed_date,
                 'volunteer_group_name' => $request->volunteer_group_name,
                 'yr_volunteered' => $request->yr_volunteered,
+                'submission_status' => 'For Approval',
             ]);
     
-
+            // Return the AlumniFormResource with the created instance
             return new AlumniFormResource($alumniForm);
         } catch (\Exception $e) {
             return response()->json([
@@ -60,8 +64,8 @@ class AlumniFormController extends Controller
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
+    
 
     /**
      * Display the specified resource.
@@ -104,6 +108,38 @@ class AlumniFormController extends Controller
     
         //     return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
         // }
+    }
+
+    public function updateSubmissionStatus(Request $request, $scholarId) 
+    {
+        try {
+            // Find the Renewal Document object by scholar ID
+            $alumniForm = AlumniForm::where('scholar_id', $scholarId)->first();
+    
+            if (!$alumniForm) {
+                return response()->json([
+                    'message' => 'Alumni Form not found for the scholar',
+                ], 404);
+            }
+            
+            // Get the ID of the logged-in user
+            $loggedInUserId = Auth::id();
+    
+            // Update the Renewal Document Data with this request
+            $alumniForm->update([
+                'submission_status' => $request->input('submission_status'),
+                'updated_by' => $loggedInUserId, // Set the updated_by field with the ID of the logged-in user
+            ]);
+    
+            // Return a success response
+            return new AlumniFormResource($alumniForm);
+        } catch (\Exception $e) {
+            // Return an error response
+            return response()->json([
+                'message' => 'Error updating Renewal Document',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

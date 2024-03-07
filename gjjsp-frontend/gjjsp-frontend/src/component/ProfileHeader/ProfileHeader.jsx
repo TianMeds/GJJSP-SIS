@@ -29,6 +29,8 @@ export const ProfileHeader = ({updateProfile, updatePassword, updateScholarProfi
         }
       };
 
+      
+
       const isOwnProfile = selectedUser.id === auth.user.id;
       const isScholar = role_id === 3;
       
@@ -47,57 +49,19 @@ export const ProfileHeader = ({updateProfile, updatePassword, updateScholarProfi
                 padding: '20px',
                 }}>
                 <MUI.Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <React.Fragment>
-                        <input
-                            accept="image/*"
-                            id="avatar-upload"
-                            type="file"
-                            style={{ display: 'none' }}
-                            onChange={handleFileChange}
-                        />
-                        <div
-                            onMouseEnter={() => setIsHovered(true)}
-                            onMouseLeave={() => setIsHovered(false)}
-                            style={{ position: 'relative', display: 'inline-block' }}
-                        >
-                            <label htmlFor="avatar-upload">
-                            <MUI.Avatar
-                                src={avatarSrc || ''}
-                                sx={{
-                                width: 100,
-                                height: 100,
-                                backgroundColor: 'blue',
-                                fontSize: '30px',
-                                cursor: 'pointer',
-                                }}
-                            >
-                                {avatarSrc ? null : avatarInitial}
-                            </MUI.Avatar>
 
-                            {isHovered && (
-                                <div
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    backgroundColor: 'rgba(169, 169, 169, 0.8)',
-                                    borderRadius: '50%',
-                                    cursor: 'pointer',
-                                }}
-                                >
-                                <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
-                                <MUI.CameraAltOutlinedIcon/>
-                                </label>
-                                </div>
-                            )}
-                            </label>
-                        </div>
-                    </React.Fragment>
+                    <MUI.Avatar
+                        src={avatarSrc || ''}
+                        sx={{
+                            width: 100,
+                            height: 100,
+                            backgroundColor: 'blue',
+                            fontSize: '30px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {avatarSrc ? null : avatarInitial}
+                    </MUI.Avatar>
 
                     <MUI.Box sx={{ display: 'flex', flexDirection: 'column', }}>
                     {/* Display the name next to the avatar */}

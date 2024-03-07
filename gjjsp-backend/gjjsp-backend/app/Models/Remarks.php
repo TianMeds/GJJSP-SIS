@@ -4,17 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Remarks extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
-        'submission_id',
+        'scholar_id',
+        'renewal_document_id',
         'remarks_message',
         'sent_datetime',
     ];
 
-    public $timestamps = false;
+    protected $primaryKey = 'sent_datetime';
+
+    public $timestamps = true;
+
+    // Define the format for the timestamps
+    const CREATED_AT = 'sent_datetime';
+    const UPDATED_AT = 'sent_datetime';
+
+    public function renewalDocument()
+{
+    return $this->belongsTo(RenewalDocument::class);
+}
+
 }

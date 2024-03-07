@@ -272,6 +272,41 @@ useEffect(() => {
   fetchScholarshipCategory();
 }, []);
 
+const statusMapping = {
+  1: "New",
+  2: "For Renewal",
+  3: "For Renewal: Graduating",
+  4: "Renewed",
+  5: "Graduating",
+  6: "Graduated",
+  7: "Alumni",
+  8: "Withdrew",
+}
+
+
+const getStatusClassName = (statusId) => {
+  switch (statusId) {
+    case 1:
+      return "New";
+    case 2:
+      return "For_Renewal";
+    case 3:
+      return "For_Renewal_Graduating";
+    case 4:
+      return "Renewed";
+    case 5:
+      return "Graduating";
+    case 6:
+      return "Graduated";
+    case 7:
+      return "Alumni";
+    case 8:
+      return "Withdrew";
+    default:
+      return "";
+  }
+};
+
   return (
     <MUI.Grid container spacing={2} sx={{mt: 5}}>
          {/* Scholar Overview part 1 */}
@@ -322,14 +357,16 @@ useEffect(() => {
           </MUI.Grid> 
 
           <MUI.Grid mr={3}>
-            <MUI.Typography variant='h5'  fontWeight="bold">Status</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
+            <MUI.Typography variant='h5'>Status</MUI.Typography>
+            <MUI.Typography variant='h5' mt={2}>
+              {statusMapping[scholarsData.scholar_status_id] || 'Unknown'}
+            </MUI.Typography>
           </MUI.Grid>
 
-          <MUI.Grid mr={3}>
+          {/* <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">GWA</MUI.Typography>
             <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
-          </MUI.Grid>
+          </MUI.Grid> */}
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Year Level</MUI.Typography>
@@ -564,7 +601,7 @@ useEffect(() => {
     
       
       {/* Eight Box: Family  */}
-<MUI.Grid item xs={12} md={12} mt={-2}>
+<MUI.Grid item xs={12} md={12} mt={2}>
       <MUI.Typography variant="h3" sx={{ marginBottom: 5 }}>
             Family
           </MUI.Typography>

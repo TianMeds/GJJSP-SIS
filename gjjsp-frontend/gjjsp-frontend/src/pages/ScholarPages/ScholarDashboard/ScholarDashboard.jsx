@@ -186,7 +186,6 @@ export default function ScholarDashboard() {
 
         if (renewalResponse.status === 200) {
           setRenewalData(renewalResponse.data.data);
-          console.log(renewalResponse.data.data);
           setAlertOpen(true);
           setAlertMessage('Renewal data loaded');
         }
@@ -196,13 +195,12 @@ export default function ScholarDashboard() {
         }
 
       } catch (error) {
-        console.error('Request failed with error:', error);
+        setErrorOpen(true);
+        setErrorMessage('Request failed with error:');
       }
     }
     fetchSchool();
   }, []);
-
-  
 
   const statusMapping = {
     1: "New",
@@ -327,29 +325,29 @@ export default function ScholarDashboard() {
                   <MUI.Typography variant='h3' sx={{fontWeight: 'bold'}} >Academic Status</MUI.Typography>
                   <br/>
 
-                  <MUI.Grid container alignItems="center" ml={2}>
+                  <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.ApartmentIcon sx={{ color: '#1976d2' }} />
                     <MUI.Grid item>
-                      <MUI.Typography variant='h5' sx={{ color: '#1976d2', ml: 2 }}>
+                      <MUI.Typography variant='h5' sx={{ color: '#1976d2', ml: 1 }}>
                       {schoolsData.find((school) => school.id === scholarProfiles.school_id)?.school_name || 'School Not Found'}
                       </MUI.Typography>
                     </MUI.Grid>
                   </MUI.Grid>
                 <br/>
 
-                <MUI.Grid container alignItems="center" ml={2}>
+                <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.SchoolOutlinedIcon   sx={{color: '#1976d2'}}/>
                   <MUI.Grid item>
-                    <MUI.Typography variant='h5'  sx={{color: '#1976d2' , ml: 2}}>{undergraduateData.current_yr_level || 'No Data yet'}</MUI.Typography>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2' , ml: 1}}>{undergraduateData.current_yr_level || 'No Data yet'}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Grid> 
 
                 <br/>
                 
-                <MUI.Grid container alignItems="center" ml={2}>
+                <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.CalendarTodayIcon  sx={{color: '#1976d2'}}/>
                   <MUI.Grid item>
-                    <MUI.Typography variant='h5'  sx={{color: '#1976d2', ml: 2}}>{undergraduateData.undergrad_sy || 'No Data yet'}</MUI.Typography>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2', ml: 1}}>{undergraduateData.undergrad_sy || 'No Data yet'}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Grid> 
                 </MUI.Paper>
@@ -382,7 +380,7 @@ export default function ScholarDashboard() {
                 height: 'auto',
               }}
             >
-              <MUI.Typography variant='h3' sx={{fontWeight: 'bold'}} >Submissions</MUI.Typography>
+              <MUI.Typography variant='h3' sx={{fontWeight: 'bold', mb: 4}} >Submissions</MUI.Typography>
 
               <MUI.TableContainer>
                     <MUI.Table sx={{ minWidth: 650, borderCollapse: 'separate', borderSpacing: 0 }}>
@@ -391,24 +389,38 @@ export default function ScholarDashboard() {
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none', borderTopLeftRadius: '12px' }}>Submission</MUI.TableCell>
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none' }}>Submitted</MUI.TableCell>
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none' }}>Status</MUI.TableCell>
-                          <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderTopRightRadius: '12px' }}>Action</MUI.TableCell>
+                          <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderTopRightRadius: '12px' }}>Terms</MUI.TableCell>
                         </MUI.TableRow>
                       </MUI.TableHead>
 
                       <MUI.TableBody>
-                      {renewalData.map((item, index) => (
-                        <MUI.TableRow key={index}>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>{item.gwa_value ? "Renewal Form" : item.future_company_Name ? "Graduating Form" : item.company_name ? "Alumni Form" : ""}</MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
-                            {formatDate(item.updated_at.replace('T', ' ').replace('.000000Z', ''))}
-                          </MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>{item.submission_status}</MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', padding: '12px'}}>
-                            <MUI.Button variant="contained" color="primary" sx={{mr: 2}} >View</MUI.Button>
-                          </MUI.TableCell>
-                        </MUI.TableRow>
-                      ))}
-                    </MUI.TableBody>
+                        {renewalData
+                          .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)) // Sort by date
+                          .map((item, index) => (
+                            <MUI.TableRow key={index}>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {item.gwa_value ? "Renewal Form" : item.futurePlan ? "Graduating Form" : item.company_name ? "Alumni Form" : ""}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {formatDate(item.updated_at.replace('T', ' ').replace('.000000Z', ''))}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                              {item.submission_status === 'For Approval' ? (
+                                    <span className='For_Approval'>For Approval</span>
+                                  ) : item.submission_status === 'Approved' ? (
+                                    <span className='Approved'>Approved</span>
+                                  ) : item.submission_status === 'For Resubmission' ? (
+                                    <span className='For_Resubmission'>For Resubmission</span>
+                                  ) : (
+                                    <span className='No_Submission'>No Submission</span>
+                                  )}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', padding: '12px' }}>
+                                {item.term_submitted}
+                              </MUI.TableCell>
+                            </MUI.TableRow>
+                          ))}
+                      </MUI.TableBody>
 
                     </MUI.Table>
                   </MUI.TableContainer>

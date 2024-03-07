@@ -58,10 +58,9 @@ export const SMP_ListItems = (
       <DropdownMenu3/>
 
     <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-      Quick Actions
+      Reports
     </MUI.ListSubheader>
 
-      <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
       <CustomListItem to='/ask' 
         icon={<MUI.Box component='img' 
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
@@ -93,10 +92,8 @@ export const SAP_ListItems = (
       <DropdownMenu3/>
 
     <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
-      Quick Actions
+      Reports
     </MUI.ListSubheader>
-
-      <CustomListItem to="/create" icon={<MUI.AddBoxOutlinedIcon />} secondary="Create" />
       <CustomListItem to='/ask' 
         icon={<MUI.Box component='img' 
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 

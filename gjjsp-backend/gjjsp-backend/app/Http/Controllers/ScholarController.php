@@ -17,6 +17,8 @@ use App\Mail\ScholarUpdated;
 use App\Mail\ScholarDeleted;
 use App\Mail\ScholarProfileUpdated;
 use App\Mail\ScholarProfileDeleted;
+use App\Mail\RenewalDocumentReminder;
+use App\Mail\GraduatingDocumentReminder;
 
 class ScholarController extends Controller
 {
@@ -175,6 +177,54 @@ class ScholarController extends Controller
         }
     }
 
+    public function sendReminders(Request $request, $id)
+    {
+        // Find the scholar by its ID
+        $scholar = Scholar::find($id);
+
+        // Check if the scholar exists
+        if (!$scholar) {
+            return response()->json(['message' => 'Scholar not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Find the user associated with the scholar
+        $user = $scholar->user;
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Send renewal document reminder email
+        Mail::to($user->email_address)->send(new RenewalDocumentReminder($scholar, $user));
+
+        return response()->json(['message' => 'Renewal Document Reminder sent successfully'], Response::HTTP_OK);
+    }
+
+    public function graduatingReminders(Request $request, $id)
+    {
+        // Find the renewal document by its ID
+        $scholar = Scholar::find($id);
+
+        // Check if the renewal document exists
+        if (!$scholar) {
+            return response()->json(['message' => 'Scholar Graduating Document not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Find the user associated with the scholar
+        $user = $scholar->user;
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Send renewal document reminder email
+        Mail::to($user->email_address)->send(new GraduatingDocumentReminder($scholar, $user));
+
+        return response()->json(['message' => 'Graduating Document Reminder sent successfully'], Response::HTTP_OK);
+    }
+
 
 
     public function updateScholarProfile(Request $request, $id)
@@ -187,7 +237,10 @@ class ScholarController extends Controller
             $scholar = Scholar::where('id', $id)
                 ->where('user_id', $userId)
                 ->firstOrFail();
-
+    
+            // Get the original data of the scholar before the update
+            $originalScholarData = $scholar->getOriginal();
+    
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem',
@@ -195,20 +248,20 @@ class ScholarController extends Controller
                 'home_visit_sched', 'fb_account', 'street', 'zip_code', 'region_name', 'province_name',
                 'cities_municipalities_name', 'barangay_name',
             ]));
-
+    
             $updatedFields = [];
             foreach ($request->all() as $key => $value) {
-                if ($originalScholarData[$key] !== $value) {
+                if (array_key_exists($key, $originalScholarData) && $originalScholarData[$key] !== $value) {
                     $updatedFields[$key] = $value;
                 }
             }
+    
             $users = User::whereIn('role_id', [1, 2])->get();
-
+    
             // Send email notification to each user
             foreach ($users as $user) {
                 Mail::to($user->email_address)->send(new ScholarProfileUpdated($user, $updatedFields, $scholar));
             }
-    
     
             // Return the updated scholar as a resource
             return new ScholarResource($scholar);
@@ -219,6 +272,7 @@ class ScholarController extends Controller
             return response()->json(['message' =>  $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
     }
+    
     public function updateOtherScholarProfile(Request $request, $user_id)
     {
         try {
@@ -251,6 +305,55 @@ class ScholarController extends Controller
             ], Response::HTTP_NOT_FOUND);
         } 
     }
+
+    // public function updateSubmissionStatus(Request $request, $scholarId, $schoolYear, $term)
+    // {
+    //     // Find the scholar by id
+    //     $scholar = Scholar::findOrFail($scholarId);
+    
+    //     // Check if the scholar has renewing data for the specified school year and term
+    //     if (!isset($scholar->renewing[$schoolYear]) || !isset($scholar->renewing[$schoolYear][$term]) || empty($scholar->renewing[$schoolYear][$term])) {
+    //         return response()->json(['message' => 'Renewal data not found for the specified school year and term'], 404);
+    //     }
+    
+    //     // Update the submission status
+    //     $submissionStatus = $request->input('submission_status');
+    //     $scholar->renewing[$schoolYear][$term][0]['submission_status'] = $submissionStatus;
+    
+    //     // Save the changes
+    //     $scholar->save();
+    
+    //     return response()->json(['message' => 'Submission status updated successfully'], 200);
+    // }
+
+    // public function updateSubmissionStatus(Request $request, $id) 
+    // {
+    //     try {
+    //         // Find the Renewal Document object by ID
+    //         $scholar = Scholar::findOrFail($id);
+            
+    //         // Get the ID of the logged-in user
+    //         $loggedInUserId = Auth::id();
+
+    //         // Update the Renewal Document Data with this request
+    //         $scholar->update([
+    //             'submission_status' => $request->input('submission_status'),
+    //             'updated_by' => $loggedInUserId, // Set the updated_by field with the ID of the logged-in user
+    //         ]);
+
+    //         // Return a success response
+    //         return new ScholarResource($scholar);
+    //     } catch (\Exception $e) {
+    //         // Return an error response
+    //         return response()->json([
+    //             'message' => 'Error updating Renewal Document',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    
+
 
     public function storeSchool(Request $request)
     {

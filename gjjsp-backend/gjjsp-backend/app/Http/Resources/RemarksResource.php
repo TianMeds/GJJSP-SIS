@@ -14,6 +14,11 @@ class RemarksResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'scholar_id' => $this->scholar_id,
+            'remarks_message' => $this->remarks_message,
+            'sent_datetime' => $this->sent_datetime,
+        ];
     }
 }

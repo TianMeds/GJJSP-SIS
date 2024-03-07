@@ -111,9 +111,9 @@ return (
           </MUI.ListItemButton>
         </MUI.ListItem>
         <MUI.Collapse in={isCollapse}  unmountOnExit>
-        <CustomListItem to="/submission-renewal" icon={<MUI.DescriptionOutlinedIcon />} secondary="Renewal Forms" />
-        <CustomListItem to="/submission-graduating" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Graduating Forms" />
-        <CustomListItem to="/submission-alumni" icon={<MUI.DescriptionOutlinedIcon />} secondary="Alumni Forms" />
+        <CustomListItem to="/submission-renewal" icon={<MUI.DescriptionOutlinedIcon />} secondary="Renewal Submission" />
+        <CustomListItem to="/submission-graduating" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Graduating Submission" />
+        <CustomListItem to="/submission-alumni" icon={<MUI.DescriptionOutlinedIcon />} secondary="Alumni Submission" />
         </MUI.Collapse>
       </MUI.List>
 )
@@ -156,9 +156,9 @@ return (
           </MUI.ListItemButton>
         </MUI.ListItem>
         <MUI.Collapse in={isCollapse}  unmountOnExit>
-        <CustomListItem to="/submitted-renewal" icon={<MUI.DescriptionOutlinedIcon />} secondary="Renewal Forms" />
-        <CustomListItem to="/submitted-graduating" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Graduating Forms" />
-        <CustomListItem to="/submitted-alumni" icon={<MUI.DescriptionOutlinedIcon />} secondary="Alumni Forms" />
+        <CustomListItem to="/submitted-renewal" icon={<MUI.DescriptionOutlinedIcon />} secondary="Renewal Submission" />
+        <CustomListItem to="/submitted-graduating" icon={<MUI.DescriptionOutlinedIcon/>} secondary="Graduating Submission" />
+        <CustomListItem to="/submitted-alumni" icon={<MUI.DescriptionOutlinedIcon />} secondary="Alumni Submission" />
         </MUI.Collapse>
       </MUI.List>
 )

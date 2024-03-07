@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\GraduatingDocument;
+use App\Models\Scholar;
 use App\Models\User;
 
 class GraduatingDocumentReminder extends Mailable
@@ -19,12 +19,12 @@ class GraduatingDocumentReminder extends Mailable
      * Create a new message instance.
      */
 
-    public $graduatingDocument;
+    public $scholar;
     public $user;
 
-    public function __construct(GraduatingDocument $graduatingDocument, User $user)
+    public function __construct(Scholar $scholar, User $user)
     {
-        $this->graduatingDocument = $graduatingDocument;
+        $this->scholar = $scholar;
         $this->user = $user;
     }
     /**
@@ -33,7 +33,7 @@ class GraduatingDocumentReminder extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Graduating Document Reminder',
+            subject: 'Scholar Graduating Document Reminder',
         );
     }
 

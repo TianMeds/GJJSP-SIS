@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\ScholarshipCateg;
 use App\Models\RenewalDocument;
 use App\Models\GraduatingDocument;
+use App\Models\AlumniForm;
 
 class Scholar extends Model
 {
@@ -66,6 +67,11 @@ class Scholar extends Model
     public function graduating_documents()
     {
         return $this->hasMany(GraduatingDocument::class);
+    }
+
+    public function alumni_forms()
+    {
+        return $this->hasMany(AlumniForm::class);
     }
 
     public function getScholarStatusNameAttribute()

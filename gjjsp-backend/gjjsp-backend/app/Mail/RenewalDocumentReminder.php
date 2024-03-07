@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\RenewalDocument;
+use App\Models\Scholar;
 use App\Models\User;
 
 class RenewalDocumentReminder extends Mailable
@@ -19,12 +19,12 @@ class RenewalDocumentReminder extends Mailable
      * Create a new message instance.
      */
 
-    public $renewalDocument;
+    public $scholar;
     public $user;
 
-    public function __construct(RenewalDocument $renewalDocument, User $user)
+    public function __construct(Scholar $scholar, User $user)
     {
-        $this->renewalDocument = $renewalDocument;
+        $this->scholar = $scholar;
         $this->user = $user;
     }
 
