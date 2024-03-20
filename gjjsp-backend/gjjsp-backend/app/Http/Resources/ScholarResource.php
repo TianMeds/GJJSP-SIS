@@ -27,20 +27,48 @@ class ScholarResource extends JsonResource
         })->get();
 
         // Group renewal documents by school year and term
+        // $renewalsGrouped = [];
+        // foreach ($this->renewal_documents as $document) {
+        //     $schoolYear = $document->school_yr_submitted;
+        //     $term = $document->term_submitted;
+
+        //     if (!isset($renewalsGrouped[$schoolYear])) {
+        //         $renewalsGrouped[$schoolYear] = [];
+        //     }
+
+        //     if (!isset($renewalsGrouped[$schoolYear][$term])) {
+        //         $renewalsGrouped[$schoolYear][$term] = [];
+        //     }
+
+        //     $renewalsGrouped[$schoolYear][$term][] = [
+        //         'submission_status' => $document->submission_status,
+        //         'gwa_value' => $document->gwa_value,
+        //         'gwa_remarks' => $document->gwa_remarks,
+        //         'copyOfReportCard' => $document->copyOfReportCard,
+        //         'copyOfRegistrationForm' => $document->copyOfRegistrationForm,
+        //         'scannedWrittenEssay' => $document->scannedWrittenEssay,
+        //         'letterOfGratitude' => $document->letterOfGratitude,
+        //         'updated_by' => $document->updated_by,
+        //         'updated_at' => $this->updated_at,
+        //         'remarks' => $remarks->where('renewal_document_id', $document->id)->pluck('remarks_message')->first(),
+        //     ];
+        // }
+
+
+        // Group renewal documents by school year and term
         $renewalsGrouped = [];
         foreach ($this->renewal_documents as $document) {
             $schoolYear = $document->school_yr_submitted;
             $term = $document->term_submitted;
-
+        
             if (!isset($renewalsGrouped[$schoolYear])) {
                 $renewalsGrouped[$schoolYear] = [];
             }
-
-            if (!isset($renewalsGrouped[$schoolYear][$term])) {
-                $renewalsGrouped[$schoolYear][$term] = [];
-            }
-
-            $renewalsGrouped[$schoolYear][$term][] = [
+        
+            // Add the document to the term array directly
+            array_unshift($renewalsGrouped[$schoolYear], [
+                'term' => $term,
+                'id' => $document->id,
                 'submission_status' => $document->submission_status,
                 'gwa_value' => $document->gwa_value,
                 'gwa_remarks' => $document->gwa_remarks,
@@ -50,9 +78,13 @@ class ScholarResource extends JsonResource
                 'letterOfGratitude' => $document->letterOfGratitude,
                 'updated_by' => $document->updated_by,
                 'updated_at' => $this->updated_at,
-                'remarks' => $remarks->where('renewal_document_id', $document->id)->pluck('remarks_message')->first(),
-            ];
+                'remarks_message' => $document->remarks_message,
+            ]);
         }
+        
+        // Now $renewalsGrouped contains the data with term 2 first, term 1 last
+        
+
         // Group graduating documents only by school year
         $graduatingGrouped = [];
         foreach ($this->graduating_documents as $document) {
@@ -82,6 +114,7 @@ class ScholarResource extends JsonResource
                 'statementOfAccount' => $document->statementOfAccount,
                 'graduationPicture' => $document->graduationPicture,
                 'transcriptOfRecords' => $document->transcriptOfRecords,
+                'remarks_message' => $document->remarks_message,
             ];
         }
 
@@ -106,6 +139,7 @@ class ScholarResource extends JsonResource
                 'submission_status' => $document->submission_status,
                 'updated_by' => $document->updated_by,
                 'updated_at' => $this->updated_at,
+                'remarks_message' => $document->remarks_message,
             ];
         }
         
@@ -118,7 +152,6 @@ class ScholarResource extends JsonResource
             'user_id' => $this->user_id,
             'scholarship_categ_id' => $this->scholarship_categ_id,
             'project_partner_id' => $this->project_partner_id,
-            'scholar_photo_filepath' => $this->scholar_photo_filepath,
             'gender' => $this->gender,
             'religion' => $this->religion,
             'birthdate' => $this->birthdate,
@@ -129,6 +162,7 @@ class ScholarResource extends JsonResource
             'school_yr_graduated' => $this->school_yr_graduated,
             'school_id' => $this->school_id,
             'program' => $this->program,
+            'acad_terms' => $this->acad_terms,
             'home_visit_sched' => $this->home_visit_sched,
             'fb_account' => $this->fb_account,
             'street' => $this->street,

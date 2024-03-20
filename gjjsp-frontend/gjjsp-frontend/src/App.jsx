@@ -31,6 +31,7 @@ const LazyClientSubmissionAlumni = lazy(() => import('./pages/ClientPages/Alumni
 
 //Scholar Imports
 const LazyScholarDashboard = lazy(() => import('./pages/ScholarPages/ScholarDashboard/ScholarDashboard'));
+const LazyScholarInformation = lazy(() => import('./pages/ScholarPages/ScholarProfile/FillScholarProfile'));
 const LazyScholarProfile = lazy(() => import('./pages/ScholarPages/ScholarProfile/ScholarProfile'));
 const LazyScholarSubmissionRenewal = lazy(() => import('./pages/ScholarPages/ScholarSubmission/RenewalSubmission'));
 const LazyScholarSubmissionGraduating = lazy(() => import('./pages/ScholarPages/ScholarSubmission/GraduatingSubmission'));
@@ -104,6 +105,15 @@ function App() {
           element={
             <Suspense fallback="Scholarlink Loading...">
               <LazyScholarDashboard/>
+            </Suspense>
+          }
+        />
+
+        <Route 
+          path='scholar-information'
+          element={
+            <Suspense fallback="Scholarlink Loading...">
+              <LazyScholarInformation/>
             </Suspense>
           }
         />
@@ -292,7 +302,7 @@ function App() {
           }
         />
 
-<Route 
+      <Route 
           path="scholar-profile" 
           element={
             <Suspense fallback="Scholarlink Loading...">

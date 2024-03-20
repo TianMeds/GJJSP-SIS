@@ -37,6 +37,7 @@ class GraduatingFormResource extends JsonResource
             'graduationPicture' => $this->graduationPicture,
             'transcriptOfRecords' => $this->transcriptOfRecords,
             'submission_status' => $this->submission_status,
+            'remarks_message' => $this->remarks_message,
             'updated_by' => $this->updated_by,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

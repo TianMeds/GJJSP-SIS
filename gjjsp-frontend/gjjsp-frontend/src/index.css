@@ -84,7 +84,11 @@
 #HsSchoolNameGrid,
 #HsSchoolAddressGrid,
 #schoolYrGraduatedHsGrid,
-#scholarPhotoGrid
+#scholarPhotoGrid,
+#acadTermsGrid,
+#undergradSyGrid,
+#currentYrLevelGrid,
+#undergradGwaGrid
 {
    margin: 5px;
 }
@@ -160,7 +164,11 @@
 #streetGraduateLabel,
 #userEmailAddressLabel,
 #userMobileNumLabel,
-#futurePlanLabel
+#futurePlanLabel,
+#acadTermsLabel,
+#undergradSyLabel,
+#currentYrLevelLabel,
+#undergradGwaLabel
 {
     font-size: 14px;
     font-weight: bold;
@@ -232,7 +240,11 @@
 #programLabel::after,
 #streetGraduateLabel::after,
 #userEmailAddressLabel::after,
-#userMobileNumLabel::after{
+#userMobileNumLabel::after,
+#acadTermsLabel::after,
+#undergradSyLabel::after,
+#currentYrLevelLabel::after,
+#undergradGwaLabel::after{
     content: " *";
     color: red; 
 }   

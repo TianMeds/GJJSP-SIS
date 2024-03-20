@@ -2,6 +2,9 @@ import { create } from "zustand";
 
 const useDashboardStore = create((set) => ({
 
+    selectedScholarProfile: null,
+    setSelectedScholarProfile: (selectedScholarProfile) => set({selectedScholarProfile}),   
+
     //Get Data from Scholar Status 
     scholarStatus: [],
     scholarStatuses: false,
@@ -65,6 +68,14 @@ const useDashboardStore = create((set) => ({
 
     alumniData: [],
     setAlumniData: (alumniData) => set({alumniData}),
+
+    viewModal: false,
+    setViewModal: (viewModal) => set({ viewModal }),
+    handleOpenViewModal: () => set({viewModal: true}),
+    handleCloseViewModal: () => set({viewModal: false}),
+
+    selectedUser: null,
+    setSelectedUser: (selectedUser) => set({ selectedUser}),
 
 }))
 

@@ -22,8 +22,13 @@ const useScholarStore = create((set) => ({
     scholarStatus: '',
     scholarCategory: '',
     selectedScholar: null,
+
     filteredScholar: 'All',
     setEditScholar: (newEditScholar) => set({editScholar: newEditScholar}),
+
+    filteredStatus: 'All',
+    setFilteredStatus: (newFilteredStatus) => set({filteredStatus: newFilteredStatus}),
+    
     setScholarName:  (newScholarName) => set({scholarName: newScholarName}),
     setScholarEmailAddress: (newScholarEmailAddress) => set({scholarEmailAddress: newScholarEmailAddress}),
     setScholarStatus: (newScholarStatus) => set({scholarStatus: newScholarStatus}),
@@ -62,6 +67,11 @@ const useScholarStore = create((set) => ({
 
     restoreModal: false,
     setRestoreModal: (restoreModal) => set({ restoreModal }),
+
+    filterModal: false,
+    setFilterModal: (filterModal) => set({ filterModal }),
+    handleOpenFilterModal: () => set({filterModal: true}),
+    handleCloseFilterModal: () => set({filterModal: false}),
 
     scholarIdToRestore: null,
     setScholarIdToRestore: (scholarIdToRestore) => set({ scholarIdToRestore }),

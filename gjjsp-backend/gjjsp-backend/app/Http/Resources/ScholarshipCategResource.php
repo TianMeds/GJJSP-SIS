@@ -20,6 +20,8 @@ class ScholarshipCategResource extends JsonResource
             'alias' => $this->alias,
             'benefactor' => $this->benefactor,
             'scholarship_categ_status' => $this->scholarship_categ_status,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,
         ];
     }

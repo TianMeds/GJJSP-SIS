@@ -69,6 +69,11 @@ const useSubmissionStore = create((set) => ({
     graduatingIdToSend: null,
     setGraduatingIdToSend: (graduatingIdToSend) => set({ graduatingIdToSend }),
 
+    modalAlumni: false,
+    setModalAlumni: (modalAlumni) => set({ modalAlumni }),
+    alumniIdToSend: null,
+    setAlumniIdToSend: (alumniIdToSend) => set({ alumniIdToSend }),
+
 
     //Get Values of the Submission
     submissionValues: [],
@@ -147,6 +152,12 @@ const useSubmissionStore = create((set) => ({
 
     disapprovalRemarks: '',
     setDisapprovalRemarks: (disapprovalRemarks) => set({disapprovalRemarks}),
+
+    editAlumni: false,
+    setEditAlumni: (newEditAlumni) => set({editAlumni: newEditAlumni}),
+
+    updateData: [],
+    setUpdateData: (newUpdateData) => set({updateData: newUpdateData}),
 
 }))
 

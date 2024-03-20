@@ -35,7 +35,7 @@ export default function Scholar({state}) {
 
   const {scholars, scholar, setScholars,editScholar, setEditScholar, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool, modalScholars, setModalScholars,
   handleOpenModalScholars, handleCloseModalScholars, deleteModal, setDeleteModal, restoreModal, setRestoreModal, scholarIdToRestore, setScholarIdToRestore,
- scholarIdToDelete, setScholarIdToDelete
+ scholarIdToDelete, setScholarIdToDelete, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal, filteredStatus, setFilteredStatus,
 } = useScholarStore();
 
   const [scholarsData, setScholarsData] = useState([]);
@@ -312,8 +312,10 @@ export default function Scholar({state}) {
       navigate(path)
     }
     else{
-      console.log('Scholar Not Found')
+      setErrorOpen(true);
+      setErrorMessage('Scholar not found');
     }
+    console.log(scholarId)
    
   };
 
@@ -457,36 +459,14 @@ export default function Scholar({state}) {
               />
             </Search>
 
+            <MUI.Grid>
+              <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+                <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+                  Add Filter
+                </MUI.Button>
+              </MUI.FormControl>
+            </MUI.Grid>
           
-            <MUI.FormControl>
-              <MUI.Select
-                value={filteredScholar}
-                onChange={(e) => setFilteredScholar(e.target.value)}
-                displayEmpty
-                  inputProps={{ 'aria-label': 'Filter' }}
-                  startAdornment={
-                    <MUI.InputAdornment position="start">
-                      <MUI.FilterListIcon
-                        viewBox="0 0 24 24"
-                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                      />
-                    </MUI.InputAdornment>
-                  }
-                  sx={{ borderRadius: '12px' }}
-              >
-                <MUI.MenuItem value="All">All</MUI.MenuItem>
-                <MUI.MenuItem value="New">New</MUI.MenuItem>
-                <MUI.MenuItem value="For Renewal">For Renewal</MUI.MenuItem>
-                <MUI.MenuItem value="For Renewal: Graduating">For Renewal: Graduating</MUI.MenuItem>
-                <MUI.MenuItem value="Renewed">Renewed</MUI.MenuItem>
-                <MUI.MenuItem value="Graduating">Graduating</MUI.MenuItem>
-                <MUI.MenuItem value="Graduated">Graduated</MUI.MenuItem>
-                <MUI.MenuItem value="Alumni">Alumni</MUI.MenuItem>
-                <MUI.MenuItem value="Withdrew">Withdrew</MUI.MenuItem>
-              </MUI.Select>
-            </MUI.FormControl>
-
-        
           </MUI.Container>
 
           {/* -------- Table Section  ----------*/}
@@ -512,6 +492,12 @@ export default function Scholar({state}) {
                       (scholar.email_address && scholar.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
                       ((`${scholar.first_name} ${scholar.middle_name} ${scholar.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
+                    .sort((a, b) => {
+                      if (a.scholar_status_id[0] === 8 && b.scholar_status_id[0] !== 8) return -1; // 'Withdrew' entries go to the bottom
+                      if (a.scholar_status_id[0] !== 8 && b.scholar_status_id[0] === 8) return 1; // 'Withdrew' entries go to the bottom
+                      return new Date(b.created_at) - new Date(a.created_at);
+                  })
+                    .reverse()
                     .map((scholar, index) => (
                       (scholar.role_id === 3) ? (
                     <MUI.TableRow key={index} className='scholar'>
@@ -940,6 +926,51 @@ export default function Scholar({state}) {
               </MUI.Button>
             </MUI.DialogActions>
 
+          </MUI.Dialog>
+
+          {/* Filter Modal */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal} fullWidth maxWidth="xs">
+            <MUI.DialogTitle id="dialogTitle">Filter Scholars</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={12}>
+                <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                  <MUI.InputLabel id="statusFilterLabel">Status Filter</MUI.InputLabel>
+                  <MUI.Select
+                    value={filteredScholar}
+                    onChange={(e) => setFilteredScholar(e.target.value)}
+                    fullWidth
+                    label="Status Filter"
+                      inputProps={{ 'aria-label': 'Filter' }}
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px', width: '100%'}}
+                  >
+                    <MUI.MenuItem value="All">All</MUI.MenuItem>
+                    <MUI.MenuItem value="New">New</MUI.MenuItem>
+                    <MUI.MenuItem value="For Renewal">For Renewal</MUI.MenuItem>
+                    <MUI.MenuItem value="For Renewal: Graduating">For Renewal: Graduating</MUI.MenuItem>
+                    <MUI.MenuItem value="Renewed">Renewed</MUI.MenuItem>
+                    <MUI.MenuItem value="Graduating">Graduating</MUI.MenuItem>
+                    <MUI.MenuItem value="Graduated">Graduated</MUI.MenuItem>
+                    <MUI.MenuItem value="Alumni">Alumni</MUI.MenuItem>
+                    {role_id === 1 && (
+                        <MUI.MenuItem value="Withdrew">Withdrew</MUI.MenuItem>
+                    )}
+                  </MUI.Select>
+                </MUI.FormControl>
+                </MUI.Grid>
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
           </MUI.Dialog>
             
         </MUI.Grid>

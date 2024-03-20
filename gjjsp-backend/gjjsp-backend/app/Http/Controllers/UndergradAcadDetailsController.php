@@ -134,12 +134,18 @@ class UndergradAcadDetailsController extends Controller
     }
 
 
-    public function getUndergradAcadDetail()
+    public function getUndergradAcadDetail(Request $request)
     {
         try {
-            $userId = Auth::id(); // Retrieve the authenticated user's I
+            $userId = Auth::id(); // Retrieve the authenticated user's Id
 
-            $scholar = Scholar::where('user_id', $userId)->first();
+             // Check if a scholar ID is provided in the request parameters
+             $scholarId = $request->input('userId');
+    
+             // If a scholar ID is provided, use it; otherwise, use the authenticated user's ID
+             $profileUserId = $scholarId ?? $userId;
+
+            $scholar = Scholar::where('user_id', $profileUserId)->first();
 
             if ($scholar) {
                 $undergradAcadDetails = UndergradAcadDetails::where('scholar_id', $scholar->id)->first();

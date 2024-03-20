@@ -38,7 +38,7 @@ export default function Scholarship({state}) {
 
   const {setLoading, setLoadingMessage} = useLoginStore();
 
-  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId, modalCateg, handleOpenModalCateg, handleCloseModalCateg, setModalCateg, deleteModal, setDeleteModal, projectIdToDelete, setProjectIdToDelete, projectIdToRestore, setProjectIdToRestore, restoreModal, setRestoreModal  } = useScholarshipStore();
+  const { projects, setProjects, project, searchQuery, handleSearch, filteredStatus, setFilteredStatus, handleOpenScholarship, handleCloseScholarship, selectedCategories,setSelectedCategories,editCategories,setEditCategories, currentProjectId, setCurrentProjectId, modalCateg, handleOpenModalCateg, handleCloseModalCateg, setModalCateg, deleteModal, setDeleteModal, projectIdToDelete, setProjectIdToDelete, projectIdToRestore, setProjectIdToRestore, restoreModal, setRestoreModal, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal, filteredDeleted, setFilteredDeleted } = useScholarshipStore();
 
   const {partners, partner, setPartners, selectedProjectPartner, setSelectedProjectPartner, selectedProjectPartnerId, setSelectedProjectPartnerId} = usePartnerStore();
 
@@ -259,6 +259,7 @@ export default function Scholarship({state}) {
       if (error.response?.status === 401) {
         setErrorOpen(true);
         setErrorMessage("You've been logged out");
+        navigate('/login');
       } else if (error.response?.status === 404) {
         setErrorOpen(true);
         setErrorMessage('Category not found');
@@ -379,34 +380,25 @@ export default function Scholarship({state}) {
             />
           </Search>
                         
+          <MUI.Grid>
+        <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+          <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+            Add Filter
+          </MUI.Button>
+        </MUI.FormControl>
+      </MUI.Grid>
 
-          <MUI.FormControl>
-            <MUI.Select
-              value={filteredStatus}
-              onChange={(e) => setFilteredStatus(e.target.value)}
-              displayEmpty
-              inputProps={{ 'aria-label': 'Filter' }}
-              startAdornment={
-                <MUI.InputAdornment position="start">
-                  <MUI.FilterListIcon
-                    viewBox="0 0 24 24"
-                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                  />
-                </MUI.InputAdornment>
-              }
-              sx={{ borderRadius: '12px' }}               
-
-            >
-              <MUI.MenuItem value="All">All</MUI.MenuItem>
-              <MUI.MenuItem value="Closed for Application">Closed Application</MUI.MenuItem>
-              <MUI.MenuItem value="Open for Application">Open Application</MUI.MenuItem>
-            </MUI.Select>
-          </MUI.FormControl>
         </MUI.Container>
 
        
         <MUI.Grid container spacing={3} sx={{ margin: 5 }}>
           {projects
+            .filter((project) => {
+              if (filteredDeleted === 'All') return true;
+              if (filteredDeleted === 'Deleted') return project.deleted_at !== null;
+              if (filteredDeleted === 'Not Deleted') return project.deleted_at === null;
+              return true; // default case
+            })
             .filter((project) => {
               return filteredStatus === 'All' ? true : (
                 project.scholarship_categ_status === filteredStatus
@@ -416,6 +408,14 @@ export default function Scholarship({state}) {
               project.scholarship_categ_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               project.benefactor.toLowerCase().includes(searchQuery.toLowerCase())
             )
+            .sort((a, b) => {
+              // First, sort by deleted status (non-deleted projects come first)
+              if (a.deleted_at !== null && b.deleted_at === null) return 1;
+              if (a.deleted_at === null && b.deleted_at !== null) return -1;
+              
+              // If both projects have the same deleted status, sort by updated_at
+              return new Date(b.updated_at) - new Date(a.updated_at);
+            }) 
             .map((project, index) => (
               <MUI.Grid key={index} item xs={12} sm={6} md={4}>
                 <MUI.Card sx={{ maxWidth: 345 }}>
@@ -648,6 +648,8 @@ export default function Scholarship({state}) {
 
         </MUI.Dialog>
 
+        {/* Modal for Restore Partner */}
+
         <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
           <MUI.DialogTitle id="dialogTitle">Heads Up!</MUI.DialogTitle>
           <MUI.DialogContent>
@@ -738,6 +740,77 @@ export default function Scholarship({state}) {
             
 
         </MUI.Dialog>
+
+          {/* Modal for Filter */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal}>
+            <MUI.DialogTitle id="dialogTitle">Filter Categories</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={6}>
+                <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                <MUI.InputLabel id="status-filter-label">Categories Filter</MUI.InputLabel>
+
+                  <MUI.Select
+                    value={filteredStatus}
+                    onChange={(e) => setFilteredStatus(e.target.value)}
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Categories Filter' }}
+                    label="Categories Filter"
+                    startAdornment={
+                      <MUI.InputAdornment position="start">
+                        <MUI.FilterListIcon
+                          viewBox="0 0 24 24"
+                          sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                        />
+                      </MUI.InputAdornment>
+                    }
+                    sx={{ borderRadius: '12px' }}               
+
+                  >
+                    <MUI.MenuItem value="All">All</MUI.MenuItem>
+                    <MUI.MenuItem value="Closed for Application">Closed Application</MUI.MenuItem>
+                    <MUI.MenuItem value="Open for Application">Open Application</MUI.MenuItem>
+                  </MUI.Select>
+                </MUI.FormControl>
+                </MUI.Grid> 
+                
+                {/* New Select component for filtering deleted status */}
+            <MUI.Grid item xs={12} sm={6}>
+              <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                <MUI.InputLabel id="deleted-filter-label">Deleted Filter</MUI.InputLabel>
+                <MUI.Select
+                  value={filteredDeleted}
+                  onChange={(e) => setFilteredDeleted(e.target.value)}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'Deleted Filter' }}
+                  label="Deleted Filter"
+                  startAdornment={
+                    <MUI.InputAdornment position="start">
+                      <MUI.FilterListIcon
+                        viewBox="0 0 24 24"
+                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                      />
+                    </MUI.InputAdornment>
+                  }
+                  sx={{ borderRadius: '12px' }}               
+                >
+                  <MUI.MenuItem value="All">All</MUI.MenuItem>
+                  <MUI.MenuItem value="Deleted">Deleted</MUI.MenuItem>
+                  <MUI.MenuItem value="Not Deleted">Not Deleted</MUI.MenuItem>
+                </MUI.Select>
+              </MUI.FormControl>
+            </MUI.Grid>
+
+
+
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+
         <DevTool control={control} />
 
         <MUI.Snackbar

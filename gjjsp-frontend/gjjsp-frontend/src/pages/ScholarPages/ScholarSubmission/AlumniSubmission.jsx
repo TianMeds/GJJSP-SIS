@@ -30,7 +30,7 @@ export default function AlumniSubmission() {
   // Zustand Store
   const { getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage } = useAuthStore();
   const { setLoading, setLoadingMessage } = useLoginStore();
-  const { modalConfirmation, setModalConfirmation, modalHistory, setModalHistory, handleOpenHistoryModal, handleCloseHistoryModal, handleOpenConfirmationModal, handleCloseConfirmationModal, userData, setUserData } = useSubmissionStore();
+  const { modalConfirmation, setModalConfirmation, modalHistory, setModalHistory, handleOpenHistoryModal, handleCloseHistoryModal, handleOpenConfirmationModal, handleCloseConfirmationModal, userData, setUserData, editAlumni, setEditAlumni, updateData, setUpdateData } = useSubmissionStore();
 
   const [userMap, setUserMap] = useState({});
 
@@ -78,6 +78,45 @@ export default function AlumniSubmission() {
   
     return formattedDate;
   };
+
+  useEffect(() => {
+    const fetchAlumniData = async () => {
+      const authToken = getAuthToken();
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      };
+
+      try {
+        const response = await axios.get('/api/scholar-alumni-documents', config);
+
+        if (response.status === 200) {
+          setUpdateData(response.data.data);
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch alumni data');
+        }
+
+        setLoading(false);
+      
+      }
+      catch (error) {
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Failed to fetch alumni data');
+        }
+      }
+    };
+
+    fetchAlumniData();
+  }, []);
+
+
 
   useEffect(() => {
     const fetchScholarData = async () => {
@@ -149,60 +188,143 @@ export default function AlumniSubmission() {
 
     fetchUserMap();
   }, []);
-
+  
   const onSubmitAlumniForm = async (data, event) => {
     event.preventDefault();
     setLoading(true);
     setLoadingMessage('Submitting Alumni Form...');
     const authToken = getAuthToken();
-
+  
+    const config = {
+      headers: {
+        "Content-type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+  
+    console.log("userData:", updateData);
+    console.log("currentYear:", currentYear);
+  
     try {
-      const config = {
-        headers: {
-          "Content-type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      };
+      const submissionStatus = updateData[0].submission_status;
 
-      const alumniFormData = {
-        year_submitted: data.year_submitted,
-        company_name: data.company_name,
-        company_location: data.company_location,
-        position_in_company: data.position_in_company,
-        licensure_exam_type: data.licensure_exam_type,
-        exam_passed_date: data.exam_passed_date,
-        volunteer_group_name: data.volunteer_group_name,
-        yr_volunteered: data.yr_volunteered
-      };
-
-      const alumniResponse = await axios.post(
-        '/api/alumni-form',
-        JSON.stringify(alumniFormData),
-        config
-      );
-
+      console.log("submissionStatus:", submissionStatus);
+  
+      const alumniEdit = submissionStatus === "For Resubmission";
+  
+      if (alumniEdit) {
+        console.log("Submitting as resubmission...");
+        const response = await axios.put(`/api/alumni-form/${userData.alumni[currentYear].id}`, { ...data }, config);
+      } else {
+        console.log("Submitting as new submission...");
+        const alumniFormData = {
+          year_submitted: data.year_submitted,
+          company_name: data.company_name,
+          company_location: data.company_location,
+          position_in_company: data.position_in_company,
+          licensure_exam_type: data.licensure_exam_type,
+          exam_passed_date: data.exam_passed_date,
+          volunteer_group_name: data.volunteer_group_name,
+          yr_volunteered: data.yr_volunteered
+        };
+  
+        const alumniResponse = await axios.post(
+          '/api/alumni-form',
+          JSON.stringify(alumniFormData),
+          config
+        );
+  
+      }
+  
       setLoading(false);
       form.reset(FormValues);
-
+  
       const scholarProfile = await axios.get('/api/scholarsProfile', config);
       setUserData(scholarProfile.data.data);
       setLoading(false);
       handleCloseConfirmationModal();
       setAlertOpen(true);
       setAlertMessage('Alumni Submission submitted successfully');
-
+  
     } catch (error) {
       setLoading(false);
       setErrorOpen(true);
       setErrorMessage('Failed to submit Alumni Form');
     }
-
   };
+  
+  
+  
 
-  const hasAlumniSubmission = Object.keys(userData.alumni || {}).length > 0;
+  // const onSubmitAlumniForm = async (data, event) => {
+  //   event.preventDefault();
+  //   setLoading(true);
+  //   setLoadingMessage('Submitting Alumni Form...');
+  //   const authToken = getAuthToken();
+
+  //   try {
+  //     const config = {
+  //       headers: {
+  //         "Content-type": "application/json",
+  //         "Authorization": `Bearer ${authToken}`
+  //       }
+  //     };
+
+  //     const alumniFormData = {
+  //       year_submitted: data.year_submitted,
+  //       company_name: data.company_name,
+  //       company_location: data.company_location,
+  //       position_in_company: data.position_in_company,
+  //       licensure_exam_type: data.licensure_exam_type,
+  //       exam_passed_date: data.exam_passed_date,
+  //       volunteer_group_name: data.volunteer_group_name,
+  //       yr_volunteered: data.yr_volunteered
+  //     };
 
 
-  const isDisabled = userData.scholar_status_id !== 6 ;
+  //     const alumniResponse = await axios.post(
+  //       '/api/alumni-form',
+  //       JSON.stringify(alumniFormData),
+  //       config
+  //     );
+
+  //     setLoading(false);
+  //     form.reset(FormValues);
+
+  //     const scholarProfile = await axios.get('/api/scholarsProfile', config);
+  //     setUserData(scholarProfile.data.data);
+  //     setLoading(false);
+  //     handleCloseConfirmationModal();
+  //     setAlertOpen(true);
+  //     setAlertMessage('Alumni Submission submitted successfully');
+
+  //   } catch (error) {
+  //     setLoading(false);
+  //     setErrorOpen(true);
+  //     setErrorMessage('Failed to submit Alumni Form');
+  //   }
+
+  // };
+
+
+
+
+  const hasAlumniSubmission = () => { 
+    const alumniData = userData.alumni[currentYear];
+    if (alumniData && alumniData.length > 0) {
+      for (const entry of alumniData) {
+        if (entry.submission_status === 'For Approval' || entry.submission_status === 'Approved') {
+          return true;
+        }
+      }
+      return false;
+
+    }
+    return false;
+  }
+
+
+  const isDisabled = userData.scholar_status_id !== 7 ;
   
 
   return (
@@ -273,7 +395,7 @@ export default function AlumniSubmission() {
               ) : (
 
                 <>
-                   {hasAlumniSubmission ? (
+                   {hasAlumniSubmission() ? (
                   <MUI.Grid item xs={12}>
                     <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'left', md: 'center' }} margin={2} justifyContent="space-between">
                       <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
@@ -333,6 +455,48 @@ export default function AlumniSubmission() {
 
                   <MUI.Grid container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }}>
 
+
+                  <MUI.Grid item xs={12}>
+                    <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'left', md: 'center' }} margin={2} justifyContent="space-between">
+                      <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
+                        Alumni Submission
+                      </MUI.Typography>
+
+                      <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }} gap={4} xs={6}>
+                        <MUI.Grid id="schoolYearGrid">
+                          <MUI.InputLabel htmlFor="year_submitted" id="schoolYearLabel"></MUI.InputLabel>
+                          <Controller
+                            name="year_submitted"
+                            id="year_submitted"
+                            control={control}
+                            defaultValue={currentYear}
+                            render={({ field }) => (
+                              <MUI.Select
+                                native
+                                {...field}
+                                disabled
+                                sx={{
+                                  border: '1px solid rgba(0,0,0,0.2)',
+                                  boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)',
+                                  borderRadius: '15px',
+                                  height: '50px'
+                                }}
+                              >
+                                <option value={currentYear}>{` Year ${currentYear}`}</option>
+                              </MUI.Select>
+                            )}
+                          />
+                        </MUI.Grid>
+                      </MUI.Grid>
+
+                      {/* Submission History button */}
+                      <MUI.Button variant="contained" component={Link} to="" id="addButton" onClick={handleOpenHistoryModal}>
+                        <HistoryIcon sx={{ mr: 1 }} />
+                        <MUI.Typography variant="body2">Submission history</MUI.Typography>
+                      </MUI.Button>
+
+                    </MUI.Box>
+                    </MUI.Grid>
                     <MUI.Grid item xs={12} md={4} mt={5}>
 
                       <MUI.Grid container spacing={3}>

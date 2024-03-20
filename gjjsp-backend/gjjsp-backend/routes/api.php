@@ -64,6 +64,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/scholarsProfile', [ScholarController::class, 'storeScholarProfile']);
     Route::put('/scholarsProfile/{id}', [ScholarController::class, 'updateScholarProfile']);
     Route::get('/scholarsProfile', [ScholarController::class, 'scholarProfile']);
+    Route::get('/viewScholarsProfile/{id}', [ScholarController::class, 'viewScholarProfile']);
+    Route::get('/viewScholarSubmission', [ScholarController::class, 'viewScholarSubmission']);  
 
     //Roles Route
     Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);
@@ -129,7 +131,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
     Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
     Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
-    Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'update']);
+    Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'updateRenewalDocument']);
     Route::get('renewal-document' , [RenewalDocumentController::class, 'scholarSubmission']);
     Route::get('total-renewal' , [RenewalDocumentController::class, 'totalRenewalDocuments']);
     Route::get('/scholar-renewal-documents', [RenewalDocumentController::class, 'scholarRenewalDocuments']);
@@ -141,7 +143,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
     Route::put('/graduating-reminders/{id}', [ScholarController::class, 'graduatingReminders']);
     Route::put('/graduating-submission/{id}', [GraduatingFormController::class, 'updateSubmissionStatus']);
+    Route::get('/scholar-graduating-documents', [GraduatingFormController::class, 'scholarGraduatingDocuments']);
+
+    Route::put('/alumni-form/{id}', [AlumniFormController::class, 'update']);
     Route::put('/alumni-submission/{id}', [AlumniFormController::class, 'updateSubmissionStatus']);
+    Route::put('/alumni-reminders/{id}', [ScholarController::class, 'alumniReminders']);
+    Route::get('/scholar-alumni-documents', [AlumniFormController::class, 'scholarAlumniDocuments']);
 
     //School Route 
     Route::apiResource('/schools', SchoolController::class)->only(['index', 'show']);

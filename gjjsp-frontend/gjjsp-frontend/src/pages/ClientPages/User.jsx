@@ -45,7 +45,7 @@ export default function User({state}) {
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
-  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
+  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, filteredStatus, setFilteredStatus, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal,
     selectedUser, setSelectedUser, setAvatarInitial, modalUsers, setModalUsers, handleOpenModalUsers, handleCloseModalUsers, deleteModal, setDeleteModal,
     userIdToDelete, setUserIdToDelete, restoreModal, setRestoreModal, userIdToRestore, setUserIdToRestore
   } = useUserStore();
@@ -154,7 +154,7 @@ export default function User({state}) {
       setErrorMessage("Something went wrong");
       setLoading(false);
     }
-
+    setLoading(false);
     handleCloseModalUsers();
   } 
 };
@@ -188,6 +188,7 @@ export default function User({state}) {
           setErrorMessage("You've been logout");
           navigate('/login')
         }
+        setLoading(false)
       }
     };
 
@@ -257,6 +258,7 @@ export default function User({state}) {
           setErrorMessage("Session expired. Please login again.")
           navigate('/login')
         }
+        setLoading(false);
       }
     }
 
@@ -396,28 +398,13 @@ export default function User({state}) {
             />
           </Search>
 
-          <MUI.FormControl sx={{ minWidth: 120 }}>
-            <MUI.Select
-              value={filteredRole}
-              onChange={(e) => setFilteredRole(e.target.value)} 
-              displayEmpty
-              inputProps={{ 'aria-label': 'Filter' }}
-              startAdornment={
-                <MUI.InputAdornment position="start">
-                  <MUI.FilterListIcon
-                    viewBox="0 0 24 24"
-                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                  />
-                </MUI.InputAdornment>
-              }
-              sx={{ borderRadius: '12px' }}
-            >
-              <MUI.MenuItem value="All">All</MUI.MenuItem>
-              <MUI.MenuItem value="Administrator">Scholarship Administrator</MUI.MenuItem>
-              <MUI.MenuItem value="Scholar Manager">Scholar Manager</MUI.MenuItem>
-              <MUI.MenuItem value="Scholar">Scholar</MUI.MenuItem>
-            </MUI.Select>
-          </MUI.FormControl>
+          <MUI.Grid>
+        <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+          <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+            Add Filter
+          </MUI.Button>
+        </MUI.FormControl>
+      </MUI.Grid>
 
           </MUI.Container>
 
@@ -441,10 +428,23 @@ export default function User({state}) {
                         user.role_id === (roleMapping[filteredRole] || null)
                       );
                     })
+                    .filter((user) => {
+                      return filteredStatus === 'All' ? true : (
+                        user.user_status === filteredStatus
+                      );
+                    })
                     .filter((user) => 
                       (user.email_address && user.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
                       ((`${user.first_name} ${user.middle_name} ${user.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
+                    // Sort the users array
+                    .sort((a, b) => {
+                      // Sort by user_status
+                      if (a.user_status === 'Revoked' && b.user_status !== 'Revoked') return -1;
+                      if (a.user_status !== 'Revoked' && b.user_status === 'Revoked') return 1;
+                      return new Date(b.created_at) - new Date(a.created_at);
+                    })
+                    .reverse()  
                     .map((user, index) => (
                     <MUI.TableRow key={index} className='user' sx={{backgroundColor: index % 2 === 0 ? '#eeeeee' : 'inherit'}}>
                       <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)' }}  className='name'>{`${user.first_name} ${user.middle_name ? user.middle_name : ''} ${user.last_name}`}</MUI.TableCell>
@@ -789,9 +789,6 @@ export default function User({state}) {
               </MUI.DialogActions>
           </MUI.Dialog>
 
-          <DevTool control={control} />
-
-
           {/* Modal for Add and Update Users */}
           <MUI.Dialog open={modalUsers} onClose={handleCloseModalUsers}>
             <MUI.DialogTitle id="dialogTitle" mt={2}>{editUser ? 'Heads Up!' : 'New Scholar Alert'}</MUI.DialogTitle>
@@ -848,6 +845,7 @@ export default function User({state}) {
             </MUI.DialogActions>
           </MUI.Dialog>
 
+          {/* Modal for Restore Users */}
           <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
             <MUI.DialogTitle id="dialogTitle" mt={2}>
               Heads Up!
@@ -884,6 +882,72 @@ export default function User({state}) {
             </MUI.DialogActions>
 
           </MUI.Dialog>
+
+          {/* Modal for Filter */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal}>
+            <MUI.DialogTitle id="dialogFilter">Filter Users</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="role-filter-label">Role Filter</MUI.InputLabel>
+                    <MUI.Select
+                      labelId="role-filter-label"
+                      value={filteredRole}
+                      onChange={(e) => setFilteredRole(e.target.value)} 
+                      displayEmpty
+                      label="Role Filter"
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      <MUI.MenuItem value="Administrator">Scholarship Administrator</MUI.MenuItem>
+                      <MUI.MenuItem value="Scholar Manager">Scholar Manager</MUI.MenuItem>
+                      <MUI.MenuItem value="Scholar">Scholar</MUI.MenuItem>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid>
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="status-filter-label">Status Filter</MUI.InputLabel>
+                    <MUI.Select
+                      labelId="status-filter-label"
+                      value={filteredStatus}
+                      onChange={(e) => setFilteredStatus(e.target.value)} 
+                      displayEmpty
+                      label="Status Filter"
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      <MUI.MenuItem value="Active">Active</MUI.MenuItem>
+                      <MUI.MenuItem value="Inactive">Inactive</MUI.MenuItem>
+                      <MUI.MenuItem value="Revoked">Revoked</MUI.MenuItem>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid>
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          
 
           {/* Snackbar for Success */}
           <MUI.Snackbar

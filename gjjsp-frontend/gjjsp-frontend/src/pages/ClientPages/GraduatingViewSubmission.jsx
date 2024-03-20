@@ -53,8 +53,17 @@ export default function ViewSubmission() {
     setLoadingMessage('Updating submission...');
     try {
       const authToken = getAuthToken();
+
+      let remarksMessage = '';
+      if (status === 'Approved') {
+          remarksMessage = "Congratulations! You're approved. You can now wait for the next submission.";
+      } else {
+          remarksMessage = disapprovalRemarks;
+      }
+
       const response = await axios.put(`/api/graduating-submission/${selectedSubmission.id}`, {
-        submission_status: status
+        submission_status: status,
+        remarks_message: remarksMessage
       }, {
         headers: {
           'Authorization': `Bearer ${authToken}` // Include the bearer token in the header
@@ -64,9 +73,11 @@ export default function ViewSubmission() {
       if (response.status === 200) {
         setAlertMessage('Submission status updated successfully');
         setAlertOpen(true);
+        handleCloseStatusModal();
       } else {
         setErrorMessage('Failed to update submission status');
         setErrorOpen(true);
+        handleCloseStatusModal();
       }
       setLoading(false);
     } catch (error) {

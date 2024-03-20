@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('volunteer_group_name')->nullable();
             $table->string('yr_volunteered')->nullable();
             $table->string('submission_status')->default('For Approval');
+            $table->string('remarks_message')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();

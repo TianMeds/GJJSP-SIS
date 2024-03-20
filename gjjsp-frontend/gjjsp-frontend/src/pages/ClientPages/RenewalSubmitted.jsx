@@ -26,7 +26,7 @@ export default function RenewalSubmitted() {
     //Zustand Calls
     const {getAuthToken, alertOpen, alertMessage, setAlertOpen, setAlertMessage, errorOpen, setErrorOpen, setErrorMessage, errorMessage} = useAuthStore();
     const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
-    const { renewalForms, setRenewalForms, renewalForm, selectedSubmission, setSelectedSubmission, submissionValues, setSubmissionValues, submissionValue, renewalSubmission, setRenewalSubmission, modalRenewal, setModalRenewal, renewalIdToSend, setRenewalIdToSend, filteredSubmission, setFilteredSubmission, searchQuery, handleSearch, modalRemarks, setModalRemarks, remarksIdToSend, setRemarkIdToSend, renewalMap, setRenewalMap, passYear, passTerm, setPassYear, setPassTerm  } = useSubmissionStore();
+    const { renewalForms, setRenewalForms, renewalForm, selectedSubmission, setSelectedSubmission, setRenewalSubmission, modalRenewal, setModalRenewal, renewalIdToSend, setRenewalIdToSend, filteredSubmission, setFilteredSubmission, searchQuery, handleSearch,  setRenewalMap,  setPassYear, setPassTerm  } = useSubmissionStore();
     const [schoolYears, setSchoolYears] = useState([]);
 
     const navigate = useNavigate();
@@ -50,20 +50,22 @@ export default function RenewalSubmitted() {
         const endYear = startYear + 1;
     
         return `${startYear}-${endYear}`;
-      };
-    
+    };
     
     useEffect(() => {
-    const currentSY = getCurrentSchoolYear();
-    if (!schoolYears.includes(currentSY)) {
-        // Add the current school year to the list of school years if it's not already there
-        setSchoolYears(prevSchoolYears => {
-        const updatedYears = [currentSY, ...prevSchoolYears];
-        // Limit the number of school years to 2
-        return updatedYears.slice(0, 2);
-        });
-    }
-    }, [schoolYears]);
+        const storedSchoolYears = localStorage.getItem('schoolYears');
+        const parsedSchoolYears = storedSchoolYears ? JSON.parse(storedSchoolYears) : [];
+        
+        const currentSY = getCurrentSchoolYear();
+        if (!parsedSchoolYears.includes(currentSY)) {
+            const updatedYears = [currentSY, ...parsedSchoolYears].slice(0, 2);
+            localStorage.setItem('schoolYears', JSON.stringify(updatedYears));
+            setSchoolYears(updatedYears);
+        } else {
+            setSchoolYears(parsedSchoolYears);
+        }
+    }, []);
+    
 
     useEffect(() => {
         const fetchRenewalForms = async () => {
@@ -90,18 +92,7 @@ export default function RenewalSubmitted() {
         };
         fetchRenewalForms();
     }, []);
-                
-
-    // const handleOpenModalRemarks = (event, renewalDocumentId) => {
-    //     event.preventDefault(); // Prevent default button behavior
-    //     console.log(renewalDocumentId);
-    // };
-    
-
-    // const handleCloseModalRemarks = () => {
-    //     setRemarkIdToSend(null);
-    //     setModalRemarks(false);
-    // }
+            
 
     const selectedTerm = watch("term_submitted");
     const selectedYear = watch("school_yr_submitted");
@@ -145,7 +136,7 @@ export default function RenewalSubmitted() {
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                console.error("Authentication token is missing.");
+                setErrorMessage('You are not authorized to perform this action. Please refresh browser');
                 return;
             }
             
@@ -315,35 +306,23 @@ export default function RenewalSubmitted() {
                         </MUI.FormControl>
                     </MUI.Container>
 
-                <MUI.TableContainer sx={{ backgroundColor: '#00000' }}>
-                    <MUI.Table> 
-                        <MUI.TableHead>
-                            <MUI.TableRow>
-                                <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar's Name</MUI.TableCell>
-                                <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Status</MUI.TableCell>
-                                <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>View Submission</MUI.TableCell>
-                                {/* <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Remarks</MUI.TableCell> */}
-                                <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
-                            </MUI.TableRow>
-                        </MUI.TableHead>
-                        <MUI.TableBody>
-                            {renewalForms
+                    <MUI.TableContainer sx={{ backgroundColor: '#00000' }}>
+                        <MUI.Table> 
+                            <MUI.TableHead>
+                                <MUI.TableRow>
+                                    <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Scholar's Name</MUI.TableCell>
+                                    <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Status</MUI.TableCell>
+                                    <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>View Submission</MUI.TableCell>
+                                    <MUI.TableCell sx={{fontWeight: 'bold', fontSize: '1rem'}}>Action</MUI.TableCell>
+                                </MUI.TableRow>
+                            </MUI.TableHead>
+                            <MUI.TableBody>
+                        {renewalForms
                             .filter((renewalForm) => {
                                 return filteredSubmission === "All" ? true : (
-                                    Object.values(renewalForm.renewing).some(terms => Object.values(terms).some(documents => documents.some(document => document.submission_status === filteredSubmission)))
+                                    Object.values(renewalForm.renewing).some(termData => termData.submission_status === filteredSubmission)
                                 );
                             })
-                           // Filter the submissions based on the selected term
-                           .filter((renewalForm) => {
-                                if (selectedTerm === "") {
-                                    return true; // No term selected, don't apply filtering
-                                } else {
-                                    return Object.keys(renewalForm.renewing).some(schoolYear => 
-                                        Object.keys(renewalForm.renewing[schoolYear]).some(term => term === selectedTerm)
-                                    );
-                                }
-                            })
-
                             // Filter the submissions based on the selected school year
                             .filter((renewalForm) => {
                                 if (selectedYear === "") {
@@ -352,44 +331,35 @@ export default function RenewalSubmitted() {
                                     return Object.keys(renewalForm.renewing).some(schoolYear => schoolYear === selectedYear);
                                 }
                             })
-
                             .filter((renewalForm) => (
                                 (`${renewalForm.user_first_name} ${renewalForm.user_middle_name || ""} ${renewalForm.user_last_name}`).toLowerCase().includes(searchQuery?.toLowerCase())
                             ))
                             .map((renewalForm, index) => (
                                 <React.Fragment key={index}>
                                     {Object.entries(renewalForm.renewing).map(([schoolYear, terms]) => (
-                                    Object.entries(terms).map(([term, documents]) => (
-                                        selectedTerm === term && (
-                                            documents.map((document, docIndex) => (
-                                                <MUI.TableRow key={`${index}-${schoolYear}-${term}-${docIndex}`} className='user' >
+                                        terms
+                                            .filter(termData => termData.term === selectedTerm || selectedTerm === "")
+                                            .map((termData, docIndex) => (
+                                                <MUI.TableRow key={`${index}-${termData.term}-${docIndex}`} className='user'>
                                                     <MUI.TableCell sx={{border: 'none'}}  className='name'>
                                                         {`${renewalForm.user_first_name} ${renewalForm.user_middle_name || ""} ${renewalForm.user_last_name}`}
                                                     </MUI.TableCell>
                                                     <MUI.TableCell sx={{border: 'none'}}  className='submission_status'> 
-
-                                                        {document.submission_status === 'For Approval' ? (
+                                                        {termData.submission_status === 'For Approval' ? (
                                                             <span className='For_Approval'>For Approval</span>
-                                                        ) : document.submission_status === 'Approved' ? (
+                                                        ) : termData.submission_status === 'Approved' ? (
                                                             <span className='Approved'>Approved</span>
-                                                        ) : document.submission_status === 'For Resubmission' ? (
+                                                        ) : termData.submission_status === 'For Resubmission' ? (
                                                             <span className='For_Resubmission'>For Resubmission</span>
                                                         ) : (
                                                             <span className='No_Submission'>No Submission</span>
                                                         )}
                                                     </MUI.TableCell>
                                                     <MUI.TableCell sx={{border: 'none'}}  className='role'>
-                                                        <MUI.IconButton color="inherit" onClick={() => viewSubmission(renewalForm.id, schoolYear, term)}>
+                                                        <MUI.IconButton color="inherit" onClick={() => viewSubmission(renewalForm.id, schoolYear, termData.term)}>
                                                             <MUI.TableChartIcon sx={{transform: 'rotate(90deg)' , marginLeft: '2rem'}}/>
                                                         </MUI.IconButton>
                                                     </MUI.TableCell>
-                                                    {/* <MUI.TableCell sx={{border: 'none'}}  className='status'>
-                                                    {Object.entries(documents).map(([key, value]) => (
-                                                <MUI.IconButton key={key} color="inherit" onClick={(event) => handleOpenModalRemarks(event, renewalForm.id)}>
-                                                    <MUI.AddCommentOutlinedIcon />
-                                                    </MUI.IconButton>
-                                                ))}
-                                                    </MUI.TableCell> */}
                                                     <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
                                                         <MUI.Button variant='contained' onClick={() => handleOpenModalRenewal(renewalForm.id)}>
                                                             <MUI.NotificationsIcon/>
@@ -400,9 +370,7 @@ export default function RenewalSubmitted() {
                                                     </MUI.TableCell>
                                                 </MUI.TableRow>
                                             ))
-                                        )
-                                    ))
-                                ))}
+                                    ))}
                                     {/* Render a row indicating no submissions if there are no documents */}
                                     {!Object.keys(renewalForm.renewing).length && (
                                         <MUI.TableRow>
@@ -414,18 +382,13 @@ export default function RenewalSubmitted() {
                                             </MUI.TableCell>
                                             <MUI.TableCell sx={{border: 'none'}}  className='role'>
                                                 <MUI.IconButton color="inherit" onClick={() => viewSubmission(renewalForm.id)}>
-                                                    <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
+                                                    <MUI.TableChartIcon sx={{transform: 'rotate(90deg)', marginLeft: '2rem'}}/>
                                                 </MUI.IconButton>
                                             </MUI.TableCell>
-                                            {/* <MUI.TableCell sx={{border: 'none'}}  className='status'>
-                                                <MUI.IconButton color="inherit" onClick={(e) => handleOpenModalRemarks(e, scholar.id)}>
-                                                    <MUI.AddCommentOutlinedIcon />
-                                                </MUI.IconButton>
-                                            </MUI.TableCell> */}
                                             <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
                                                 <MUI.Button variant='contained' onClick={() => handleOpenModalRenewal(renewalForm.id)}>
                                                     <MUI.NotificationsIcon/>
-                                                    <MUI.Typography variant='h5'>
+                                                    <MUI.Typography variant='h6' color={'white'}>
                                                         Send Reminders
                                                     </MUI.Typography>  
                                                 </MUI.Button>
@@ -434,10 +397,12 @@ export default function RenewalSubmitted() {
                                     )}
                                 </React.Fragment>
                             ))}
-                        </MUI.TableBody>
-                    </MUI.Table>
-                    <MUI.Divider sx={{width:'100%'}}/>
-                </MUI.TableContainer>
+                    </MUI.TableBody>
+
+                        </MUI.Table>
+                        <MUI.Divider sx={{width:'100%'}}/>
+                    </MUI.TableContainer>
+
 
                 </MUI.Grid>
 

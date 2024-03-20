@@ -50,16 +50,20 @@ export default function GraduatingSubmitted() {
 
         return `${startYear}-${endYear}`;
     };
-
     useEffect(() => {
+        const storedSchoolYears = localStorage.getItem('schoolYears');
+        const parsedSchoolYears = storedSchoolYears ? JSON.parse(storedSchoolYears) : [];
+        
         const currentSY = getCurrentSchoolYear();
-        if(!schoolYears.includes(currentSY)) {
-            setSchoolYears(prevSchoolYears => {
-                const updatedYears = [currentSY, ...prevSchoolYears];
-                return updatedYears.slice(0, 2);
-            })
+        if (!parsedSchoolYears.includes(currentSY)) {
+            const updatedYears = [currentSY, ...parsedSchoolYears].slice(0, 10);
+            localStorage.setItem('schoolYears', JSON.stringify(updatedYears));
+            setSchoolYears(updatedYears);
+        } else {
+            setSchoolYears(parsedSchoolYears);
         }
-    }, [schoolYears]);
+    }, []);
+    
 
     useEffect(() => {
         const fetchScholars= async () => {

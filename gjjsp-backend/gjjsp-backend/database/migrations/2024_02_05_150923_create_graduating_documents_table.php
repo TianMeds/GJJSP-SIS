@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('graduationPicture')->nullable();
             $table->string('transcriptOfRecords')->nullable();
             $table->string('submission_status')->default('For Approval');
+            $table->string('remarks_message')->nullable();
             $table->unsignedInteger('updated_by')->nullable()->constrained('users');
             $table->timestamps();
             $table->softDeletes();

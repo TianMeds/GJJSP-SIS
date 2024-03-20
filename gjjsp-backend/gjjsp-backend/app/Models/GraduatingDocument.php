@@ -33,6 +33,7 @@ class GraduatingDocument extends Model
         'graduationPicture',
         'transcriptOfRecords',
         'submission_status',
+        'remarks_message',
         'updated_by',
     ];
 

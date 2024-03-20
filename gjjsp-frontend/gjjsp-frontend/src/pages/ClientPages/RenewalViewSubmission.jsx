@@ -95,31 +95,53 @@ export default function ViewSubmission() {
     setLoading(true);
     setLoadingMessage('Updating submission...');
     try {
-      const authToken = getAuthToken();
-      const response = await axios.put(`/api/renewal-submission/${selectedSubmission.id}`, {
-        submission_status: status
-      }, {
-        headers: {
-          'Authorization': `Bearer ${authToken}` // Include the bearer token in the header
+        const authToken = getAuthToken();
+        // Find the selected term based on passYear and passTerm
+        const selectedTerm = selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm);
+        if (!selectedTerm) {
+            setErrorMessage('Selected term not found');
+            setErrorOpen(true);
+            setLoading(false);
+            return;
         }
-      });
-  
-      if (response.status === 200) {
-        setAlertMessage('Submission status updated successfully');
-        setAlertOpen(true);
-      } else {
+        let remarksMessage = '';
+        if (status === 'Approved') {
+            remarksMessage = "Congratulations! You're approved. You can now submit your next term documents.";
+        } else {
+            remarksMessage = disapprovalRemarks;
+        }
+        const response = await axios.put(`/api/renewal-submission/${selectedTerm.id}`, {
+            submission_status: status,
+            term_submitted: selectedTerm,
+            remarks_message: remarksMessage
+        }, {
+            headers: {
+                'Authorization': `Bearer ${authToken}` // Include the bearer token in the header
+            }
+        });
+
+        if (response.status === 200) {
+            setAlertMessage('Submission status updated successfully');
+            setAlertOpen(true);
+            handleCloseStatusModal();
+        } else {
+            setErrorMessage('Failed to update submission status');
+            setErrorOpen(true);
+            handleCloseStatusModal();
+        }
+
+        setLoading(false);
+    } catch (error) {
+        setLoading(false);
+        console.error('Error updating submission status:', error);
         setErrorMessage('Failed to update submission status');
         setErrorOpen(true);
-      }
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      console.error('Error updating submission status:', error);
-      setErrorMessage('Failed to update submission status');
-      setErrorOpen(true);
     }
-  };
-  
+};
+
+
+
+
 
   return (
     <Layout>
@@ -142,9 +164,10 @@ export default function ViewSubmission() {
 
           <MUI.Grid item>
               <MUI.Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                  Renewal Form: {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.submission_status || 'No Submission'}
+                  Renewal Form: {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.submission_status || 'No Submission'}
               </MUI.Typography>
           </MUI.Grid>
+
 
           <MUI.Grid item>
               <MUI.Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
@@ -157,23 +180,36 @@ export default function ViewSubmission() {
           </MUI.Grid>
 
           <MUI.Grid item>
-            <MUI.Button 
+          <MUI.Button 
               variant='contained' 
-              disabled={selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.submission_status === 'Approved'}
+              disabled={
+                  !selectedSubmission ||
+                  !selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm) ||
+                  selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.submission_status === 'Approved' || 
+                  selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.submission_status === 'For Resubmission'
+              }
               onClick={() => handleOpenStatusModal('Approved')}
               sx={{ backgroundColor: '#4caf50', color: '#fff', '&:hover': { backgroundColor: '#388e3c' } }}
-            >
+          >
               Approve
-            </MUI.Button>
+          </MUI.Button>
+
             <MUI.Button 
               variant='contained' 
-              disabled={selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.submission_status === 'Approved'}
+              disabled={
+                !selectedSubmission || 
+                !selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm) || 
+                selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.submission_status === 'Approved' ||
+                selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.submission_status === 'For Resubmission'
+              }
+                
               onClick={() => handleOpenStatusModal('Disapproved')}
               sx={{ marginLeft: '10px', backgroundColor: '#f44336', color: '#fff', '&:hover': { backgroundColor: '#f44336' } }}
             >
               Disapprove
             </MUI.Button>
           </MUI.Grid>
+
       </MUI.Grid>
 
 
@@ -198,7 +234,7 @@ export default function ViewSubmission() {
                     color: '#333', // Adjust text color as needed
                   }}
                 >
-                  {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.gwa_value || 'No Gwa yet'}
+                  {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.gwa_value || 'No Gwa yet'}
                 </MUI.Box>
 
 
@@ -223,7 +259,7 @@ export default function ViewSubmission() {
                     color: '#333', // Adjust text color as needed
                   }}
                 >
-                  {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.gwa_remarks || 'No Remarks yet'}
+                  {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.gwa_remarks || 'No Remarks yet'}
                 </MUI.Box>
 
               </MUI.Grid>
@@ -252,19 +288,20 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{ border: 'none' }}>
 
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                        {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.copyOfReportCard ? (
-                          <a href={selectedSubmission.renewing[passYear][passTerm][0].copyOfReportCard} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer', }}>
-                            <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
-                            <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none', }}>
-                              {extractFileName(selectedSubmission.renewing[passYear][passTerm][0].copyOfReportCard)}
-                            </MUI.Typography>
-                          </a>
-                        ) : (
-                          <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none', }}>
-                            No submission
-                          </MUI.Typography>
-                        )}
+                            {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.copyOfReportCard ? (
+                                <a href={selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).copyOfReportCard} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer', }}>
+                                    <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
+                                    <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none', }}>
+                                        {extractFileName(selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).copyOfReportCard)}
+                                    </MUI.Typography>
+                                </a>
+                            ) : (
+                                <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none', }}>
+                                    No submission
+                                </MUI.Typography>
+                            )}
                         </MUI.Grid>
+
 
                         </MUI.TableCell>
                       </MUI.TableRow>
@@ -276,11 +313,11 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{border: 'none'}}>
 
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                          {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.copyOfRegistrationForm ? (
-                            <a href={selectedSubmission.renewing[passYear][passTerm][0].copyOfRegistrationForm} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
+                          {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.copyOfRegistrationForm ? (
+                            <a href={selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).copyOfRegistrationForm} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
                               <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
                               <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
-                                {extractFileName(selectedSubmission.renewing[passYear][passTerm][0].copyOfRegistrationForm)}
+                                {extractFileName(selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).copyOfRegistrationForm)}
                               </MUI.Typography>
                             </a>
                           ) : (
@@ -300,19 +337,20 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{border: 'none'}}>
                           
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                          {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.scannedWrittenEssay ? (
-                            <a href={selectedSubmission.renewing[passYear][passTerm][0].scannedWrittenEssay} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
-                              <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
-                              <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
-                                {extractFileName(selectedSubmission.renewing[passYear][passTerm][0].scannedWrittenEssay)}
-                              </MUI.Typography>
-                            </a>
-                          ) : (
-                            <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
-                              No submission
-                            </MUI.Typography>
-                          )}
+                            {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.scannedWrittenEssay ? (
+                                <a href={selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).scannedWrittenEssay} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
+                                    <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
+                                    <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
+                                        {extractFileName(selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).scannedWrittenEssay)}
+                                    </MUI.Typography>
+                                </a>
+                            ) : (
+                                <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
+                                    No submission
+                                </MUI.Typography>
+                            )}
                         </MUI.Grid>
+
 
                         </MUI.TableCell>
                       </MUI.TableRow>
@@ -324,19 +362,20 @@ export default function ViewSubmission() {
                         <MUI.TableCell sx={{border: 'none'}}>
 
                         <MUI.Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                          {selectedSubmission.renewing[passYear]?.[passTerm]?.[0]?.letterOfGratitude ? (
-                            <a href={selectedSubmission.renewing[passYear][passTerm][0].letterOfGratitude} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
-                              <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
-                              <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
-                                {extractFileName(selectedSubmission.renewing[passYear][passTerm][0].letterOfGratitude)}
-                              </MUI.Typography>
-                            </a>
-                          ) : (
-                            <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
-                              No submission
-                            </MUI.Typography>
-                          )}
+                            {selectedSubmission.renewing[passYear]?.find(termData => termData.term === passTerm)?.letterOfGratitude ? (
+                                <a href={selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).letterOfGratitude} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#1976d2', cursor: 'pointer' }}>
+                                    <InsertDriveFileIcon style={{ fontSize: '1.2rem' }} />
+                                    <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
+                                        {extractFileName(selectedSubmission.renewing[passYear].find(termData => termData.term === passTerm).letterOfGratitude)}
+                                    </MUI.Typography>
+                                </a>
+                            ) : (
+                                <MUI.Typography variant='body1' style={{ color: '#1976d2', textDecoration: 'none' }}>
+                                    No submission
+                                </MUI.Typography>
+                            )}
                         </MUI.Grid>
+
 
                         </MUI.TableCell>
                       </MUI.TableRow>

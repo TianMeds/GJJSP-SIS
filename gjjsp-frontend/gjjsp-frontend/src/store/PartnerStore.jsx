@@ -59,6 +59,14 @@ const usePartnerStore = create((set) => ({
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
+
+    filterModal: false,
+    setFilterModal: (filterModal) => set({ filterModal }),
+    handleOpenFilterModal: () => set({filterModal: true}),
+    handleCloseFilterModal: () => set({filterModal: false}),
+
+    filteredDeleted: 'All',
+    setFilteredDeleted: (newFilteredDeleted) => set({filteredDeleted: newFilteredDeleted}),
 }));
 
 export default usePartnerStore;

@@ -19,6 +19,8 @@ class ProjectPartnerResource extends JsonResource
             'scholarship_categ_id' => $this->scholarship_categ_id,
             'project_partner_name' => $this->project_partner_name,
             'project_partner_mobile_num' => $this->project_partner_mobile_num,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,
             'school_id' => $this->school_id,
         ];

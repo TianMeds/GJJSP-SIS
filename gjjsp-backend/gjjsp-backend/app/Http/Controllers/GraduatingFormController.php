@@ -108,6 +108,17 @@ class GraduatingFormController extends Controller
     //     }
     // }
 
+    public function scholarGraduatingDocuments()
+    {
+        $userId = Auth::id();
+
+        // Retrieve renewal documents for the logged-in user
+        $graduatingDocuments = GraduatingDocument::where('user_id', $userId)->get();
+    
+        // Return the response
+        return response()->json(new GraduatingFormCollection($graduatingDocuments), Response::HTTP_OK);
+    }
+
 
     public function store(Request $request) {
         try {
@@ -126,11 +137,11 @@ class GraduatingFormController extends Controller
             $rules = [
                 'copyOfReportCard' => 'required|mimes:pdf| max:5120',
                 'copyOfRegistrationForm' => 'required|mimes:pdf| max:5120',
-                'scannedWrittenEssay' => 'required|mimes:pdf | max:5120',
-                'letterOfGratitude' => 'required|mimes:pdf | max:5120',
-                'statementOfAccount' => 'required|mimes:pdf | max:5120',
-                'graduationPicture' => 'required|mimes:jpeg,png,jpg | max:5120',
-                'transcriptOfRecords' => 'required|mimes:pdf | max:5120' ,
+                'scannedWrittenEssay' => 'required|mimes:pdf| max:5120',
+                'letterOfGratitude' => 'required|mimes:pdf| max:5120',
+                'statementOfAccount' => 'required|mimes:pdf| max:5120',
+                'graduationPicture' => 'required|mimes:jpeg,png,jpg| max:5120',
+                'transcriptOfRecords' => 'required|mimes:pdf| max:5120' ,
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -282,7 +293,8 @@ class GraduatingFormController extends Controller
             // Update the Renewal Document Data with this request
             $graduatingDocument->update([
                 'submission_status' => $request->input('submission_status'),
-                'updated_by' => $loggedInUserId, // Set the updated_by field with the ID of the logged-in user
+                'updated_by' => $loggedInUserId, 
+                'remarks_message' => $request->input('remarks_message'),
             ]);
     
             // Return a success response

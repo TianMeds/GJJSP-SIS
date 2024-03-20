@@ -53,44 +53,27 @@ class ScholarFamMemberController extends Controller
             $scholar = Scholar::where('user_id', $userId)->first();
     
             if ($scholar) {
-    
-                $scholarFamMem = ScholarFamMember::where('scholar_id', $scholar->id)->first();
-    
-                if ($scholarFamMem) {
-
-                    $originalFamMemberData = $scholarFamMem->toArray();
-
-                    $scholarFamMem->update($request->only([
-                        'father_name',
-                        'mother_name',
-                        'relation_to_scholar',
-                        'fam_mem_name',
-                        'occupation',
-                        'income',
-                        'fam_mem_mobile_num',
-                    ]));
-
-                    $updatedScholarFamMem = [];
-                    foreach ($request->all() as $keyFamMem => $valueFamMem) {
-                        if ($originalFamMemberData[$keyFamMem] !== $valueFamMem) {
-                            $updatedScholarFamMem[$keyFamMem] = $valueFamMem;
-                        }
-                    }
-
-                    $users = User::whereIn('role_id', [1, 2])->get();
-
-                    // Send email notification to each user
-                    foreach ($users as $user) {
-                        Mail::to($user->email_address)->send(new ScholarProfileUpdated($user, $updatedScholarFamMem, $scholar));
-                    }
-
-                    return new ScholarFamMemberResource($scholarFamMem);
-                } else {
-                    return response()->json(['message' => 'Scholar Family Information not found'], Response::HTTP_NOT_FOUND);
+                // Ensure that the provided $id matches the scholar_fam_member belonging to the scholar
+                if ($id->scholar_id !== $scholar->id) {
+                    return response()->json(['message' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
                 }
+    
+                // Update the scholar_fam_member directly using the $id parameter
+                $id->update($request->only([
+                    'father_name',
+                    'mother_name',
+                    'relation_to_scholar',
+                    'fam_mem_name',
+                    'occupation',
+                    'income',
+                    'fam_mem_mobile_num',
+                ]));
+    
+                return new ScholarFamMemberResource($id);
+            } else {
+                return response()->json(['message' => 'Scholar not found'], Response::HTTP_NOT_FOUND);
             }
         } catch (\Exception $e) {
-    
             return response([
                 'status' => false,
                 'message' => 'An error occurred while updating Scholar Family Information',
@@ -98,6 +81,7 @@ class ScholarFamMemberController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     /**
      * Remove the specified resource from storage.
@@ -107,14 +91,19 @@ class ScholarFamMemberController extends Controller
         //
     }
 
-    public function getScholarFam()
+    public function getScholarFam(Request $request)
     {
         try {
             // Retrieve the authenticated user's ID
             $userId = Auth::id();
 
+            // Check if a scholar ID is provided in the request parameters
+            $scholarId = $request->input('userId');
+
+            $profileUserId = $scholarId ?? $userId;
+
             // Find the scholar profile that belongs to the authenticated user
-            $scholar = Scholar::where('user_id', $userId)->first();
+            $scholar = Scholar::where('user_id', $profileUserId)->first();
 
             if ($scholar) {
                 // Find the scholar_fam_member using the scholar_id

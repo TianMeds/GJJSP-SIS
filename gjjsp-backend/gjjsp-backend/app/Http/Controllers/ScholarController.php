@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ScholarResource;
 use App\Http\Resources\ScholarCollection;
+use App\Http\Resources\GraduatingFormCollection;
+use App\Http\Resources\AlumniFormCollection;
+use App\Http\Resources\RenewalDocumentCollection;
 use App\Http\Resources;
 use App\Models\Scholar;
 use App\Models\User;
@@ -19,6 +22,10 @@ use App\Mail\ScholarProfileUpdated;
 use App\Mail\ScholarProfileDeleted;
 use App\Mail\RenewalDocumentReminder;
 use App\Mail\GraduatingDocumentReminder;
+use App\Mail\AlumniFormReminder;
+use App\Models\RenewalDocument;
+use App\Models\GraduatingDocument;
+use App\Models\AlumniForm;  
 
 class ScholarController extends Controller
 {
@@ -54,8 +61,8 @@ class ScholarController extends Controller
     public function store(Request $request)
     {
         $scholar = Scholar::create($request->only([
-            'user_id','scholarship_categ_id','scholar_photo_filepath','gender','religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
-            'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
+            'user_id','scholarship_categ_id','gender','religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
+            'school_yr_graduated','school_id','program', 'acad_terms','home_visit_sched','home_address_id',
             'fb_account',
         ]));
         return new ScholarResource($scholar);
@@ -103,9 +110,9 @@ class ScholarController extends Controller
     public function update(Request $request, Scholar $scholar)
     {
         $scholar->update($request->only([
-            'scholar_photo_filepath','gender',
+            'gender',
             'religion','birthdate','birthplace','civil_status','num_fam_mem','school_yr_started',
-            'school_yr_graduated','school_id','program','home_visit_sched','home_address_id',
+            'school_yr_graduated','school_id','program', 'acad_terms','home_visit_sched','home_address_id',
             'fb_account',
         ]));
 
@@ -153,29 +160,59 @@ class ScholarController extends Controller
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    public function scholarProfile()
+    public function scholarProfile(Request $request)
     {
         try {
             // Retrieve the authenticated user's ID
             $userId = Auth::id();
-
-            // Find the scholar profile that belongs to the authenticated user
-            $scholar = Scholar::where('user_id', $userId)->first();
-
+    
+            // Check if a scholar ID is provided in the request parameters
+            $scholarId = $request->input('userId');
+    
+            // If a scholar ID is provided, use it; otherwise, use the authenticated user's ID
+            $profileUserId = $scholarId ?? $userId;
+    
+            // Find the scholar profile using the determined user ID
+            $scholar = Scholar::where('user_id', $profileUserId)->first();
+    
             if ($scholar) {
                 // Scholar profile found, return as a resource
                 return new ScholarResource($scholar);
             } else {
-                // Scholar profile not found for the authenticated user
-                return response()->json(['message' => 'Scholar profile not found for the authenticated user'], Response::HTTP_NOT_FOUND);
+                // Scholar profile not found for the specified or authenticated user
+                return response()->json(['message' => 'Scholar profile not found for the specified or authenticated user'], Response::HTTP_NOT_FOUND);
             }
         } catch (\Exception $e) {
             // Log the exception for further investigation
             \Log::error('Error in scholarProfile: ' . $e->getMessage());
-
+    
             return response()->json(['message' => 'Error processing scholar profile'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
+    public function viewScholarSubmission() 
+    {
+        $userId = Auth::id();
+
+        // Retrieve all documents (RenewalDocument, GraduatingForm, AlumniForm) for the logged-in user
+        $documents = collect([]);
+        $renewalDocuments = RenewalDocument::where('user_id', $userId)->get();
+        $graduatingForms = GraduatingDocument::where('user_id', $userId)->get();
+        $alumniForms = AlumniForm::where('user_id', $userId)->get();
+    
+        // Merge all document collections into a single collection
+        $documents = $documents->merge($renewalDocuments)->merge($graduatingForms)->merge($alumniForms);
+        
+        // Return the response
+        return response()->json([
+            'data' => [
+                'renewal_documents' => new RenewalDocumentCollection($renewalDocuments),
+                'graduating_forms' => new GraduatingFormCollection($graduatingForms),
+                'alumni_forms' => new AlumniFormCollection($alumniForms),
+            ]
+        ], Response::HTTP_OK);
+    }
+
 
     public function sendReminders(Request $request, $id)
     {
@@ -225,6 +262,30 @@ class ScholarController extends Controller
         return response()->json(['message' => 'Graduating Document Reminder sent successfully'], Response::HTTP_OK);
     }
 
+    public function alumniReminders(Request $request, $id)
+    {
+        // Find the renewal document by its ID
+        $scholar = Scholar::find($id);
+
+        // Check if the renewal document exists
+        if (!$scholar) {
+            return response()->json(['message' => 'Alumni Document not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Find the user associated with the scholar
+        $user = $scholar->user;
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Send renewal document reminder email
+        Mail::to($user->email_address)->send(new AlumniFormReminder($scholar, $user));
+
+        return response()->json(['message' => 'Alumni Form Reminder sent successfully'], Response::HTTP_OK);
+    }
+
 
 
     public function updateScholarProfile(Request $request, $id)
@@ -244,7 +305,7 @@ class ScholarController extends Controller
             // Update the scholar with the request data
             $scholar->update($request->only([
                 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem',
-                'school_yr_started', 'school_yr_graduated', 'school_id', 'program',
+                'school_yr_started', 'school_yr_graduated', 'school_id', 'program', 'acad_terms',
                 'home_visit_sched', 'fb_account', 'street', 'zip_code', 'region_name', 'province_name',
                 'cities_municipalities_name', 'barangay_name',
             ]));
@@ -370,7 +431,7 @@ class ScholarController extends Controller
     public function storeScholarProfile(Request $request)
     {
         $scholar = Scholar::create($request->only([
-            'user_id', 'scholarship_categ_id', 'scholar_photo_filepath', 'project_partner_id', 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem', 'school_yr_started', 'school_yr_graduated', 'school_id', 'program', 'home_visit_sched', 'home_address_id', 'fb_account', 'scholar_status_id'
+            'user_id', 'scholarship_categ_id', 'project_partner_id', 'gender', 'religion', 'birthdate', 'birthplace', 'civil_status', 'num_fam_mem', 'school_yr_started', 'school_yr_graduated', 'school_id', 'program', 'acad_terms', 'home_visit_sched', 'home_address_id', 'fb_account', 'scholar_status_id'
         ]));
         return new ScholarResource($scholar);
     }

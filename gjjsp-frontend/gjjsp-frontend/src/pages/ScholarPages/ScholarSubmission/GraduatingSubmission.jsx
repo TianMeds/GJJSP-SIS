@@ -261,10 +261,28 @@ export default function GraduatingSubmission() {
   }, []);
 
   const currentSchoolYear = getCurrentSchoolYear();
+   
+  const hasGraduatingSubmission = () => {
+    const graduatingData = userData.graduating[currentSchoolYear];
+    if (graduatingData && graduatingData.length > 0) {
+        for (const entry of graduatingData) {
+            if (entry.submission_status === 'For Approval' || entry.submission_status === 'Approved') {
+                return true; // Disable the form if there is a submission for approval
+            }
+        }
+        return false; // No submission for approval found, enable the form
+    }
+    return false; // No data found, disable the form
+};
 
-  const hasGraduatingSubmission = Object.keys(userData.graduating || {}).length > 0;
 
-  const isDisabled = userData.scholar_status_id !== 6; 
+
+
+
+
+
+
+  const isDisabled = userData.scholar_status_id !== 5; 
 
 
   return (
@@ -332,7 +350,7 @@ export default function GraduatingSubmission() {
         ) : (
 
           <>
-          {hasGraduatingSubmission ? (
+          {hasGraduatingSubmission() ? (
             <MUI.Grid item xs={12}>
               <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
                 <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
@@ -391,9 +409,49 @@ export default function GraduatingSubmission() {
           <>
               <MUI.Grid  container spacing={3} sx={{ mt: 2, ml: 2, display: 'flex' }}> 
            
-                <MUI.Grid item xs={12} md={12} mt={5}>
+                <MUI.Grid item xs={12} md={12}>
 
                   <MUI.Grid container spacing={3}>
+
+                  <MUI.Grid item xs={12}>
+                    <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
+                      <MUI.Typography variant="h1" id="tabsTitle" sx={{ color: 'black' }}>
+                        Graduating Submission
+                      </MUI.Typography>
+                      
+                      <MUI.Grid sx={{display: 'flex', alignItems: 'center'}} gap={4} xs={6}>
+                        
+                      <MUI.Grid id="schoolYearGrid">
+                        <MUI.InputLabel htmlFor="school_yr_submitted" id="schoolYearLabel"></MUI.InputLabel>
+                          <Controller
+                            name="school_yr_submitted"
+                            id="school_yr_submitted"
+                            control={control}
+                            defaultValue={currentSchoolYear}
+                            render={({ field }) => (
+                              <MUI.Select
+                                native
+                                {...field}
+                                sx={{border: '1px solid rgba(0,0,0,0.2)',
+                                boxShadow: '11px 7px 15px -3px rgba(0,0,0,0.1)', borderRadius: '15px', height: '50px'}}
+                                disabled // Disable the select field
+                              >
+                                <option value={currentSchoolYear}>{`SY ${currentSchoolYear}`}</option>
+                              </MUI.Select>
+                            )}
+                          />
+                      </MUI.Grid>
+
+                      </MUI.Grid>
+
+                      {/* Submission History button */}
+                      <MUI.Button variant="contained" component={Link} to="" id="addButton">
+                        <HistoryIcon sx={{ mr: 1 }} />
+                        <MUI.Typography variant="body2" onClick={handleOpenHistoryModal}>Submission history</MUI.Typography>
+                      </MUI.Button>
+
+                    </MUI.Box>
+                  </MUI.Grid>
 
                   {/* Left Column */}
                   <MUI.Grid item xs={12} sm={6}>
@@ -1268,6 +1326,7 @@ export default function GraduatingSubmission() {
                     <MUI.TableCell>Submission</MUI.TableCell>
                     <MUI.TableCell>Submitted Date</MUI.TableCell>
                     <MUI.TableCell>Status</MUI.TableCell>
+                    <MUI.TableCell>Remarks</MUI.TableCell>
                     <MUI.TableCell>Updated By</MUI.TableCell>
                   </MUI.TableRow>
                 </MUI.TableHead>
@@ -1280,6 +1339,7 @@ export default function GraduatingSubmission() {
                         {formatDate(submission.updated_at)}
                       </MUI.TableCell>
                       <MUI.TableCell>{submission.submission_status}</MUI.TableCell>
+                      <MUI.TableCell>{submission.remarks_message || 'No Remarks'}</MUI.TableCell>
                       <MUI.TableCell>{userMap[submission.updated_by] || 'Not yet updated'}</MUI.TableCell>
                     </MUI.TableRow>
                   ))

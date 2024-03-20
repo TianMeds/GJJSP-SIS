@@ -26,6 +26,7 @@ class AlumniFormResource extends JsonResource
             'volunteer_group_name' => $this->volunteer_group_name,
             'yr_volunteered' => $this->yr_volunteered,
             'submission_status' => $this->submission_status,
+            'remarks_message' => $this->remarks_message,
             'updated_by' => $this->updated_by,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

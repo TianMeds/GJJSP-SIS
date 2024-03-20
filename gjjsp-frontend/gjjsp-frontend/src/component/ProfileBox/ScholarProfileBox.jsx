@@ -53,7 +53,7 @@ useEffect(() => {
     setLoadingMessage('Loading Scholar Data')
     try{
       const authToken = useAuthStore.getState().getAuthToken();
-      const scholarResponse = await axios.get('/api/scholarsProfile', {
+      const scholarResponse = await axios.get(`/api/scholarsProfile?userId=${selectedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -99,7 +99,7 @@ useEffect(() => {
     try {
       const authToken = useAuthStore.getState().getAuthToken();
       
-      const response = await axios.get(`/api/scholarFam`, {
+      const response = await axios.get(`/api/scholarFam?userId=${selectedUser.id}`, {
         headers: {
           'Authorization':
           `Bearer ${authToken}`
@@ -131,7 +131,7 @@ useEffect(() => {
     try {
       const authToken = useAuthStore.getState().getAuthToken();
 
-      const response = await axios.get(`/api/highschool-acad-detail`, {
+      const response = await axios.get(`/api/highschool-acad-detail?userId=${selectedUser.id}`, {
         headers: {
           'Authorization':
           `Bearer ${authToken}`
@@ -161,7 +161,7 @@ useEffect(() => {
     try {
       const authToken = useAuthStore.getState().getAuthToken();
 
-      const response = await axios.get(`/api/undergrad-acad-detail`, {
+      const response = await axios.get(`/api/undergrad-acad-detail?userId=${selectedUser.id}`, {
         headers: {
           'Authorization':
           `Bearer ${authToken}`
@@ -363,10 +363,10 @@ const getStatusClassName = (statusId) => {
             </MUI.Typography>
           </MUI.Grid>
 
-          {/* <MUI.Grid mr={3}>
+          <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">GWA</MUI.Typography>
-            <MUI.Typography sx={{ mt: 2, width: '100%' }}></MUI.Typography>
-          </MUI.Grid> */}
+            <MUI.Typography sx={{ mt: 2, width: '100%' }}>{undergradAcadDetails.gwa_current_school_yr}</MUI.Typography>
+          </MUI.Grid>
 
           <MUI.Grid mr={3}>
             <MUI.Typography variant='h5'  fontWeight="bold">Year Level</MUI.Typography>

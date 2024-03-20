@@ -9,6 +9,7 @@ use App\Models\Scholar;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 
 class AlumniFormController extends Controller
@@ -78,37 +79,52 @@ class AlumniFormController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, AlumniForm $alumniForm, )
+    public function update(Request $request)
     {
-        // try {
-        //     // Retrieve the authenticated user's ID
-        //     $userId = Auth::id();
+        try {
+            // Retrieve the authenticated user
+            $user = auth()->user();
     
-        //     // Find the scholar by ID and make sure it belongs to the authenticated user
-        //     $scholar = Scholar::where('id', $id)
-        //         ->where('user_id', $userId)
-        //         ->firstOrFail();
+            $scholar = $user->scholar()->first();
     
-        //     // Update the scholar with the request data
-        //     $scholar->update($request->only([
-        //         'company_name',
-        //         'position_in_company',
-        //         'company_location',
-        //         'licensure_exam_type',
-        //         'exam_passed_date',
-        //         'volunteer_group_name',
-        //         'yr_volunteered',
-        //     ]));
+            if (!$scholar) {
+                return response()->json(['error' => 'Scholar not found for the authenticated user'], 404);
+            }
     
-        //     // Return the updated scholar as a resource
-        //     return new ScholarResource($scholar);
-        // } catch (\Exception $e) {
-        //     // Log the exception for further investigation
-        //     \Log::error('Error in updateScholarProfile: ' . $e->getMessage());
+            $scholarId = $scholar->id;
     
-        //     return response()->json(['message' => 'Scholar not found or does not belong to the authenticated user'], Response::HTTP_NOT_FOUND);
-        // }
+            $userId = $user->id;
+    
+            // Find the AlumniForm record to update based on the scholar ID
+            $alumniForm = AlumniForm::where('scholar_id', $scholarId)->first();
+    
+            if (!$alumniForm) {
+                return response()->json(['error' => 'Alumni form not found for the authenticated user'], 404);
+            }
+    
+            // Update the AlumniForm with the provided data
+            $alumniForm->update([
+                'year_submitted' => $request->year_submitted,
+                'company_name' => $request->company_name,
+                'position_in_company' => $request->position_in_company,
+                'company_location' => $request->company_location,
+                'licensure_exam_type' => $request->licensure_exam_type,
+                'exam_passed_date' => $request->exam_passed_date,
+                'volunteer_group_name' => $request->volunteer_group_name,
+                'yr_volunteered' => $request->yr_volunteered,
+                'submission_status' => 'For Approval', // Assuming it's always set to 'For Approval' upon update
+            ]);
+    
+            // Return the updated AlumniFormResource
+            return new AlumniFormResource($alumniForm);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error in updating alumni form',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
+    
 
     public function updateSubmissionStatus(Request $request, $scholarId) 
     {
@@ -128,7 +144,8 @@ class AlumniFormController extends Controller
             // Update the Renewal Document Data with this request
             $alumniForm->update([
                 'submission_status' => $request->input('submission_status'),
-                'updated_by' => $loggedInUserId, // Set the updated_by field with the ID of the logged-in user
+                'updated_by' => $loggedInUserId, 
+                'remarks_message' => $request->input('remarks_message'),
             ]);
     
             // Return a success response
@@ -141,6 +158,20 @@ class AlumniFormController extends Controller
             ], 500);
         }
     }
+
+    public function scholarAlumniDocuments()
+    {
+        $userId = Auth::id();
+
+        // Retrieve renewal documents for the logged-in user
+        $alumniDocuments= AlumniForm::where('user_id', $userId)->get();
+    
+        // Return the response
+        return response()->json(new AlumniFormCollection($alumniDocuments), Response::HTTP_OK);
+    }
+
+
+
 
     /**
      * Remove the specified resource from storage.
