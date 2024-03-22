@@ -21,6 +21,7 @@ use App\Http\Controllers\GraduatingFormController;
 use App\Http\Controllers\RenewalDocumentController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\RemarksController;
+use App\Http\Controllers\GenerateReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,7 +164,13 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::put('/remarks/{id}', [RemarksController::class, 'update']);
     Route::delete('/remarks/{id}', [RemarksController::class, 'destroy']);
 
+    //Generate Route
+Route::get('/generate-report',[GenerateReportController::class, 'generateReport'])->name( 'generate.report' );
+
 });
+
+
+
 
 
 

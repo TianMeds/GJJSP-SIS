@@ -61,7 +61,7 @@ export const SMP_ListItems = (
       Reports
     </MUI.ListSubheader>
 
-      <CustomListItem to='/ask' 
+      <CustomListItem to='/gneerate-report' 
         icon={<MUI.Box component='img' 
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
         alt="The house from the offer."
@@ -94,7 +94,7 @@ export const SAP_ListItems = (
     <MUI.ListSubheader component="div" inset sx={{ ...subheaderStyles, ...hiddenOnMobile }}>
       Reports
     </MUI.ListSubheader>
-      <CustomListItem to='/ask' 
+      <CustomListItem to='/generate-report' 
         icon={<MUI.Box component='img' 
         sx={{height: 40, width: 60, marginLeft: '-20px'}} 
         alt="The house from the offer."
