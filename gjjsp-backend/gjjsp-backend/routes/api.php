@@ -22,6 +22,7 @@ use App\Http\Controllers\RenewalDocumentController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\RemarksController;
 use App\Http\Controllers\GenerateReportController;
+use App\Http\Controllers\ScholarExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,7 +166,10 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::delete('/remarks/{id}', [RemarksController::class, 'destroy']);
 
     //Generate Route
-Route::get('/generate-report',[GenerateReportController::class, 'generateReport'])->name( 'generate.report' );
+    Route::get('/generate-report',[GenerateReportController::class, 'generateReport'])->name( 'generate.report' );
+    Route::get('/export-scholars', [ScholarExportController::class, 'exportScholars'])->name('export.scholars');
+
+
 
 });
 

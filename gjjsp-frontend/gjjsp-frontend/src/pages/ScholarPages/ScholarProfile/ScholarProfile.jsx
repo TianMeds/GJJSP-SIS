@@ -46,7 +46,7 @@ export default function ScholarProfile() {
   {profile, setProfiles, handleOpenProfile, handleCloseProfile, 
   editProfile, setEditProfile,setSelectedProfile, 
   changePassword, handleOpenChangePassword, 
-  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword
+  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword, goBack, setGoBack
   } = useProfileStore();
 
   const {
@@ -71,9 +71,7 @@ export default function ScholarProfile() {
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
 
-  const { user } = useAuth(); 
-
-  const isAdmin = user && (user.role_id === 1 || user.role_id === 2);
+  const role_id = auth?.user?.role_id || '';
 
 
   const navigate = useNavigate();
@@ -816,6 +814,28 @@ useEffect(() => {
       console.error('Error fetching user data:', error);
     }
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authToken = getAuthToken();
+        const response = await axios.get(`/api/profile`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+  
+        setGoBack(response.data.data);
+        console.log(response.data.data);
+      } catch (error) {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
 
   //Dialog
   const steps = [
@@ -2008,6 +2028,15 @@ useEffect(() => {
     <Layout>
       <MUI.ThemeProvider theme={theme}>
     <MUI.Grid item xs={12} md={8} lg={9}>
+
+    {goBack.role_id === 1 || goBack.role_id === 2 ? (
+       <MUI.IconButton style={{ marginRight: '8px', color: 'black' }} onClick={() => navigate("/scholar")}>
+       <MUI.ArrowBackIcon /> <p>Back to Scholar List</p>
+     </MUI.IconButton>
+    ) : null}
+
+
+
 
         <MUI.Box mb={4} sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
             <MUI.Typography variant='h1' sx={{color: 'black', fontWeight: 'bold'}}>Profile</MUI.Typography>

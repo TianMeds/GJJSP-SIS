@@ -177,6 +177,7 @@ class ScholarResource extends JsonResource
             'user_middle_name' => $this->user->middle_name,
             'user_email_address' => $this->user->email_address,
             'user_mobile_num' => $this->user->user_mobile_num,
+            'user_role_id' => $this->user->role_id,
             'renewing' => $renewalsGrouped, 
             'graduating' => $graduatingGrouped,
             'alumni' => $alumniObject,
