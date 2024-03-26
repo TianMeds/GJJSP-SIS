@@ -9,6 +9,7 @@ import useDashboardStore from '../../store/DashboardStore';
 import useAuthStore from '../../store/AuthStore';
 import useSubmissionStore from '../../store/SubmissionStore';
 import PrivacyNotice from '../../component/Layout/Dialog/PrivacyNotice';
+import useAuth from '../../hooks/useAuth';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -19,6 +20,10 @@ export default function Dashboard() {
   const { scholarStatus, setScholarStatus, scholarStatuses, totalUsers,setTotalUsers, totalScholars, setTotalScholars, totalScholarshipCategories, setTotalScholarshipCategories, totalProjectPartners, setTotalProjectPartners, scholarSubmission, setScholarSubmission, term1Data, setTerm1Data, term2Data, setTerm2Data, term3Data, setTerm3Data, graduatingSubmission, setGraduatingSubmission, alumniSubmission, setAlumniSubmission, scholarStatusCount, setScholarStatusCount } = useDashboardStore();
   const {getAuthToken,alertOpen, setAlertOpen, alertMessage, setAlertMessage, errorOpen, errorMessage, setErrorOpen, setErrorMessage} = useAuthStore();
   const {page, setPage, rowsPerPage, setRowsPerPage, pressedRows, setPressedRows} = useSubmissionStore();
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
+
 
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 
@@ -32,6 +37,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    setErrorOpen(false);
     const fetchTotal = async () => {
       try {
         const authToken = getAuthToken();
@@ -90,6 +96,7 @@ export default function Dashboard() {
 
 
   useEffect(() => {
+    setErrorOpen(false);
     const fetchScholarStatus = async () => {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
@@ -160,6 +167,7 @@ export default function Dashboard() {
 
   //Bar chart data 
   useEffect(() => {
+    setErrorOpen(false);
     const fetchBarChart = async () => {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
@@ -216,7 +224,6 @@ export default function Dashboard() {
 
   const allSubmissions = [...scholarSubmission, ...graduatingSubmission, ...alumniSubmission ];
   const graduatingCount = scholarStatusCount.filter(scholar => scholar.scholar_status_id === 5).length;
-  const graduatingWithLatinHonorCount = scholarStatusCount.filter(scholar => scholar.scholar_status_id === 6).length;
   const scholarsRenewingCount = scholarStatusCount.filter(scholar => scholar.scholar_status_id === 2).length;
   const scholarsOnExtensionCount = scholarStatusCount.filter(scholar => scholar.scholar_status_id === 8).length;
 
@@ -252,17 +259,19 @@ export default function Dashboard() {
 
            <MUI.Grid container direction="row" item xs={12} spacing={2}>
               
+           {role_id === 1 && (
               <MUI.Grid item xs={3} mt={2}>
-                <MUI.Paper  elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
-                  <MUI.Grid>
-                    <MUI.PeopleAltOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
-                  </MUI.Grid>
-                  <MUI.Grid ml={4} mt={-1}>
-                    <MUI.Typography variant='h5' sx={{color: '#9e9e9e'}}>Users</MUI.Typography>
-                    <MUI.Typography variant='h1' >{totalUsers.total_users}</MUI.Typography>
-                  </MUI.Grid>
-                </MUI.Paper>
+                  <MUI.Paper elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
+                      <MUI.Grid>
+                          <MUI.PeopleAltOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
+                      </MUI.Grid>
+                      <MUI.Grid ml={4} mt={-1}>
+                          <MUI.Typography variant='h5' sx={{ color: '#9e9e9e' }}>Users</MUI.Typography>
+                          <MUI.Typography variant='h1'>{totalUsers.total_users}</MUI.Typography>
+                      </MUI.Grid>
+                  </MUI.Paper>
               </MUI.Grid>
+          )}
 
               <MUI.Grid item xs={3} mt={2}>
                 <MUI.Paper  elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
@@ -282,7 +291,7 @@ export default function Dashboard() {
                     <MUI.SchoolOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
                   </MUI.Grid>
                   <MUI.Grid ml={4} mt={-1}>
-                    <MUI.Typography variant='h5' sx={{color: '#9e9e9e'}}>Scholarships</MUI.Typography>
+                    <MUI.Typography variant='h5' sx={{color: '#9e9e9e'}}>Categories</MUI.Typography>
                     <MUI.Typography variant='h1' >{totalScholarshipCategories.total_scholarship_categ}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Paper>
@@ -294,10 +303,10 @@ export default function Dashboard() {
                 elevation={3} 
                 sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
                   <MUI.Grid>
-                    <MUI.DescriptionOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
+                    <MUI.HandshakeOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
                   </MUI.Grid>
                   <MUI.Grid ml={4} mt={-1}>
-                    <MUI.Typography variant='h5' sx={{color: '#9e9e9e'}}>Project Partners</MUI.Typography>
+                    <MUI.Typography variant='h5' sx={{color: '#9e9e9e'}}>Partners</MUI.Typography>
                     <MUI.Typography variant='h1' >{totalProjectPartners.total_project_partners}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Paper>
@@ -347,18 +356,18 @@ export default function Dashboard() {
 
               <MUI.Grid item xs={12} mt={2}>
                 <MUI.Paper  elevation={3} sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 'auto', borderRadius: '12px'}}>
-                  <MUI.Typography variant='h2' sx={{fontWeight: 'bold', mb: 2}} >Total of Submissions</MUI.Typography>
+                  <MUI.Typography variant='h3' sx={{fontWeight: 'bold', mb: 2}} >Total of Renewal Submissions</MUI.Typography>
                   <br/>
                   <BarChart
                     series={[
-                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 1').length, term2Data.filter(entry => entry.term_submitted === 'Term 1').length], label: 'Term 1' },
-                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 2').length, term2Data.filter(entry => entry.term_submitted === 'Term 2').length], label: 'Term 2' },
-                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 3').length, term2Data.filter(entry => entry.term_submitted === 'Term 3').length], label: 'Term 3' },
+                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 1').length],  label: 'Term 1' },
+                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 2').length],  label: 'Term 2' },
+                      { data: [term1Data.filter(entry => entry.term_submitted === 'Term 3').length],  label: 'Term 3' },
                     ]}
                     height={350}
                     xAxis={[
                       {
-                        data: ['Renewal', 'Graduating'],
+                        data: ['Renewal'],
                         scaleType: 'band',
                         categoryGapRatio: 0.1,
                         barGapRatio: 0.1
@@ -398,44 +407,47 @@ export default function Dashboard() {
                       </MUI.TableHead>
 
                       <MUI.TableBody>
-                        {allSubmissions.slice().reverse().map((scholarSubmissions, index) => {
-                          return (
-                            <MUI.TableRow key={index}>
-                              <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
-                                <MUI.Typography variant='body1'>
-                                  {scholarSubmissions.user_first_name} {scholarSubmissions.user_middle_name ? scholarSubmissions.user_middle_name : ''} {scholarSubmissions.user_last_name}
-                                </MUI.Typography>
-                              </MUI.TableCell>
-                              <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',  borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
-                                <MUI.Typography variant='body1'>
-                                {scholarSubmissions.gwa_value 
-                                    ? 'Renewal Forms' 
-                                    : (scholarSubmissions.future_company 
-                                        ? 'Graduating Forms' 
-                                        : (scholarSubmissions.company_name 
-                                            ? 'Alumni Forms' 
-                                            : 'Unknown Forms'
+                        {allSubmissions
+                          .slice()
+                          .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)) // Sort by updated_at date in descending order
+                          .slice(0, 6) // Limit to the 6 latest submissions
+                          .map((scholarSubmissions, index) => {
+                            return (
+                              <MUI.TableRow key={index}>
+                                <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
+                                  <MUI.Typography variant='body1'>
+                                    {scholarSubmissions.user_first_name} {scholarSubmissions.user_middle_name ? scholarSubmissions.user_middle_name : ''} {scholarSubmissions.user_last_name}
+                                  </MUI.Typography>
+                                </MUI.TableCell>
+                                <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',  borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
+                                  <MUI.Typography variant='body1'>
+                                    {scholarSubmissions.gwa_value 
+                                        ? 'Renewal Forms' 
+                                        : (scholarSubmissions.futurePlan
+                                            ? 'Graduating Forms' 
+                                            : (scholarSubmissions.company_name 
+                                                ? 'Alumni Forms' 
+                                                : 'Unknown Forms'
+                                              )
                                           )
-                                      )
-                                }
-                                </MUI.Typography>
-                              </MUI.TableCell>
-                              <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
-                                <MUI.Typography variant='body1'>
-                                  {new Date(scholarSubmissions.updated_at).toLocaleDateString()}
-                                </MUI.Typography>
-                              </MUI.TableCell>
-                              <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', padding: '16px', fontSize: '0.875rem', borderTopRightRadius: '12px' }}>
-                                <MUI.Typography variant='body1'>
-                                  {scholarSubmissions.submission_status}
-                                </MUI.Typography>
-                              </MUI.TableCell>
-                            </MUI.TableRow>
-                          );
-                        })}
-
-
+                                    }
+                                  </MUI.Typography>
+                                </MUI.TableCell>
+                                <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', borderRight: '1px solid #f5f5f5', padding: '16px', fontSize: '0.875rem' }}>
+                                  <MUI.Typography variant='body1'>
+                                    {new Date(scholarSubmissions.updated_at).toLocaleDateString()}
+                                  </MUI.Typography>
+                                </MUI.TableCell>
+                                <MUI.TableCell sx={{ background: '#ffffff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '12px', padding: '16px', fontSize: '0.875rem', borderTopRightRadius: '12px' }}>
+                                  <MUI.Typography variant='body1'>
+                                    {scholarSubmissions.submission_status}
+                                  </MUI.Typography>
+                                </MUI.TableCell>
+                              </MUI.TableRow>
+                            );
+                          })}
                       </MUI.TableBody>
+
                     </MUI.Table>
                   </MUI.TableContainer>
                 </MUI.Paper>
@@ -486,7 +498,7 @@ export default function Dashboard() {
                     <MUI.Paper  elevation={3} sx={{ height: '500px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 2, borderRadius: '12px' }}>
                       <MUI.Typography variant='h3' sx={{ fontWeight: 'bold' }}>GJJSP Scholarships's Impact Indicator</MUI.Typography>
                       <PieChart
-                        series={[{ data: [{ value: graduatingCount, label: 'Graduating' },{ value: graduatingWithLatinHonorCount, label: 'Graduates w/ Latin Honor' }, { value: scholarsRenewingCount, label: 'Scholars Renewing' }, { value: scholarsOnExtensionCount, label: 'Scholars on extension' } ] }]}
+                        series={[{ data: [{ value: graduatingCount, label: 'Graduating' },   { value: scholarsRenewingCount, label: 'Scholars Renewing' }, { value: scholarsOnExtensionCount, label: 'Scholars on Withdrew' } ] }]}
                         width={200}
                         height={300}
                         margin={{ top: -50, bottom: 100, left: 10, right: 10 }}

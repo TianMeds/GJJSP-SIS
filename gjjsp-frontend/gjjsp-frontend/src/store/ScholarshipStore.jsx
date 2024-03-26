@@ -62,6 +62,14 @@ const useScholarshipStore = create((set) => ({
 
     isDeleted: false,
     setIsDeleted: (newIsDeleted) => set({ isDeleted: newIsDeleted }),
+
+    filterModal: false,
+    setFilterModal: (filterModal) => set({ filterModal }),
+    handleOpenFilterModal: () => set({filterModal: true}),
+    handleCloseFilterModal: () => set({filterModal: false}),
+
+    filteredDeleted: 'All',
+    setFilteredDeleted: (newFilteredDeleted) => set({filteredDeleted: newFilteredDeleted}),
    
 }))
 

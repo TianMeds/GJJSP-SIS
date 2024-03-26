@@ -24,6 +24,7 @@ class AlumniForm extends Model
         'volunteer_group_name',
         'yr_volunteered',
         'submission_status',
+        'remarks_message',
         'updated_by',
     ];
 

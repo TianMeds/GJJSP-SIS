@@ -6,7 +6,6 @@ const useSubmissionStore = create((set) => ({
     submissionFormOpen: false,
     submissionStatusOpen: false,
     submissionManage: '',
-    filteredSubmission: "All",
     scholarshipType: 'Gado - FORMAL Education',
     submissionType: 'New Application',
     submissionSent: '12/01/2023',
@@ -39,6 +38,9 @@ const useSubmissionStore = create((set) => ({
     transcriptOfRecords: null,
     setTranscriptOfRecords: (transcriptOfRecords) => set({transcriptOfRecords}),
 
+    userData: [],
+    setUserData: (newUserData) => set({userData: newUserData}),
+
 
 
     //Table Values and Status before viewing
@@ -50,12 +52,40 @@ const useSubmissionStore = create((set) => ({
     renewalValues: [],
     setRenewalValues: (newRenewalValues) => set({renewalValues: newRenewalValues}),
 
+    //Table Values for Graduating
+    graduatingForms: [],
+    graduatingForm: false,
+    setGraduatingForms: (newGraduatingForms) => set({graduatingForms: newGraduatingForms}),
+
+    alumniForms: [],
+    setAlumniForms: (newAlumniForms) => set({alumniForms: newAlumniForms}),
+
+    renewalMap: [],
+    setRenewalMap: (newRenewalMap) => set({renewalMap: newRenewalMap}),
+
+    
+    modalGraduating: false,
+    setModalGraduating: (modalGraduating) => set({ modalGraduating }),
+    graduatingIdToSend: null,
+    setGraduatingIdToSend: (graduatingIdToSend) => set({ graduatingIdToSend }),
+
+    modalAlumni: false,
+    setModalAlumni: (modalAlumni) => set({ modalAlumni }),
+    alumniIdToSend: null,
+    setAlumniIdToSend: (alumniIdToSend) => set({ alumniIdToSend }),
+
+
     //Get Values of the Submission
     submissionValues: [],
     submissionValue: false,
     setSubmissionValues: (submissionValues) => set({submissionValues}),
     selectedSubmission: null,
     setSelectedSubmission: (selectedSubmission) => set({selectedSubmission}),
+
+    passYear : null,
+    setPassYear: (passYear) => set({passYear}),
+    passTerm : null,
+    setPassTerm: (passTerm) => set({passTerm}),
 
     //Values of the Submissions 
     renewalScholarData: [],
@@ -69,16 +99,6 @@ const useSubmissionStore = create((set) => ({
     submission: false,
     setSubmissions: (newSubmissions) => set({submissions: newSubmissions}),
 
-    //Table Pagination
-    page: 0,
-    setPage: (newPage) => set({ page: newPage }),
-  
-    rowsPerPage: 5,
-    setRowsPerPage: (newRowsPerPage) => set({ rowsPerPage: newRowsPerPage }),
-  
-    pressedRows: [],
-    setPressedRows: (newPressedRows) => set({ pressedRows: newPressedRows }),
-
     setSubmission: (newSubmission) => set({submission: newSubmission}),
     setSubmissionManage: (newSubmissionManage) => set({submissionManage: newSubmissionManage}),
     setSubmissionStatusOpen: (newSubmissionStatusOpen) => set({submissionStatusOpen: newSubmissionStatusOpen}),
@@ -88,11 +108,57 @@ const useSubmissionStore = create((set) => ({
     setSubmissionType: (newSubmissionType) => set({submissionType: newSubmissionType}),
     setSubmissionSent: (newSubmissionSent) => set({submissionSent: newSubmissionSent}),
     setSubmissionStatus: (newSubmissionStatus) => set({submissionStatus: newSubmissionStatus}),
-    setFilteredSubmission: (newFilteredSubmission) => set({filteredSubmission: newFilteredSubmission}),
+
+    //Submission Form
+    renewalSubmission: [],
+    setRenewalSubmission: (newRenewalSubmission) => set({renewalSubmission: newRenewalSubmission}),
+    
+    modalRenewal: false,
+    setModalRenewal: (modalRenewal) => set({ modalRenewal }),
+
+    renewalIdToSend: null,
+    setRenewalIdToSend: (renewalIdToSend) => set({ renewalIdToSend }),
 
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
+
+    filteredSubmission: "All",
+    setFilteredSubmission: (newFilteredSubmission) => set({filteredSubmission: newFilteredSubmission}),
+
+    modalRemarks: false,
+    setModalRemarks: (modalRemarks) => set({ modalRemarks }),
+    remarksIdToSend: null,
+    setRemarksIdToSend: (remarksIdToSend) => set({ remarksIdToSend }),
+
+
+    //Renewal Submission Modal
+    modalConfirmation: false,
+    setModalConfirmation: (modalConfirmation) => set({ modalConfirmation }),
+    handleOpenConfirmationModal: () => set({modalConfirmation: true}),
+    handleCloseConfirmationModal: () => set({modalConfirmation: false}),
+
+    //Renewal Submission History Modal
+    modalHistory: false,
+    setModalHistory: (modalHistory) => set({ modalHistory }),
+    handleOpenHistoryModal: () => set({modalHistory: true}),
+    handleCloseHistoryModal: () => set({modalHistory: false}),
+
+    //Submission Status Modal
+    modalStatus: false,
+    setModalStatus: (modalStatus) => set({ modalStatus }),
+    handleOpenStatusModal: () => set({modalStatus: true}),
+    handleCloseStatusModal: () => set({modalStatus: false}),
+
+    disapprovalRemarks: '',
+    setDisapprovalRemarks: (disapprovalRemarks) => set({disapprovalRemarks}),
+
+    editAlumni: false,
+    setEditAlumni: (newEditAlumni) => set({editAlumni: newEditAlumni}),
+
+    updateData: [],
+    setUpdateData: (newUpdateData) => set({updateData: newUpdateData}),
+
 }))
 
 export default useSubmissionStore;

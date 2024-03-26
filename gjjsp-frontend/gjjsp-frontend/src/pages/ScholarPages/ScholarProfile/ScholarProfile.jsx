@@ -46,7 +46,7 @@ export default function ScholarProfile() {
   {profile, setProfiles, handleOpenProfile, handleCloseProfile, 
   editProfile, setEditProfile,setSelectedProfile, 
   changePassword, handleOpenChangePassword, 
-  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword
+  handleCloseChangePassword, editPassword, setEditPassword,setSelectedPassword, goBack, setGoBack
   } = useProfileStore();
 
   const {
@@ -70,6 +70,9 @@ export default function ScholarProfile() {
   } = useScholarProfileStore();
 
   const { showPassword, handleTogglePassword, setLoading, setLoadingMessage } = useLoginStore();
+
+  const role_id = auth?.user?.role_id || '';
+
 
   const navigate = useNavigate();
   
@@ -104,6 +107,7 @@ export default function ScholarProfile() {
     school_yr_graduated: '',
     school_id: '',
     program: '',
+    acad_terms: '',
     home_visit_sched: '',
     fb_account: '',
     region_name: '',
@@ -349,38 +353,44 @@ export default function ScholarProfile() {
     }
   };
 
-  // Fetch Scholar Data
-  useEffect(() => {
-    const fetchScholarProfile = async () => {
-      try {
-        const authToken = useAuthStore.getState().getAuthToken();
-        
-        const response = await axios.get(`/api/scholarsProfile`, {
-          headers: {
-            'Authorization':  `Bearer ${authToken}`
-          }
-        });
+// Fetch Scholar Data
+useEffect(() => {
+  const fetchScholarProfile = async (selectedUser) => {
+    try {
+      const authToken = useAuthStore.getState().getAuthToken();
+      
+      // Extract the id from the selected user
+      const userId = selectedUser.id;
+
+      const response = await axios.get(`/api/scholarsProfile?userId=${selectedUser.id}`, {
+        headers: {
+          'Authorization':  `Bearer ${authToken}`
+        }
+      });
 
       if (response.status === 200) {
-          setScholarProfiles(response.data.data);
-          setAlertOpen(true);
-          setAlertMessage('Users list has been updated');
+        setScholarProfiles(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Users list has been updated');
       } else {
-          setErrorOpen(true);
-          setAlertMessage('Failed to fetch data');
+        setErrorOpen(true);
+        setAlertMessage('Failed to fetch data');
       }
 
       form.reset(FormValues);
-      } catch (error) {
-          if (error.response?.status === 401) {
-              setErrorOpen(true);
-              setErrorMessage("You've been logout");
-              navigate('/login');
-          }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("You've been logout");
+        navigate('/login');
       }
-    };
-    fetchScholarProfile();
-  }, []);
+    }
+  };
+
+  fetchScholarProfile(selectedUser); // Pass the selectedUser to the fetchScholarProfile function
+}, [selectedUser]); // Include selectedUser in the dependency array so that useEffect runs whenever selectedUser changes
+
+
 
   // Fetch Scholar Family Member
   useEffect(() => {
@@ -388,7 +398,7 @@ export default function ScholarProfile() {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
         
-        const response = await axios.get(`/api/scholarFam`, {
+        const response = await axios.get(`/api/scholarFam?userId=${selectedUser.id}`, {
           headers: {
             'Authorization':
             `Bearer ${authToken}`
@@ -420,7 +430,7 @@ export default function ScholarProfile() {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
       
-        const response = await axios.get(`/api/highschool-acad-detail`, {
+        const response = await axios.get(`/api/highschool-acad-detail?userId=${selectedUser.id}`, {
           headers: {
             'Authorization':
             `Bearer ${authToken}`
@@ -450,7 +460,7 @@ export default function ScholarProfile() {
       try {
         const authToken = useAuthStore.getState().getAuthToken();
 
-        const response = await axios.get(`/api/undergrad-acad-detail`, {
+        const response = await axios.get(`/api/undergrad-acad-detail?userId=${selectedUser.id}`, {
           headers: {
             'Authorization':
             `Bearer ${authToken}`
@@ -621,7 +631,7 @@ useEffect(() => {
       const authToken = useAuthStore.getState().getAuthToken();
   
       // Fetch Scholar Profile
-      const profileResponse = await axios.get(`/api/scholarsProfile`, {
+      const profileResponse = await axios.get(`/api/scholarsProfile?userId=${selectedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -644,6 +654,7 @@ useEffect(() => {
           school_yr_graduated: '',
           school_id: '',
           program: '',
+          acad_terms: '',
           home_visit_sched: '',
           fb_account: ''
         });
@@ -661,7 +672,7 @@ useEffect(() => {
       }
   
       // Fetch Scholar Family Member
-      const scholarFamResponse = await axios.get(`/api/scholarFam`, {
+      const scholarFamResponse = await axios.get(`/api/scholarFam?userId=${selectedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -698,7 +709,7 @@ useEffect(() => {
       }
 
       // Fetch High School Data
-      const highschoolResponse = await axios.get(`/api/highschool-acad-detail`, {
+      const highschoolResponse = await axios.get(`/api/highschool-acad-detail?userId=${selectedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -734,7 +745,7 @@ useEffect(() => {
       }
 
       // Fetch Undergrad Data
-      const undergradResponse = await axios.get(`/api/undergrad-acad-detail`, {
+      const undergradResponse = await axios.get(`/api/undergrad-acad-detail?userId=${selectedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
@@ -804,6 +815,28 @@ useEffect(() => {
     }
   }
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authToken = getAuthToken();
+        const response = await axios.get(`/api/profile`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+  
+        setGoBack(response.data.data);
+        console.log(response.data.data);
+      } catch (error) {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+
   //Dialog
   const steps = [
     {
@@ -816,31 +849,23 @@ useEffect(() => {
           <MUI.Grid item xs={4}>
             <MUI.Grid id="genderGrid">
               <MUI.InputLabel htmlFor="gender" id="genderLabel">Gender</MUI.InputLabel>
-              <Controller
-                  name='gender'
-                  defaultValue={scholarProfiles.gender || ''}
-                  control={control}
-                  rules={{
-                    required: 'Gender is required',
-                    validate: (value) => value !== '' || 'Please select a gender'
-                  }}
-                  render={({ field }) => (
-                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-                      <MUI.Select
-                        id="gender"
-                        native
-                        {...field}
-                        value={field.value || ""}  // Use formData.religion instead of field.value
-                        onChange={field.onChange}
-                      >
-                        <option value="" disabled>Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </MUI.Select>
-                    </MUI.FormControl>
-                  )}
-                />
+
+                <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                  <MUI.Select
+                    id='gender'
+                    native
+                    {...register('gender', {
+                      required: true,
+                    })}
+                  >
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </MUI.Select>
+
+                </MUI.FormControl>
+
               {errors.gender && (
                   <p id='errMsg'>
                       <MUI.InfoIcon className='infoErr' />
@@ -988,12 +1013,13 @@ useEffect(() => {
             </MUI.Grid>
             
             <MUI.Grid id="schoolYrStartedGrid">
-              <MUI.InputLabel htmlFor="school_yr_started" id="schoolYrStartedLabel">School Year Started</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="school_yr_started" id="schoolYrStartedLabel">Year Started</MUI.InputLabel>
               <MUI.TextField
                   type='text'
                   id='school_yr_started'
                   placeholder='School Year Started'
                   fullWidth
+                  autoComplete='off'
                   defaultValue={scholarProfiles.school_yr_started || ""}
                   {...register("school_yr_started", {
                       required: {
@@ -1015,7 +1041,7 @@ useEffect(() => {
             </MUI.Grid>
 
             <MUI.Grid id="schoolYrGraduatedGrid">
-              <MUI.InputLabel htmlFor="school_yr_graduated" id="schoolYrGraduatedLabel">School Year Graduated</MUI.InputLabel>
+              <MUI.InputLabel htmlFor="school_yr_graduated" id="schoolYrGraduatedLabel">Year Graduated</MUI.InputLabel>
               <MUI.TextField
                   type='text'
                   id='school_yr_graduated'
@@ -1041,76 +1067,6 @@ useEffect(() => {
               )}
             </MUI.Grid>
 
-            <MUI.Grid id="schoolIdGrid">
-              <MUI.InputLabel htmlFor="school_id" id="schoolIdLabel">
-                  School
-              </MUI.InputLabel>
-                <Controller
-                    name="school_id"
-                    control={control}
-                    defaultValue={scholarProfiles.school_id || ""}
-                    rules={{
-                        required: 'School ID is required',
-                    }}
-                    render={({ field }) => (
-                        <MUI.FormControl sx={{ borderRadius: '8px', width: '200px' }}>
-                            <MUI.Select
-                                id="school_id"
-                                native
-                                {...field}
-                                value={field.value || ""} 
-                                MenuProps={{
-                                    PaperProps: {
-                                        style: {
-                                            width: '200px',
-                                        },
-                                    },
-                                }}
-                            >
-                              <option value="" disabled>Select School</option>
-                              <option value="1">Ateneo De Manila University</option>
-                              <option value="2">Assumption College – Makati City | Assumption college</option>
-                              <option value="3">Don Bosco Technical College – Mandaluyong | Don Bosco Technical College</option>
-                              <option value="4">Don Bosco Training Center Nueva Ecija</option>
-                              <option value="5">Don Bosco Technical College – Technical Vocational Educational Technology</option>
-                              <option value="6">Don Bosco Technical College – Mandaluyong – BATCH 18</option>
-                              <option value="7">Don Bosco Technical College – Technical Vocational Educational Technology – BATCH 19</option>
-                              <option value="8">Don Bosco Training Center Mandaluyong Technical Vocational Educational Technology</option>
-                              <option value="9">Don Bosco Training Center Nueva Ecija c/o Fr. Clarence (Sr. Elizabeth Tolentino, FDCC)</option>
-                              <option value="10">University of St. La Salle – Bacolod</option>
-                              <option value="11">La Consolacion College – Bacolod</option>
-                              <option value="12">La Consolacion College – Manila</option>
-                              <option value="13">La Consolacion College – Binan</option>
-                              <option value="14">University of Negros Occidental – Recoletos | University of Negros Occidental</option>
-                              <option value="15">University of Perpetual Help System Dalta – Laguna</option>
-                              <option value="16">Concordia College – Manila</option>
-                              <option value="17">Canossa College of San Pablo City</option>
-                              <option value="18">Iloilo Science and Technology University</option>
-                              <option value="19">West Visayas State University (Iloilo City) | West Visayas State University</option>
-                              <option value="20">ISAT-U, Colegio de Sagrado, U.I & Other State Colleges</option>
-                              <option value="21">University of Santo Tomas</option>
-                              <option value="22">Polytechnic University of the Philippines</option>
-                              <option value="23">Centro Escolar University</option>
-                              <option value="24">Makati Science Technological Institute of the Philippines</option>
-                              <option value="25">Saint Pedro Poveda College</option>
-                              <option value="26">Visayan Center for Hotel and Restaurant Services</option>
-                            </MUI.Select>
-                        </MUI.FormControl>
-                    )}
-                />
-                {errors.school_id && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.school_id?.message}
-                    </p>
-                )}
-            </MUI.Grid>
-          
-          </MUI.Grid>
-
-          {/* Third Column */}
-          <MUI.Grid item xs={4}>
-
             <MUI.Grid id="programGrid">
                 <MUI.InputLabel htmlFor="program" id="programLabel">Program</MUI.InputLabel>
                 <MUI.TextField
@@ -1133,6 +1089,12 @@ useEffect(() => {
                     </p>
                 )}
             </MUI.Grid>
+
+
+          </MUI.Grid>
+
+          {/* Third Column */}
+          <MUI.Grid item xs={4}>
 
             <MUI.Grid id="homeVisitSchedGrid">
             <MUI.InputLabel htmlFor="home_visit_sched" id="homeVisitSchedLabel">Home Visit Schedule</MUI.InputLabel>
@@ -1183,28 +1145,40 @@ useEffect(() => {
                 </p>
             )}
           </MUI.Grid>
-          <MUI.Grid id="photoGrid" container alignItems="center">
-            <MUI.InputLabel htmlFor="scholar_photo_filepath" id="photoLabel">Photo</MUI.InputLabel>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-              <MUI.Paper elevation={1} sx={{ padding: '10px', width: '100%', height: '55px', borderRadius: '5px', background: 'transparent', border: '1px solid #AAAAAA', mr: 2 }}>
-                <MUI.Typography sx={{ color: '#777777' }}>{scholarPhoto ? scholarPhoto.name : 'Browse File'}</MUI.Typography>
-              </MUI.Paper>
 
-              <label htmlFor="scholar_photo_filepath" sx={{ cursor: 'pointer', margin: 0 }}>
-                <MUI.Button variant="contained" component="div" sx={{ height: '55px', backgroundColor: '#007bff', color: '#fff', borderRadius: '5px', cursor: 'pointer', padding: '10px', width: '100px' }}>
-                  <MUI.AddIcon /> Add File
-                </MUI.Button>
-                <input
-                  type="file"
-                  id="scholar_photo_filepath"
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
+          <MUI.Grid id="acadTermsGrid">
+              <MUI.InputLabel htmlFor="acad_terms" id="acadTermsLabel">School Academic Terms</MUI.InputLabel>
+              <Controller
+                  name='acad_terms'
+                  defaultValue=""
+                  control={control}
+                  rules={{
+                    required: 'Academic Term is required',
+                    validate: (value) => value !== '' || 'Please select an Academic Term'
+                  }}
+                  render={({ field }) => (
+                    <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                      <MUI.Select
+                        id="acad_terms"
+                        native
+                        {...field}
+                        value={field.value || ""} 
+                        onChange={field.onChange}
+                      >
+                        <option value="" disabled>Select Academic Terms</option>
+                        <option value="2">2 Terms</option>
+                        <option value="3">3 Terms</option>
+                      </MUI.Select>
+                    </MUI.FormControl>
+                  )}
                 />
-              </label>
-            </div>
-          </MUI.Grid>
-                            
-
+              {errors.acad_terms && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.acad_terms?.message}
+                  </p>
+              )}
+            </MUI.Grid>
 
 
           </MUI.Grid>
@@ -1320,7 +1294,7 @@ useEffect(() => {
               </MUI.Grid>
 
 
-                          <MUI.Grid id="cityGrid">
+            <MUI.Grid id="cityGrid">
               <MUI.InputLabel htmlFor="cities-municipalities_name" id="cityLabel">
                 City
               </MUI.InputLabel>
@@ -1366,8 +1340,6 @@ useEffect(() => {
 
             {/* Second Column */}
             <MUI.Grid item xs={6}>
-
-            {console.log("currentStep:", currentStep, "relevantStep:", relevantStep)}
 
             {currentStep === relevantStep && (
               <MUI.Grid id="barangayGrid">
@@ -1437,6 +1409,7 @@ useEffect(() => {
                   name='zip_code'
                   control={control}
                   defaultValue={scholarProfiles.zip_code || ''}
+                  autoComplete='off'
                   rules={{
                     required: 'Zip Code is required',
                   }}
@@ -1476,29 +1449,6 @@ useEffect(() => {
             {/* First Column */}
             <MUI.Grid item xs={4}>
 
-              <MUI.Grid id="numFamMemGrid">
-                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
-                <MUI.TextField
-                    type='text'
-                    id='num_fam_mem'
-                    placeholder='Number of Family Members'
-                    fullWidth
-                    defaultValue={scholarProfiles.num_fam_mem || ""}
-                    {...register("num_fam_mem", {
-                        required: {
-                            value: true,
-                            message: 'Number of Family Members is required',
-                        }
-                    })}
-                />
-                {errors.num_fam_mem && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.num_fam_mem?.message}
-                    </p>
-                )}
-              </MUI.Grid>
-
               <MUI.Grid id="fatherNameGrid">
                 <MUI.InputLabel htmlFor="father_name" id="fatherNameLabel">Father's Name</MUI.InputLabel>
                 <MUI.TextField
@@ -1528,6 +1478,7 @@ useEffect(() => {
                     type='text'
                     id='mother_name'
                     placeholder='Mother Name'
+                    autoComplete='off'
                     fullWidth
                     defaultValue={scholarFamMembers.mother_name || ""}
                     {...register("mother_name", {
@@ -1545,97 +1496,37 @@ useEffect(() => {
                 )}
               </MUI.Grid>
 
-            </MUI.Grid>
-
-            {/* Second Column */}
-            <MUI.Grid item xs={4}>
-              <MUI.Grid id="famMemberNameGrid">
-                <MUI.InputLabel htmlFor="fam_mem_name" id="famMemberNameLabel">Guardian's Name</MUI.InputLabel>
-                <MUI.TextField
-                    type='text'
-                    id='fam_mem_name'
-                    placeholder='Family Member Name'
-                    fullWidth
-                    defaultValue={scholarFamMembers.fam_mem_name || ""}
-                    {...register("fam_mem_name", {
+              <MUI.Grid id="numFamMemGrid">
+                <MUI.InputLabel htmlFor="num_fam_mem" id="numFamMemLabel">Number of Family Members</MUI.InputLabel>
+                <MUI.Select
+                    id="num_fam_mem"
+                    native
+                    defaultValue={scholarProfiles.num_fam_mem || ""}
+                    {...register("num_fam_mem", {
                         required: {
                             value: true,
-                            message: 'Family Member Name is required',
+                            message: 'Number of Family Members is required',
                         }
                     })}
-                />
-                {errors.fam_mem_name && (
+                >
+                    <option value="" disabled>Select No. of Fam Members</option>
+                    {/* Generate options from 1 to 20 */}
+                    {Array.from({ length: 20 }, (_, index) => (
+                        <option key={index + 1} value={index + 1}>{index + 1}</option>
+                    ))}
+                </MUI.Select>
+
+                {errors.num_fam_mem && (
                     <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr' />
-                        {errors.fam_mem_name?.message}
+                        {errors.num_fam_mem?.message}
                     </p>
                 )}
               </MUI.Grid>
 
-              <MUI.Grid id="relationToScholarGrid">
-              <MUI.InputLabel htmlFor="relation_to_scholar" id="relationToScholarLabel">Guardian Relation</MUI.InputLabel>
-              <Controller
-                name='relation_to_scholar'
-                control={control}
-                defaultValue={scholarFamMembers.relation_to_scholar || ""}
-                rules={{
-                  required: 'Relation to scholar is required',
-                  validate: (value) => value !== '' || 'Please select a relation to scholar'
-                }}
-                render={({ field }) => (
-                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-                    <MUI.Select
-                      id="relation_to_scholar"
-                      native
-                      {...field}                    >
-                      <option value="">Select Relation</option>
-                      <option value="Father">Father</option>
-                      <option value="Mother">Mother</option>
-                      <option value="Guardian">Guardian</option>
-                    </MUI.Select>
-                  </MUI.FormControl>
-                )}
-              />
-              {errors.relation_to_scholar && (
-                  <p id='errMsg'>
-                      <MUI.InfoIcon className='infoErr' />
-                      {errors.relation_to_scholar?.message}
-                  </p>
-              )}
             </MUI.Grid>
 
-            
-              <MUI.Grid id="occupationGrid">
-              <MUI.InputLabel htmlFor="occupation" id="occupationLabel">Guardian's Occupation</MUI.InputLabel>
-              <Controller
-                name='occupation'
-                control={control}
-                defaultValue={scholarFamMembers.occupation || ''}
-                rules={{
-                  required: 'Occupation is required',
-                }}
-                render={({ field }) => (
-                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
-                    <MUI.TextField
-                      type='text'
-                      id='occupation'
-                      placeholder='Occupation'
-                      fullWidth
-                      {...field}
-                    />
-                  </MUI.FormControl>
-                )}
-              />
-              {errors.occupation && (
-                <p id='errMsg'>
-                  <MUI.InfoIcon className='infoErr' />
-                  {errors.occupation?.message}
-                </p>
-              )}
-            </MUI.Grid>
-            </MUI.Grid>
-
-            {/* Third Column */}
+            {/* Second Column */}
             <MUI.Grid item xs={4}>
 
             <MUI.Grid id="incomeGrid">
@@ -1675,6 +1566,96 @@ useEffect(() => {
               )}
             </MUI.Grid>
 
+              <MUI.Grid id="occupationGrid">
+              <MUI.InputLabel htmlFor="occupation" id="occupationLabel">Guardian's Occupation</MUI.InputLabel>
+              <Controller
+                name='occupation'
+                control={control}
+                defaultValue={scholarFamMembers.occupation || ''}
+                autoComplete='off'
+                rules={{
+                  required: 'Occupation is required',
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.TextField
+                      type='text'
+                      id='occupation'
+                      placeholder='Occupation'
+                      fullWidth
+                      {...field}
+                    />
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.occupation && (
+                <p id='errMsg'>
+                  <MUI.InfoIcon className='infoErr' />
+                  {errors.occupation?.message}
+                </p>
+              )}
+            </MUI.Grid>
+            <MUI.Grid id="relationToScholarGrid">
+              <MUI.InputLabel htmlFor="relation_to_scholar" id="relationToScholarLabel">Guardian Relation</MUI.InputLabel>
+              <Controller
+                name='relation_to_scholar'
+                control={control}
+                defaultValue={scholarFamMembers.relation_to_scholar || ""}
+                rules={{
+                  required: 'Relation to scholar is required',
+                  validate: (value) => value !== '' || 'Please select a relation to scholar'
+                }}
+                render={({ field }) => (
+                  <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+                    <MUI.Select
+                      id="relation_to_scholar"
+                      native
+                      {...field}                    >
+                      <option value="">Select Relation</option>
+                      <option value="Father">Father</option>
+                      <option value="Mother">Mother</option>
+                      <option value="Guardian">Guardian</option>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                )}
+              />
+              {errors.relation_to_scholar && (
+                  <p id='errMsg'>
+                      <MUI.InfoIcon className='infoErr' />
+                      {errors.relation_to_scholar?.message}
+                  </p>
+              )}
+            </MUI.Grid>
+          
+            
+            </MUI.Grid>
+
+            {/* Third Column */}
+            <MUI.Grid item xs={4}>
+              
+            <MUI.Grid id="famMemberNameGrid">
+                <MUI.InputLabel htmlFor="fam_mem_name" id="famMemberNameLabel">Guardian's Name</MUI.InputLabel>
+                <MUI.TextField
+                    type='text'
+                    id='fam_mem_name'
+                    placeholder='Family Member Name'
+                    fullWidth
+                    defaultValue={scholarFamMembers.fam_mem_name || ""}
+                    {...register("fam_mem_name", {
+                        required: {
+                            value: true,
+                            message: 'Family Member Name is required',
+                        }
+                    })}
+                />
+                {errors.fam_mem_name && (
+                    <p id='errMsg'>
+                        <MUI.InfoIcon className='infoErr' />
+                        {errors.fam_mem_name?.message}
+                    </p>
+                )}
+              </MUI.Grid>
+
             <MUI.Grid id="famMemberContactGrid">
                 <MUI.InputLabel htmlFor="fam_mem_contact" id="famMemberContactLabel">Guardian's Contact Number</MUI.InputLabel>
                 <MUI.TextField
@@ -1712,7 +1693,7 @@ useEffect(() => {
         <div>
           <MUI.Grid container spacing={6}>
             {/* First Column */}
-            <MUI.Grid item xs={4}>
+            <MUI.Grid item xs={6}>
 
               <MUI.Grid id="trackNameGrid">
                 <MUI.InputLabel htmlFor="track_name" id="trackNameLabel">SHS Track</MUI.InputLabel>
@@ -1791,18 +1772,26 @@ useEffect(() => {
 
                 <MUI.InputLabel htmlFor="gwa_school_yr_graduated" id="HSGwaLabel">High School GWA</MUI.InputLabel>
                 <MUI.TextField
-                    type='text'
-                    id='gwa_school_yr_graduated'
-                    placeholder='High School GWA'
-                    fullWidth
-                    defaultValue={highschoolAcadDetails.gwa_school_yr_graduated}
-                    {...register("gwa_school_yr_graduated", {
-                        required: {
-                            value: true,
-                            message: 'High School GWA is required',
-                        }
-                    })}
-                />
+                  type='text'
+                  id='gwa_school_yr_graduated'
+                  placeholder='High School GWA'
+                  fullWidth
+                  defaultValue={highschoolAcadDetails.gwa_school_yr_graduated}
+                  inputProps={{
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*', // Only allow digits
+                  }}
+                  {...register("gwa_school_yr_graduated", {
+                      required: {
+                          value: true,
+                          message: 'High School GWA is required',
+                      },
+                      pattern: {
+                          value: /^[0-9]+$/,
+                          message: 'Please enter a valid number',
+                      }
+                  })}
+              />
                 {errors.hs_gwa && (
                     <p id='errMsg'>
                         <MUI.InfoIcon className='infoErr' />
@@ -1811,7 +1800,7 @@ useEffect(() => {
                 )}
               </MUI.Grid>
 
-          </MUI.Grid>
+            </MUI.Grid>
             {/* Second Column */}
             <MUI.Grid item xs={6}>
 
@@ -1822,7 +1811,8 @@ useEffect(() => {
                       id='school_name'
                       placeholder='High School Name'
                       fullWidth
-                      defaultValue={highschoolAcadDetails.school_name}
+                      autoComplete='off'
+                      defaultValue={highschoolAcadDetails.school_name || ""}
                       {...register("school_name", {
                           required: {
                               value: true,
@@ -1901,28 +1891,65 @@ useEffect(() => {
             {/* First Column */}
             <MUI.Grid item xs={4}>
 
-             <MUI.Grid id="undegradSyGrid">
-                <MUI.InputLabel htmlFor="undergrad_sy" id="undegradSyLabel">School Year</MUI.InputLabel>
-                <MUI.TextField
-                    type='text'
-                    id='undergrad_sy'
-                    placeholder='Current School Year'
-                    fullWidth
-                    defaultValue=""
-                    {...register("undergrad_sy", {
-                        required: {
-                            value: true,
-                            message: 'Current School Year is required',
-                        }
-                    })}
-                />
-                {errors.undergrad_sy && (
-                    <p id='errMsg'>
-                        <MUI.InfoIcon className='infoErr' />
-                        {errors.undergrad_sy?.message}  
-                    </p>
-                )}
-             </MUI.Grid>
+            <MUI.Grid id="undergradSyGrid">
+  <MUI.InputLabel htmlFor="undergrad_sy" id="undergradSyLabel">School Year</MUI.InputLabel>
+  <Controller
+    name="undergrad_sy"
+    control={control}
+    defaultValue=""
+    rules={{
+      validate: {
+        checkSchoolYear: () => {
+          const started = watch("school_yr_started");
+          const graduated = watch("school_yr_graduated");
+          const currentSchoolYear = watch("undergrad_sy");
+          
+          if (!started || !graduated) {
+            return "Please input School Year Started and School Year Graduated first";
+          } else if (!currentSchoolYear) {
+            return "School Year is required";
+          }
+    
+          return true;
+        },
+      },
+    }}
+    render={({ field }) => (
+      <MUI.FormControl sx={{ width: '100%', borderRadius: '8px' }}>
+        <MUI.Select
+          id="undergrad_sy"
+          native
+          {...field}
+          value={field.value || ""}
+          onChange={field.onChange}
+          disabled={!watch("school_yr_started") || !watch("school_yr_graduated")} // Disable if either field is empty
+        >
+          <option value="" disabled>Select Current School Year</option>
+          {/* Generate options based on the School Year Started and Graduated */}
+          {Array.from(
+            { length: parseInt(watch("school_yr_graduated") || 0) - parseInt(watch("school_yr_started") || 0) + 1 },
+            (_, i) => {
+              const startYear = parseInt(watch("school_yr_started") || 0) + i;
+              const endYear = startYear + 1;
+              return (
+                <option key={`${startYear}-${endYear}`} value={`${startYear}-${endYear}`}>
+                  {`${startYear}-${endYear}`}
+                </option>
+              );
+            }
+          )}
+        </MUI.Select>
+      </MUI.FormControl>
+    )}
+  />
+  {errors.undergrad_sy && (
+    <p id='errMsg'>
+      <MUI.InfoIcon className='infoErr' />
+      {errors.undergrad_sy?.message}
+    </p>
+  )}
+</MUI.Grid>
+
             
             </MUI.Grid>
 
@@ -2002,6 +2029,15 @@ useEffect(() => {
       <MUI.ThemeProvider theme={theme}>
     <MUI.Grid item xs={12} md={8} lg={9}>
 
+    {goBack.role_id === 1 || goBack.role_id === 2 ? (
+       <MUI.IconButton style={{ marginRight: '8px', color: 'black' }} onClick={() => navigate("/scholar")}>
+       <MUI.ArrowBackIcon /> <p>Back to Scholar List</p>
+     </MUI.IconButton>
+    ) : null}
+
+
+
+
         <MUI.Box mb={4} sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
             <MUI.Typography variant='h1' sx={{color: 'black', fontWeight: 'bold'}}>Profile</MUI.Typography>
         </MUI.Box>
@@ -2022,7 +2058,7 @@ useEffect(() => {
     </MUI.Grid>
 
   
-      <MUI.Dialog open={scholarProfile} onClose={handleCloseScholarProfile} fullWidth maxWidth="md" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitScholarProfileForm)}>         
+      <MUI.Dialog open={scholarProfile} onClose={handleCloseScholarProfile} fullWidth maxWidth="lg" component='form' method='post' noValidate onSubmit={handleSubmit(onSubmitScholarProfileForm)}>         
       <MUI.DialogTitle id="dialogTitle">{steps[activeStep].title}</MUI.DialogTitle>
       <MUI.Typography variant='body2' id="dialogLabel">Required fields are marked with an asterisk *</MUI.Typography>
       <MUI.Stepper activeStep={activeStep} alternativeLabel>

@@ -120,6 +120,8 @@
   import ApartmentIcon from '@mui/icons-material/Apartment';
   import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
   import RestoreIcon from '@mui/icons-material/Restore';
+  import FormHelperText from '@mui/material/FormHelperText';
+  import ArrowBackIcon from '@mui/icons-material/ArrowBack';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -250,5 +252,7 @@
     WarningIcon, 
     ApartmentIcon,
     CalendarTodayIcon,
-    RestoreIcon
+    RestoreIcon,
+    FormHelperText,
+    ArrowBackIcon
   };

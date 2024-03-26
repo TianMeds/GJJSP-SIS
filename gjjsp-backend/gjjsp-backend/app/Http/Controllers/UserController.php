@@ -143,7 +143,7 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully'], 200);
 
     }
-
+    
     public function restore(User $user, $id)
     {
         // Find the user by its ID and include trashed models
@@ -166,6 +166,7 @@ class UserController extends Controller
 
         $user->update(['user_status' => 'Active']);
 
+        $user->scholar()->update(['scholar_status_id' => 2]);
 
         // Send email notification to the restored user
         try {
@@ -186,14 +187,58 @@ class UserController extends Controller
 
     public function getScholars()
     {
-        $scholars = User::where('role_id', 3)
-        ->whereHas('scholar', function ($query) {
-            $query->whereNull('deleted_at');
-        })
-        ->get();
-
-    return new UserCollection($scholars);
+        $loggedInUserRole = Auth::user()->role_id;
+    
+        $scholars = User::where('role_id', 3);
+    
+        // Check if the logged-in user has a role ID of 1
+        if ($loggedInUserRole === 1) {
+            $scholars->withTrashed(); // Include soft deleted users
+        }
+    
+        $scholars = $scholars->whereHas('scholar', function ($query) {
+                $query->withTrashed(); // Include soft deleted scholars
+            })
+            ->with(['scholar.scholarship_categs', 'scholar.scholarStatus']) // Corrected relationship name
+            ->get();
+    
+        return new UserCollection($scholars);
     }
+
+    public function destroyScholars(User $user, $id)
+    {
+        $userToDelete = User::where('role_id', 3)->find($id);
+
+        if ($userToDelete) {
+            $deletedName = $userToDelete->first_name . ' ' . $userToDelete->last_name;
+
+            try {
+                $userToDelete->delete();
+
+                $userToDelete->update(['user_status' => 'Revoked']);
+
+                // Update related scholar record
+                $userToDelete->scholar()->update(['scholar_status_id' => 8]);
+
+                 // Get all users with role IDs 1 and 2
+                $users = User::whereIn('role_id', [1, 2])->get();
+
+                foreach ($users as $user) {
+                    Mail::to($user->email_address)->send(new UserDeleted($user, $deletedName));
+                }
+
+                return response()->json(['message' => 'User deleted successfully'], 200);
+            }
+            catch (\Exception $e) {
+                return response()->json(['message' => 'Error deleting user'], 500);
+            }
+        }
+        else{
+            return response()->json(['message' => 'User not found or does not have the required role'], 404);
+        }
+    }
+
+
 
     public function updateOtherScholarProfile(Request $request, $id)
     {
@@ -274,7 +319,7 @@ class UserController extends Controller
             return response()->json(['message' => 'Email already taken'], Response::HTTP_CONFLICT);
         }
 
-        return response()->json(['message' => 'Error updating profile'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        return response()->json(['message' => $e->getMessages()], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
 

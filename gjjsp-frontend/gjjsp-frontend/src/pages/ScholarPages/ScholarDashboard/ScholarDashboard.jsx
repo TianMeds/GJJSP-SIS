@@ -20,10 +20,14 @@ export default function ScholarDashboard() {
   
   const {getAuthToken, alertOpen, alertMessage, setAlertMessage, setAlertOpen, errorOpen, errorMessage, setErrorMessage, setErrorOpen, setOpenDialog, setOpenPrivacyDialog} = useAuthStore();
   const [buttonClicked, setButtonClicked] = useState(false);
-  const {schoolsData, setSchoolsData, undergraduateData, setUndergraduateData, renewalData, setRenewalData} = useDashboardStore();
+  const {schoolsData, setSchoolsData, undergraduateData, setUndergraduateData, renewalData, setRenewalData, graduatingData, setGraduatingData, alumniData, setAlumniData, viewModal, setViewModal, handleOpenViewModal, handleCloseViewModal, setSelectedUser, selectedUser} = useDashboardStore();
 
   const [scholarProfiles, setScholarProfiles] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+
+// Merging all sorted data
+const allSortedData = [...renewalData, ...graduatingData, ...alumniData];
 
   const handleRefresh = () => {
     setRefreshTrigger(!refreshTrigger);
@@ -80,6 +84,39 @@ export default function ScholarDashboard() {
         else {
           setErrorOpen(true);
           setErrorMessage('Request failed with status:', renewalResponse.status);
+        }
+
+        const graduatingResponse = await axios.get('/api/scholar-graduating-documents', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (graduatingResponse.status === 200) {
+          setGraduatingData(graduatingResponse.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Graduating data loaded');
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Request failed with status:');
+        }
+
+
+        const alumniResponse = await axios.get('/api/scholar-alumni-documents', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (alumniResponse.status === 200) {
+          setAlumniData(alumniResponse.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Alumni data loaded');
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Request failed with status:');
         }
 
         const schoolResponse = await axios.get('/api/schools', {
@@ -186,7 +223,6 @@ export default function ScholarDashboard() {
 
         if (renewalResponse.status === 200) {
           setRenewalData(renewalResponse.data.data);
-          console.log(renewalResponse.data.data);
           setAlertOpen(true);
           setAlertMessage('Renewal data loaded');
         }
@@ -195,14 +231,46 @@ export default function ScholarDashboard() {
           setErrorMessage('Request failed with status:');
         }
 
+        const graduatingResponse = await axios.get('/api/scholar-graduating-documents', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (graduatingResponse.status === 200) {
+          setGraduatingData(graduatingResponse.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Graduating data loaded');
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Request failed with status:');
+        }
+
+
+        const alumniResponse = await axios.get('/api/scholar-alumni-documents', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (alumniResponse.status === 200) {
+          setAlumniData(alumniResponse.data.data);
+          setAlertOpen(true);
+          setAlertMessage('Alumni data loaded');
+        }
+        else {
+          setErrorOpen(true);
+          setErrorMessage('Request failed with status:');
+        }
+
       } catch (error) {
-        console.error('Request failed with error:', error);
+        setErrorOpen(true);
+        setErrorMessage('Request failed with error:');
       }
     }
     fetchSchool();
   }, []);
-
-  
 
   const statusMapping = {
     1: "New",
@@ -244,6 +312,42 @@ export default function ScholarDashboard() {
     return date.toLocaleDateString('en-US', options);
   };
 
+  const allSubmissions = [...renewalData, ...graduatingData, ...alumniData ];
+
+  const viewScholarSubmission =  (submissionId) => {
+    const selectedUser = allSubmissions.find((submission) => submission.id === submissionId);
+
+    if (selectedUser) {
+      setSelectedUser(selectedUser);
+      handleOpenViewModal();
+    }
+    
+    else {
+      setErrorOpen(true);
+      setErrorMessage('Submission not found');
+    }
+
+  }
+
+    
+  const extractFileName = (url, maxLength = 50) => {
+    // Split the URL string by '/'
+    const parts = url.split('/');
+    // Get the last part which represents the file name
+    const fileNameWithExtension = parts[parts.length - 1];
+    // Split the file name by '.' to separate the name and extension
+    const fileNameParts = fileNameWithExtension.split('.');
+    // Remove the last part which is the file extension
+    fileNameParts.pop();
+    // Join the remaining parts to get the file name without extension
+    let fileName = fileNameParts.join('.');
+    // Limit the length of the file name and add ellipsis if it exceeds maxLength
+    if (fileName.length > maxLength) {
+      fileName = fileName.substring(0, maxLength) + '...';
+    }
+    return fileName;
+  };
+
   return (
     <Layout>
          <MUI.ThemeProvider theme={theme}>
@@ -281,7 +385,7 @@ export default function ScholarDashboard() {
                   p: 3,
                   display: 'flex',
                   flexDirection: 'row', 
-                  height: '250px',
+                  height: '280px',
                   justifyContent: 'space-between', 
                   alignItems: 'center', 
                   borderRadius: '12px'
@@ -327,29 +431,29 @@ export default function ScholarDashboard() {
                   <MUI.Typography variant='h3' sx={{fontWeight: 'bold'}} >Academic Status</MUI.Typography>
                   <br/>
 
-                  <MUI.Grid container alignItems="center" ml={2}>
+                  <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.ApartmentIcon sx={{ color: '#1976d2' }} />
                     <MUI.Grid item>
-                      <MUI.Typography variant='h5' sx={{ color: '#1976d2', ml: 2 }}>
+                      <MUI.Typography variant='h5' sx={{ color: '#1976d2', ml: 1 }}>
                       {schoolsData.find((school) => school.id === scholarProfiles.school_id)?.school_name || 'School Not Found'}
                       </MUI.Typography>
                     </MUI.Grid>
                   </MUI.Grid>
                 <br/>
 
-                <MUI.Grid container alignItems="center" ml={2}>
+                <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.SchoolOutlinedIcon   sx={{color: '#1976d2'}}/>
                   <MUI.Grid item>
-                    <MUI.Typography variant='h5'  sx={{color: '#1976d2' , ml: 2}}>{undergraduateData.current_yr_level || 'No Data yet'}</MUI.Typography>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2' , ml: 1}}>{undergraduateData.current_yr_level || 'No Data yet'}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Grid> 
 
                 <br/>
                 
-                <MUI.Grid container alignItems="center" ml={2}>
+                <MUI.Grid container alignItems="center" ml={1}>
                     <MUI.CalendarTodayIcon  sx={{color: '#1976d2'}}/>
                   <MUI.Grid item>
-                    <MUI.Typography variant='h5'  sx={{color: '#1976d2', ml: 2}}>{undergraduateData.undergrad_sy || 'No Data yet'}</MUI.Typography>
+                    <MUI.Typography variant='h5'  sx={{color: '#1976d2', ml: 1}}>{undergraduateData.undergrad_sy || 'No Data yet'}</MUI.Typography>
                   </MUI.Grid>
                 </MUI.Grid> 
                 </MUI.Paper>
@@ -365,7 +469,7 @@ export default function ScholarDashboard() {
                   >
                   <MUI.Grid container alignItems="center">
                     <MUI.Typography variant='h4' sx={{ fontWeight: 'bold' }}>Scholar Status :</MUI.Typography>
-                    <MUI.Typography variant='h4' ml={2} className={getStatusClassName(scholarProfiles.scholar_status_id)}> {statusMapping[scholarProfiles.scholar_status_id] || 'Unknown'}</MUI.Typography>
+                    <MUI.Typography variant='h5' ml={2} className={getStatusClassName(scholarProfiles.scholar_status_id)}> {statusMapping[scholarProfiles.scholar_status_id] || 'Unknown'}</MUI.Typography>
                   </MUI.Grid>
                   </MUI.Paper>
                 </MUI.Grid>
@@ -373,7 +477,7 @@ export default function ScholarDashboard() {
               
           </MUI.Grid>
 
-          <MUI.Grid xs={8} mt={2}>
+          <MUI.Grid xs={12} mt={2}>
             <MUI.Paper
               sx={{
                 p: 2,
@@ -382,7 +486,7 @@ export default function ScholarDashboard() {
                 height: 'auto',
               }}
             >
-              <MUI.Typography variant='h3' sx={{fontWeight: 'bold'}} >Submissions</MUI.Typography>
+              <MUI.Typography variant='h3' sx={{fontWeight: 'bold', mb: 4}} >Submissions</MUI.Typography>
 
               <MUI.TableContainer>
                     <MUI.Table sx={{ minWidth: 650, borderCollapse: 'separate', borderSpacing: 0 }}>
@@ -391,24 +495,53 @@ export default function ScholarDashboard() {
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none', borderTopLeftRadius: '12px' }}>Submission</MUI.TableCell>
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none' }}>Submitted</MUI.TableCell>
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderRight: 'none' }}>Status</MUI.TableCell>
+                          <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderTopRightRadius: '12px' }}>Remarks</MUI.TableCell>
+                          <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderTopRightRadius: '12px' }}>Terms</MUI.TableCell>
                           <MUI.TableCell sx={{ background: '#f5f5f5', fontWeight: 'bold', fontSize: '1rem', padding: '16px', textAlign: 'left', borderBottom: 'none', borderTopRightRadius: '12px' }}>Action</MUI.TableCell>
                         </MUI.TableRow>
                       </MUI.TableHead>
 
                       <MUI.TableBody>
-                      {renewalData.map((item, index) => (
-                        <MUI.TableRow key={index}>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>{item.gwa_value ? "Renewal Form" : item.future_company_Name ? "Graduating Form" : item.company_name ? "Alumni Form" : ""}</MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
-                            {formatDate(item.updated_at.replace('T', ' ').replace('.000000Z', ''))}
-                          </MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>{item.submission_status}</MUI.TableCell>
-                          <MUI.TableCell sx={{ borderBottom: 'none', padding: '12px'}}>
-                            <MUI.Button variant="contained" color="primary" sx={{mr: 2}} >View</MUI.Button>
-                          </MUI.TableCell>
-                        </MUI.TableRow>
-                      ))}
-                    </MUI.TableBody>
+                        {allSubmissions
+                          .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)) // Sort by date
+                          .map((item, index) => (
+                            <MUI.TableRow key={index}>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {item.gwa_value ? "Renewal Form" : item.graduateName   ? "Graduating Form" : item.company_name ? "Alumni Form" : ""}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {formatDate(item.updated_at.replace('T', ' ').replace('.000000Z', ''))}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {item.submission_status === 'For Approval' ? (
+                                  <span className='For_Approval'>For Approval</span>
+                                ) : item.submission_status === 'Approved' ? (
+                                  <span className='Approved'>Approved</span>
+                                ) : item.submission_status === 'For Resubmission' ? (
+                                  <span className='For_Resubmission'>For Resubmission</span>
+                                ) : (
+                                  <span className='No_Submission'>No Submission</span>
+                                )}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ width: '30%', borderBottom: 'none', borderRight: 'none', padding: '16px', textAlign: 'left' }}>
+                                {item.remarks_message || 'No Remarks yet'}
+                              </MUI.TableCell>
+                              <MUI.TableCell sx={{ borderBottom: 'none', padding: '12px' }}>
+                                {item.term_submitted || 'No Terms'}
+                              </MUI.TableCell>
+
+                              <MUI.TableCell sx={{ borderBottom: 'none', padding: '12px' }}>
+                                <MUI.Button
+                                  variant="contained"
+                                  onClick={() => viewScholarSubmission(item.id)}
+                                >
+                                  <MUI.Typography variant='h6' sx={{color: '#FFFFFF'}}>View</MUI.Typography>
+                                </MUI.Button>
+                              </MUI.TableCell>
+                            </MUI.TableRow>
+                          ))}
+                      </MUI.TableBody>
+
 
                     </MUI.Table>
                   </MUI.TableContainer>
@@ -417,8 +550,231 @@ export default function ScholarDashboard() {
             
           
         </MUI.Container>
+
+
+        {/* Dialog for Viewing Files */}
+        <MUI.Dialog open={viewModal} onClose={handleCloseViewModal}  fullWidth maxWidth="md">
+          <MUI.DialogTitle>
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }} mb={2}>
+              File Viewer
+            </MUI.Typography>
+
+          </MUI.DialogTitle>
+
+          <MUI.DialogContent>
+  <MUI.Grid container spacing={2}>
+    <MUI.Grid item xs={12} md={6}>
+
+      
+
+
+      <MUI.Typography variant="h5" sx={{ fontWeight: 'bold' }} mb={2}>
+        Year Submitted: {selectedUser ? selectedUser.school_yr_submitted || selectedUser.year_submitted : ''}
+      </MUI.Typography>
+
+      {/* Render data based on submission type */}
+      {selectedUser && selectedUser.gwa_value && (
+        <div>
+
+          <MUI.Typography variant="h5" sx={{ fontWeight: 'bold' }} mb={2}>
+            Term Submitted: {selectedUser.term_submitted }
+          </MUI.Typography>
+
+          <div style={{ marginBottom: '20px' }}>
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }}>Scholar Information</MUI.Typography>
+            <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>GWA Value:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.gwa_value}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>GWA Remarks:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.gwa_remarks}</MUI.Typography>
+            </div>
+          </div>
+
+          <div>
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }}>Documentary Requirements</MUI.Typography>
+            <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Copy of Report Card:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.copyOfReportCard)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Copy of Registration Form:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.copyOfRegistrationForm)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Scanned Written Essay:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.scannedWrittenEssay)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Letter of Gratitude:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.letterOfGratitude)}</MUI.Typography>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedUser && selectedUser.graduateName && (
+        <div>
+          <div style={{ marginBottom: '20px' }}>
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }}>Scholar Information</MUI.Typography>
+            <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Graduating Name:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.graduateName}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>School Graduated:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.schoolGraduated}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Address School</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.addressSchool}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Year Entered and Graduated:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.yearEnteredGraduated}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Program:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.program}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Full Address:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.street}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Email Address</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.user_email_address}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Mobile Number:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.user_mobile_num}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Future Plan:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.futurePlan}</MUI.Typography>
+            </div>
+
+          </div>
+
+          <div>
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }}>Documentary Requirements</MUI.Typography>
+            <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Copy of Report Card:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.copyOfReportCard)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Copy of Registration Form:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.copyOfRegistrationForm)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Scanned Written Essay:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.scannedWrittenEssay)}</MUI.Typography>
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Letter of Gratitude:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.letterOfGratitude)}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Statement of Account:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.statementOfAccount)}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Graduating of Picture:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.graduationPicture)}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Transcript of Records:</MUI.Typography>
+              <MUI.Typography variant="body1">{extractFileName(selectedUser.transcriptOfRecords)}</MUI.Typography>
+            </div>
+
+          </div>
+        </div>
+      
+      )}
+
+
+      {selectedUser && selectedUser.company_name && (
+        <div>
+
+          <div style={{ marginBottom: '20px' }}>
+
+            <MUI.Typography variant="h4" sx={{ fontWeight: 'bold' }}>Alumni Information</MUI.Typography>
+            <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Company Name:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.company_name}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Company Address:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.company_location}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Position:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.position_in_company}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Licensure Exam Type:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.licensure_exam_type || "Didn't take any Licensure Examination"}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Exam Passed Date:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.exam_passed_date || "Didn't take any Licensure Examination"}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Volunteer Group Name:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.volunteer_group_name}</MUI.Typography>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <MUI.Typography variant="h6" sx={{ fontWeight: 'bold' }}>Year Volunteered:</MUI.Typography>
+              <MUI.Typography variant="body1">{selectedUser.yr_volunteered}</MUI.Typography>
+            </div>
+          </div>
+
+        </div>
+      )}
+      
+
+      {/* Add similar conditions for other types of submissions (Graduating Form, Alumni Form) */}
+    </MUI.Grid>
+
+    {/* You can add another grid item for rendering other fields if needed */}
+  </MUI.Grid>
+</MUI.DialogContent>
+
+          <MUI.DialogActions>
+            <MUI.Button onClick={handleCloseViewModal} variant="contained">
+              Close
+            </MUI.Button>
+          </MUI.DialogActions>
+
+        </MUI.Dialog>
+
         {/* Pop up Dialog  for Privacy Notice and Warning */}
         <EditProfileDialog />
+
+
+
 
         <MUI.Snackbar
             open={alertOpen}

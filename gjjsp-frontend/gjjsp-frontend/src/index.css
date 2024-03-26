@@ -84,7 +84,11 @@
 #HsSchoolNameGrid,
 #HsSchoolAddressGrid,
 #schoolYrGraduatedHsGrid,
-#photoGrid
+#scholarPhotoGrid,
+#acadTermsGrid,
+#undergradSyGrid,
+#currentYrLevelGrid,
+#undergradGwaGrid
 {
    margin: 5px;
 }
@@ -151,7 +155,21 @@
 #schoolYrGraduatedHsLabel,
 #gwaLabel,
 #remarksLabel,
-#photoLabel{
+#scholarPhotoLabel,
+#graduateNameLabel,
+#schoolGraduatedLabel,
+#addressSchoolLabel,
+#yearEnteredGraduatedLabel,
+#programLabel,
+#streetGraduateLabel,
+#userEmailAddressLabel,
+#userMobileNumLabel,
+#futurePlanLabel,
+#acadTermsLabel,
+#undergradSyLabel,
+#currentYrLevelLabel,
+#undergradGwaLabel
+{
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -214,7 +232,19 @@
 #HsSchoolNameLabel::after,
 #HsSchoolAddressLabel::after,
 #schoolYrGraduatedHsLabel::after,
-#photoLabel::after {
+#scholarPhotoLabel::after,
+#graduateNameLabel::after,
+#schoolGraduatedLabel::after,
+#addressSchoolLabel::after,
+#yearEnteredGraduatedLabel::after,
+#programLabel::after,
+#streetGraduateLabel::after,
+#userEmailAddressLabel::after,
+#userMobileNumLabel::after,
+#acadTermsLabel::after,
+#undergradSyLabel::after,
+#currentYrLevelLabel::after,
+#undergradGwaLabel::after{
     content: " *";
     color: red; 
 }   
@@ -244,6 +274,11 @@
     font-size: small;
 }
 
+.file-input-container {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
 
 
 .SAVED{
@@ -375,3 +410,35 @@ border-radius: 8px;
 margin: 2px; 
 }
 
+/* Submission Status */
+.For_Approval {
+    background-color: purple;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 2px;
+}
+
+.Approved {
+    background-color: lightgreen;
+    color: black;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 2px;
+}
+
+.For_Resubmission {
+    background-color: lightblue;
+    color: black;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 2px;
+}
+
+.No_Submission {
+    background-color: gray;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 2px;
+}

@@ -7,6 +7,9 @@ const useUserStore = create((set) => ({
     //Hook For the Filter of Table 
     filteredRole: 'All',
     setFilteredRole: (newFilteredRole) => set({filteredRole: newFilteredRole}),
+
+    filteredStatus: 'All',
+    setFilteredStatus: (newFilteredStatus) => set({filteredStatus: newFilteredStatus}),
     searchQuery: '',
     setSearchQuery: (query) => set({ searchQuery: query }),
     handleSearch: (e) => set({ searchQuery: e.target.value }),
@@ -22,11 +25,16 @@ const useUserStore = create((set) => ({
     handleOpenDeleteModal: () => set({deleteModal: true}),
     handleCloseDeleteModal: () => set({deleteModal: false}),
 
-    userIdToDelete: null,
-    setUserIdToDelete: (userIdToDelete) => set({ userIdToDelete }),
-
     restoreModal: false,
     setRestoreModal: (restoreModal) => set({ restoreModal }),
+
+    filterModal: false,
+    setFilterModal: (filterModal) => set({ filterModal }),
+    handleOpenFilterModal: () => set({filterModal: true}),
+    handleCloseFilterModal: () => set({filterModal: false}),
+
+    userIdToDelete: null,
+    setUserIdToDelete: (userIdToDelete) => set({ userIdToDelete }),
 
     userIdToRestore: null,
     setUserIdToRestore: (userIdToRestore) => set({ userIdToRestore }),

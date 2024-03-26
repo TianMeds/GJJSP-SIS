@@ -26,6 +26,7 @@ class RenewalDocument extends Model
         'letterOfGratitude',
         'submission_status',
         'updated_by',
+        'remarks_message',
     ];
 
     public function user()

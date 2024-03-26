@@ -16,7 +16,6 @@ return new class extends Migration
             $table->integer('user_id');
             $table->integer('scholarship_type_id');
             $table->integer('project_partner_id');
-            $table->string('scholar_photo_filepath');
             $table->enum('gender', ['Male', 'Female']);
             $table->string('religion');
             $table->date('birthdate');
@@ -27,7 +26,8 @@ return new class extends Migration
             $table->year('school_yr_graduated');
             $table->integer('school_id');
             $table->string('program');
-            $table->date    ('home_visit_sched');
+            $table->string('acad_terms');
+            $table->date('home_visit_sched');
             $table->string('fb_account');
             $table->integer('scholar_status_id');
             $table->timestamps();

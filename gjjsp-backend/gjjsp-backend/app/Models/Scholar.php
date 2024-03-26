@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\ScholarshipCateg;
 use App\Models\RenewalDocument;
 use App\Models\GraduatingDocument;
+use App\Models\AlumniForm;
 
 class Scholar extends Model
 {
@@ -19,7 +20,6 @@ class Scholar extends Model
         'user_id',
         'scholarship_categ_id',
         'project_partner_id',
-        'scholar_photo_filepath',
         'gender',
         'religion',
         'birthdate',
@@ -31,6 +31,7 @@ class Scholar extends Model
         'school_id',
         'home_visit_sched',
         'program',
+        'acad_terms',
         'home_visit_sched',
         'fb_account',
         'street',
@@ -66,6 +67,11 @@ class Scholar extends Model
     public function graduating_documents()
     {
         return $this->hasMany(GraduatingDocument::class);
+    }
+
+    public function alumni_forms()
+    {
+        return $this->hasMany(AlumniForm::class);
     }
 
     public function getScholarStatusNameAttribute()

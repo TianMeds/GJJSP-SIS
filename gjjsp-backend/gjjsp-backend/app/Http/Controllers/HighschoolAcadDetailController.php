@@ -145,14 +145,20 @@ class HighschoolAcadDetailController extends Controller
         return response()->json(['message' => 'High school details restored successfully'], 200);
     }
 
-    public function getHighschoolAcadDetail()
+    public function getHighschoolAcadDetail(Request $request)
     {
         try {
             // Retrieve the authenticated user's ID
             $userId = Auth::id();
 
+            // Check if a scholar ID is provided in the request parameters
+            $scholarId = $request->input('userId');
+
+            // If a scholar ID is provided, use it; otherwise, use the authenticated user's ID
+            $profileUserId = $scholarId ?? $userId;
+
             // Find the scholar profile that belongs to the authenticated user
-            $scholar = Scholar::where('user_id', $userId)->first();
+            $scholar = Scholar::where('user_id', $profileUserId)->first();
 
             if ($scholar) {
                 // Find the highschool_acad_details using the scholar_id

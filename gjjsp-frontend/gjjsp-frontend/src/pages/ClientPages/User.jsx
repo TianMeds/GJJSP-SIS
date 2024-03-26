@@ -1,4 +1,5 @@
 import React, {useEffect,lazy, Suspense, useState} from 'react'
+import React, {useEffect,lazy, Suspense, useState} from 'react'
 import axios from '../../api/axios';
 
 //Components
@@ -19,12 +20,15 @@ import {useNavigate} from 'react-router-dom';
 import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
 const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,24}$/;
+// const CONTACT_REGEX = /^\+?63\d{10}$/
 const CONTACT_REGEX = /^\d{10}$/;
+
 
 
 //Reseting Form Values 
@@ -45,7 +49,7 @@ export default function User({state}) {
   const { register, control, handleSubmit, formState, reset, watch, validate, setValue} = form
   const { errors } = formState;
 
-  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, 
+  const {users, setUsers, user, handleOpenUser, handleCloseUser, filteredRole, setFilteredRole, editUser, setEditUser, searchQuery, handleSearch, filteredStatus, setFilteredStatus, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal,
     selectedUser, setSelectedUser, setAvatarInitial, modalUsers, setModalUsers, handleOpenModalUsers, handleCloseModalUsers, deleteModal, setDeleteModal,
     userIdToDelete, setUserIdToDelete, restoreModal, setRestoreModal, userIdToRestore, setUserIdToRestore
   } = useUserStore();
@@ -62,12 +66,19 @@ export default function User({state}) {
   const role_id = auth?.user?.role_id || '';
   
 
+  const [emailError, setEmailError] = useState("");
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
+  
+
   // Post Data to API 
   const onSubmit = async (data, event) => {
     event.preventDefault();
     const authToken = useAuthStore.getState().getAuthToken();
+
     const fullMobileNumber = `63${String(data.user_mobile_num).replace(/^63/, '')}`;
-    // data.user_mobile_num = fullMobileNumber;
+ 
     const config = {
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -81,6 +92,7 @@ export default function User({state}) {
       setAlertMessage('Updating user...');
       setLoading(true);
       setLoadingMessage("Updating user")
+      const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       handleCloseModalUsers();
@@ -130,7 +142,9 @@ export default function User({state}) {
 
     if(error.response?.status === 422){
       setEmailError("Email already taken");
+      setEmailError("Email already taken");
       setErrorOpen(true)
+      setErrorMessage("Email already been taken");
       setErrorMessage("Email already been taken");
       setLoading(false);
     }
@@ -154,6 +168,8 @@ export default function User({state}) {
       setLoading(false);
     }
 
+    handleCloseModalUsers();
+    setLoading(false);
     handleCloseModalUsers();
   } 
 };
@@ -187,6 +203,7 @@ export default function User({state}) {
           setErrorMessage("You've been logout");
           navigate('/login')
         }
+        setLoading(false)
       }
     };
 
@@ -256,6 +273,7 @@ export default function User({state}) {
           setErrorMessage("Session expired. Please login again.")
           navigate('/login')
         }
+        setLoading(false);
       }
     }
 
@@ -396,28 +414,13 @@ const handleMobileNumberChange = (e) => {
             />
           </Search>
 
-          <MUI.FormControl sx={{ minWidth: 120 }}>
-            <MUI.Select
-              value={filteredRole}
-              onChange={(e) => setFilteredRole(e.target.value)} 
-              displayEmpty
-              inputProps={{ 'aria-label': 'Filter' }}
-              startAdornment={
-                <MUI.InputAdornment position="start">
-                  <MUI.FilterListIcon
-                    viewBox="0 0 24 24"
-                    sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                  />
-                </MUI.InputAdornment>
-              }
-              sx={{ borderRadius: '12px' }}
-            >
-              <MUI.MenuItem value="All">All</MUI.MenuItem>
-              <MUI.MenuItem value="Administrator">Scholarship Administrator</MUI.MenuItem>
-              <MUI.MenuItem value="Scholar Manager">Scholar Manager</MUI.MenuItem>
-              <MUI.MenuItem value="Scholar">Scholar</MUI.MenuItem>
-            </MUI.Select>
-          </MUI.FormControl>
+          <MUI.Grid>
+        <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+          <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+            Add Filter
+          </MUI.Button>
+        </MUI.FormControl>
+      </MUI.Grid>
 
           </MUI.Container>
 
@@ -441,10 +444,23 @@ const handleMobileNumberChange = (e) => {
                         user.role_id === (roleMapping[filteredRole] || null)
                       );
                     })
+                    .filter((user) => {
+                      return filteredStatus === 'All' ? true : (
+                        user.user_status === filteredStatus
+                      );
+                    })
                     .filter((user) => 
                       (user.email_address && user.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
                       ((`${user.first_name} ${user.middle_name} ${user.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
+                    // Sort the users array
+                    .sort((a, b) => {
+                      // Sort by user_status
+                      if (a.user_status === 'Revoked' && b.user_status !== 'Revoked') return -1;
+                      if (a.user_status !== 'Revoked' && b.user_status === 'Revoked') return 1;
+                      return new Date(b.created_at) - new Date(a.created_at);
+                    })
+                    .reverse()  
                     .map((user, index) => (
                     <MUI.TableRow key={index} className='user' sx={{backgroundColor: index % 2 === 0 ? '#eeeeee' : 'inherit'}}>
                       <MUI.TableCell sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)' }}  className='name'>{`${user.first_name} ${user.middle_name ? user.middle_name : ''} ${user.last_name}`}</MUI.TableCell>
@@ -479,6 +495,7 @@ const handleMobileNumberChange = (e) => {
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
                         
+                        
 
                         <MUI.IconButton
                           color="inherit"
@@ -503,7 +520,7 @@ const handleMobileNumberChange = (e) => {
                         ) : (
                           <MUI.IconButton
                             type='button'
-                            color="inherit"
+                            color="error"
                             onClick={(event) => handleOpenDeleteModal(user.id, user.first_name, user.last_name)} // Open delete confirmation modal
                             sx={{ textTransform: 'capitalize' }}
                           >
@@ -541,7 +558,7 @@ const handleMobileNumberChange = (e) => {
                     <MUI.TextField 
                       type='text'
                       id='first_name'
-                      placeholder="Enter user's first name" 
+                      placeholder='Name' 
                       fullWidth 
                       
                       {...register("first_name", {
@@ -568,7 +585,7 @@ const handleMobileNumberChange = (e) => {
                     <MUI.TextField 
                       type='text'
                       id='middle_name'
-                      placeholder="Enter user's middle name (Optional)"
+                      placeholder='Name' 
                       fullWidth 
 
                       {...register("middle_name", {
@@ -591,7 +608,7 @@ const handleMobileNumberChange = (e) => {
                     <MUI.TextField 
                       type='text'
                       id='last_name'
-                      placeholder="Enter user's last name" 
+                      placeholder='Name' 
                       fullWidth 
                       
                       {...register("last_name", {
@@ -648,7 +665,7 @@ const handleMobileNumberChange = (e) => {
                   <MUI.TextField 
                     type='email'
                     id='email_address'
-                    placeholder="Enter user's email address"
+                    placeholder='Email Address' 
                     fullWidth 
                     {...register("email_address", {
                       required: {
@@ -661,9 +678,14 @@ const handleMobileNumberChange = (e) => {
                       }
                     })}
 
+
                   />
                   {errors.email_address && (
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
+                  )}
+
+                  {emailError && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {emailError}</p>
                   )}
 
                   {emailError && (
@@ -788,9 +810,6 @@ const handleMobileNumberChange = (e) => {
               </MUI.DialogActions>
           </MUI.Dialog>
 
-          <DevTool control={control} />
-
-
           {/* Modal for Add and Update Users */}
           <MUI.Dialog open={modalUsers} onClose={handleCloseModalUsers}>
             <MUI.DialogTitle id="dialogTitle" mt={2}>{editUser ? 'Heads Up!' : 'New Scholar Alert'}</MUI.DialogTitle>
@@ -847,6 +866,7 @@ const handleMobileNumberChange = (e) => {
             </MUI.DialogActions>
           </MUI.Dialog>
 
+          {/* Modal for Restore Users */}
           <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
             <MUI.DialogTitle id="dialogTitle" mt={2}>
               Heads Up!
@@ -883,6 +903,72 @@ const handleMobileNumberChange = (e) => {
             </MUI.DialogActions>
 
           </MUI.Dialog>
+
+          {/* Modal for Filter */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal}>
+            <MUI.DialogTitle id="dialogFilter">Filter Users</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="role-filter-label">Role Filter</MUI.InputLabel>
+                    <MUI.Select
+                      labelId="role-filter-label"
+                      value={filteredRole}
+                      onChange={(e) => setFilteredRole(e.target.value)} 
+                      displayEmpty
+                      label="Role Filter"
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      <MUI.MenuItem value="Administrator">Scholarship Administrator</MUI.MenuItem>
+                      <MUI.MenuItem value="Scholar Manager">Scholar Manager</MUI.MenuItem>
+                      <MUI.MenuItem value="Scholar">Scholar</MUI.MenuItem>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid>
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="status-filter-label">Status Filter</MUI.InputLabel>
+                    <MUI.Select
+                      labelId="status-filter-label"
+                      value={filteredStatus}
+                      onChange={(e) => setFilteredStatus(e.target.value)} 
+                      displayEmpty
+                      label="Status Filter"
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      <MUI.MenuItem value="Active">Active</MUI.MenuItem>
+                      <MUI.MenuItem value="Inactive">Inactive</MUI.MenuItem>
+                      <MUI.MenuItem value="Revoked">Revoked</MUI.MenuItem>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid>
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
+          
 
           {/* Snackbar for Success */}
           <MUI.Snackbar

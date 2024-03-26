@@ -25,6 +25,9 @@ const useProfileStore = create((set) => ({
 
     handleOpenChangePassword: () => set({changePassword: true}),
     handleCloseChangePassword: () => set({changePassword: false}),
+
+    goBack: [],
+    setGoBack: (goBack) => set({goBack}),
 }));
 
 export default useProfileStore;

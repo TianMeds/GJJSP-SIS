@@ -49,7 +49,7 @@ export default function Partner({state}) {
     schools, 
     setSchools,
     categories,
-    setCategories, modalPartner, setPartnerModal, handleOpenModalPartner, handleCloseModalPartner, deleteModalPartner, setDeleteModalPartner,  partnerIdToDelete, setPartnerIdToDelete, restoreModalPartner, setRestoreModalPartner, partnerIdToRestore, setPartnerIdToRestore,
+    setCategories, modalPartner, setPartnerModal, handleOpenModalPartner, handleCloseModalPartner, deleteModalPartner, setDeleteModalPartner,  partnerIdToDelete, setPartnerIdToDelete, restoreModalPartner, setRestoreModalPartner, partnerIdToRestore, setPartnerIdToRestore, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal, filteredDeleted, setFilteredDeleted
   } = usePartnerStore();  
 
   const {setLoading, setLoadingMessage} = useLoginStore();
@@ -423,30 +423,15 @@ export default function Partner({state}) {
                 />
               </Search>
 
-              <MUI.FormControl variant="outlined" sx={{ minWidth: 120 }}>
-                <MUI.Select
-                  value={filteredPartner}
-                  onChange={(e) => setFilteredPartner(e.target.value)}
-                  displayEmpty
-                  inputProps={{ 'aria-label': 'Filter' }}
-                  startAdornment={
-                    <MUI.InputAdornment position="start">
-                      <MUI.FilterListIcon
-                        viewBox="0 0 24 24"
-                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                      />
-                    </MUI.InputAdornment>
-                  }
-                  sx={{ borderRadius: '12px' }}
-                >
-                  <MUI.MenuItem value="All">All</MUI.MenuItem>
-                  {schools.map((school) => (
-                    <MUI.MenuItem key={school.id} value={school.id}>
-                      {school.school_name}
-                    </MUI.MenuItem>
-                  ))}
-                </MUI.Select>
-              </MUI.FormControl>
+
+              <MUI.Grid>
+        <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+          <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+            Add Filter
+          </MUI.Button>
+        </MUI.FormControl>
+      </MUI.Grid>
+
 
               
             </MUI.Container>
@@ -468,6 +453,24 @@ export default function Partner({state}) {
                       const matchSearchQuery = partner.project_partner_name.toLowerCase().includes(searchQuery.toLowerCase());
                       const matchSchool = filteredPartner === 'All' || partner.school_id === parseInt(filteredPartner);
                       return matchSearchQuery && matchSchool;
+                    })
+                    .filter((partner) => {
+                      if (filteredDeleted === 'All') return true;
+                      if (filteredDeleted === 'Deleted') return partner.deleted_at !== null;
+                      if (filteredDeleted === 'Not Deleted') return partner.deleted_at === null;
+                      return true; // default case
+                    })
+                    .sort((a, b) => {
+                      // Sort by created_at
+                      const dateComparison = new Date(b.updated_at) - new Date(a.updated_at);
+                      // Move deleted partners to the end
+                      if (a.deleted_at !== null && b.deleted_at === null) {
+                        return 1;
+                      } else if (a.deleted_at === null && b.deleted_at !== null) {
+                        return -1;
+                      } else {
+                        return dateComparison;
+                      }
                     })
                     .map((partner, index) => (
                     <MUI.TableRow key={index} className='partner' sx={{backgroundColor: index % 2 === 0 ? '#fbf3f2' : '#e0e0e0'}}>
@@ -803,7 +806,74 @@ export default function Partner({state}) {
               Yes, Restore Partner
             </MUI.Button>
           </MUI.DialogActions>
-        </MUI.Dialog>
+          </MUI.Dialog>
+
+          {/* Modal for Filter */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal}>
+            <MUI.DialogTitle id="dialogTitle">Filter Partners</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl variant="outlined" fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="school-filter-label">School Filter</MUI.InputLabel>
+                    <MUI.Select
+                      value={filteredPartner}
+                      onChange={(e) => setFilteredPartner(e.target.value)}
+                      displayEmpty
+                      label="School Filter"
+                      inputProps={{ 'aria-label': 'Filter' }}
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      {schools.map((school) => (
+                        <MUI.MenuItem key={school.id} value={school.id}>
+                          {school.school_name}
+                        </MUI.MenuItem>
+                      ))}
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid> 
+
+                <MUI.Grid item xs={12} sm={6}>
+                  <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                    <MUI.InputLabel id="deleted-filter-label">Deleted Filter</MUI.InputLabel>
+                    <MUI.Select
+                      value={filteredDeleted}
+                      onChange={(e) => setFilteredDeleted(e.target.value)}
+                      displayEmpty
+                      inputProps={{ 'aria-label': 'Deleted Filter' }}
+                      label="Deleted Filter"
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px' }}               
+                    >
+                      <MUI.MenuItem value="All">All</MUI.MenuItem>
+                      <MUI.MenuItem value="Deleted">Deleted</MUI.MenuItem>
+                      <MUI.MenuItem value="Not Deleted">Not Deleted</MUI.MenuItem>
+                    </MUI.Select>
+                  </MUI.FormControl>
+                </MUI.Grid>
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+
 
           <MUI.Snackbar
             open={alertOpen}

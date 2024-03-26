@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ScholarController;
+use App\Http\Controllers\ScholarController; 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
@@ -20,6 +20,8 @@ use App\Http\Controllers\AlumniFormController;
 use App\Http\Controllers\GraduatingFormController;
 use App\Http\Controllers\RenewalDocumentController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\RemarksController;
+use App\Http\Controllers\GenerateReportController;
 use App\Http\Controllers\ScholarExportController;
 
 /*
@@ -36,7 +38,7 @@ use App\Http\Controllers\ScholarExportController;
 //Protected Route
 Route::group(['middleware' => ['auth:sanctum']], function() {
 
-    //CRUD USERS
+    //CRUD USERS 
     Route::apiResource('/users', UserController::class)->only(['index', 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
@@ -47,6 +49,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/userScholar', [UserController::class, 'getUserRoles']);
     Route::get('/restoreUser/{id}', [UserController::class, 'restore']);
     Route::get('/userScholars', [UserController::class, 'getScholars']);
+    Route::delete('/userScholars/{id}', [UserController::class, 'destroyScholars']);
 
     //Scholars Route
     Route::apiResource('/scholars', ScholarController::class)->only(['index', 'show']);
@@ -57,19 +60,22 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::put('/scholars-data/{user_id}', [ScholarController::class, 'updateOtherScholarProfile']);
     Route::post('school-data', [ScholarController::class, 'storeSchool']);
     Route::get('/total-scholars', [ScholarController::class, 'totalScholars']);
+    Route::put('/scholars/{scholarId}/renewals/{schoolYear}/{term}', [ScholarController::class, 'updateSubmissionStatus']);
 
     //Scholars Profile Route
     Route::post('/scholarsProfile', [ScholarController::class, 'storeScholarProfile']);
     Route::put('/scholarsProfile/{id}', [ScholarController::class, 'updateScholarProfile']);
     Route::get('/scholarsProfile', [ScholarController::class, 'scholarProfile']);
+    Route::get('/viewScholarsProfile/{id}', [ScholarController::class, 'viewScholarProfile']);
+    Route::get('/viewScholarSubmission', [ScholarController::class, 'viewScholarSubmission']);  
 
     //Roles Route
     Route::apiResource('/roles', RoleController::class)->only(['index', 'show']);
 
     //Auth Route
     Route::post('/logout', [AuthController::class, 'logout']);
-
-   // Route::get('/refresh-token', [AuthController::class,'refreshToken']);
+    Route::post('/register', [AuthController::class, 'register']);
+   // Route::get('/refresh-token', [AuthController::class,'refreshToken']); 
 
    //Scholarship Route
     Route::apiResource('/scholarships', ScholarshipCategController::class)->only(['index', 'show']);
@@ -103,7 +109,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::delete('/undergrad-acad-detail/{id}', [UndergradAcadDetailsController::class, 'destroy']);
     Route::get('/restore-undergrad/{id}', [UndergradAcadDetailsController::class, 'restoreUndergradAcadDetail']);
     Route::get('/undergrad-acad-detail', [UndergradAcadDetailsController::class, 'getUndergradAcadDetail']);
-
+    
     //Submission Route
     Route::get('/submissions', [SubmissionController::class, 'index'])->name('submission');
     Route::post('/submissions', [SubmissionController::class, 'store']);
@@ -124,34 +130,56 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/documents', [DocumentController::class, 'index'])->name('document');
     Route::post('/documents', [DocumentController::class, 'store']);
 
+
     Route::get('/renewal-documents', [RenewalDocumentController::class, 'index', 'show']);
     Route::post('/renewal-documents', [RenewalDocumentController::class, 'store']);
-    Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'update']);
+    Route::put('/renewal-documents/{id}', [RenewalDocumentController::class, 'updateRenewalDocument']);
     Route::get('renewal-document' , [RenewalDocumentController::class, 'scholarSubmission']);
     Route::get('total-renewal' , [RenewalDocumentController::class, 'totalRenewalDocuments']);
     Route::get('/scholar-renewal-documents', [RenewalDocumentController::class, 'scholarRenewalDocuments']);
+    Route::put('/send-reminders/{id}', [ScholarController::class, 'sendReminders']);
+    Route::put('/renewal-submission/{id}', [RenewalDocumentController::class, 'updateSubmissionStatus']);
+    
 
     Route::get('/graduating-documents', [GraduatingFormController::class, 'index', 'show']);
     Route::post('/graduating-documents', [GraduatingFormController::class, 'store']);
+    Route::put('/graduating-reminders/{id}', [ScholarController::class, 'graduatingReminders']);
+    Route::put('/graduating-submission/{id}', [GraduatingFormController::class, 'updateSubmissionStatus']);
+    Route::get('/scholar-graduating-documents', [GraduatingFormController::class, 'scholarGraduatingDocuments']);
 
-    //School Route
+    Route::put('/alumni-form/{id}', [AlumniFormController::class, 'update']);
+    Route::put('/alumni-submission/{id}', [AlumniFormController::class, 'updateSubmissionStatus']);
+    Route::put('/alumni-reminders/{id}', [ScholarController::class, 'alumniReminders']);
+    Route::get('/scholar-alumni-documents', [AlumniFormController::class, 'scholarAlumniDocuments']);
+
+    //School Route 
     Route::apiResource('/schools', SchoolController::class)->only(['index', 'show']);
     Route::post('/schools', [SchoolController::class, 'store']);
     Route::put('/schools/{id}', [SchoolController::class, 'update']);
     Route::delete('/schools/{id}', [SchoolController::class, 'destroy']);
     Route::get('/restore-schools/{id}', [SchoolController::class, 'restoreSchool']);
+    
+    //Remarks Route
+    Route::apiResource('/remarks', RemarksController::class)->only(['index', 'show']);
+    Route::post('/remarks', [RemarksController::class, 'store']);
+    Route::put('/remarks/{id}', [RemarksController::class, 'update']);
+    Route::delete('/remarks/{id}', [RemarksController::class, 'destroy']);
+
+    //Generate Route
+    Route::get('/generate-report',[GenerateReportController::class, 'generateReport'])->name( 'generate.report' );
+    Route::get('/export-scholars', [ScholarExportController::class, 'exportScholars'])->name('export.scholars');
 
 
 
 });
 
-  //Export Route
-  Route::get('/export-scholars', [ScholarExportController::class, 'exportScholars'])->name('export.scholars');
-//Public Route
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('/generate-prompt', [PromptController::class, 'generate']);
+
+
+
+
+//Public Route
+Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;
@@ -161,3 +189,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request){
     return $request->scholar();;
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    //
+});

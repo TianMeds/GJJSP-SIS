@@ -14,6 +14,7 @@ use App\Models\HighschoolAcadDetails;
 use App\Models\UndergradAcadDetails;
 use App\Models\RenewalDocument;
 use App\Models\GraduatingDocument;
+use App\Models\Remarks;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -68,6 +69,10 @@ class AuthController extends Controller
 
             // Create Scholar Undergrad Academic Details profile separately
             $undergradAcadDetails = UndergradAcadDetails::create([
+                'scholar_id' => $scholar->id,
+            ]);
+
+            $remakrs = Remarks::create([
                 'scholar_id' => $scholar->id,
             ]);
 
@@ -154,23 +159,27 @@ class AuthController extends Controller
         $expires_at = now()->addMinute(30)->format('Y-m-d H:i:s');
         $response = [
             'user' => $user,
-            'roles_name' => $roleName,
             'remember_token' => $remember_token,
-            'expires_at' => $expires_at
+            'role' => $roleName,
         ];
-        return response($response, 201);
-    }
-    public function logout(Request $request){
-        $user = auth()->user();
-        $user->currentAccessToken()->delete();
+        
+        // Create and attach cookie
+        $cookie = cookie('remember_token', $remember_token, 30); // 30 minutes
+        return response($response, 201)->withCookie($cookie);
+}
+    public function logout(Request $request)
+    {
+        // Revoke the current access token for the authenticated user
+        $request->user()->currentAccessToken()->delete();
 
-        return response([
-            'status' => true,
-            'message' => 'Successfully your logged Out',
-            'method' => 'DELETE',
-        ], 200);
-    }
+        // Forget the token cookie
+        $cookie = cookie()->forget('remember_token');
 
+        // Return a JSON response indicating successful logout
+        return response()->json([
+            'message' => 'Logged out successfully!'
+        ])->withCookie($cookie);
+    }
 
     /* public function refreshToken(Request $request)
     {

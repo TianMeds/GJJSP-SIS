@@ -11,6 +11,7 @@ import { DevTool } from "@hookform/devtools";
 import {useForm, Controller } from 'react-hook-form';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/AuthStore';
+import useAuth from '../../hooks/useAuth';
 
 const FormValues = {
   'scholarship_categ_id': '',
@@ -33,8 +34,8 @@ export default function Scholar({state}) {
   const {getAuthToken,alertOpen, setAlertOpen, errorOpen, setErrorOpen,alertMessage, setAlertMessage, errorMessage, setErrorMessage} = useAuthStore();
 
   const {scholars, scholar, setScholars,editScholar, setEditScholar, handleOpenScholar, handleCloseScholar, filteredScholar, setFilteredScholar, searchQuery,handleSearch, scholarshipCateg, setScholarshipCateg, projectPartner, setProjectPartner, school, setSchool, modalScholars, setModalScholars,
-  handleOpenModalScholars, handleCloseModalScholars, deleteModal, setDeleteModal,
- scholarIdToDelete, setScholarIdToDelete
+  handleOpenModalScholars, handleCloseModalScholars, deleteModal, setDeleteModal, restoreModal, setRestoreModal, scholarIdToRestore, setScholarIdToRestore,
+ scholarIdToDelete, setScholarIdToDelete, filterModal, setFilterModal, handleOpenFilterModal, handleCloseFilterModal, filteredStatus, setFilteredStatus,
 } = useScholarStore();
 
   const [scholarsData, setScholarsData] = useState([]);
@@ -42,6 +43,155 @@ export default function Scholar({state}) {
   const { setLoading, setLoadingMessage} = useLoginStore();
 
   const {setAvatarInitial, users, setUsers, selectedUser, setSelectedUser} = useUserStore();
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
+
+  // Export Data consts and states here
+  
+
+  const [showModal, setShowModal] = useState(false);
+  const [fromYear, setFromYear] = useState(null);
+  const [toYear, setToYear] = useState(null);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // Get current month
+  const [availableToYears, setAvailableToYears] = useState([]); // Track dynamic ToYear options
+  const [exportConfirmModalOpen, setExportConfirmModalOpen] = useState(false);
+  const [exportMessage, setExportMessage] = useState("");
+
+
+
+  // Get current year with Philippine timezone (replace with your library)
+  useEffect(() => {
+    const philippineDate = new Date().toLocaleString('ph-PH', { timeZone: 'Asia/Manila' });
+    setCurrentYear(new Date(philippineDate).getFullYear());
+    setCurrentMonth(new Date(philippineDate).getMonth()); // Update current month state
+  }, []);
+
+  const handleOpenModal = () => {
+    setFromYear(null);
+    setToYear(null);
+    setAvailableToYears([]); // Reset available ToYear options
+    setShowModal(true);
+  };
+
+  const handleFromYearChange = (event) => {
+    const selectedYear = event.target.value;
+    setFromYear(selectedYear);
+    setToYear(null); // Reset the ToYear on FromYear change
+  
+    if (selectedYear === 'all') {
+      setAvailableToYears(['all']);
+    } else {
+    let nextYearOptions = [];
+    for (let year = selectedYear + 1; year <= currentYear; year++) {
+      // If we're in the current year and it's before April, don't add the current school year
+      if (year === currentYear && currentMonth < 3) {
+        break;
+      }
+      nextYearOptions.push(year);
+    }
+    // If 'From' year is before the current year or it's past April, add the option for "This School Year only"
+    if (selectedYear < currentYear || (selectedYear === currentYear && currentMonth >= 3)) {
+      nextYearOptions.unshift(selectedYear); // Adds the selected "From" year as the first option
+    }
+    setAvailableToYears(nextYearOptions);
+  }
+  };
+
+  const handleToYearChange = (event) => {
+    setToYear(event.target.value);
+  };
+
+  const handleExport = () => {
+    // Trigger loading state
+    setLoading(true);
+    setLoadingMessage("Exporting Scholar Information, please wait...");
+  
+    // When "All School Years" is selected
+    if (fromYear === "all") {
+      console.log('Exporting data from All School Years');
+      exportData('all');
+    }
+    // When specific "From" and "To" years are selected
+    else if (fromYear && toYear) {
+      console.log(`Exporting data from SY ${fromYear}-${toYear}`);
+      exportData(fromYear, toYear);
+    } else {
+      // If required selections are not made, display an error message
+      console.error("Please select both 'From' and 'To' academic years.");
+      // Stop loading and show error message
+      setLoading(false);
+      setErrorOpen(true);
+      setErrorMessage("Please select both 'From' and 'To' academic years.");
+    }
+  };
+  
+  const exportData = (fromYear, toYear = null) => {
+    const authToken = getAuthToken(); // Get the authToken from wherever it is stored in your application
+  
+    const apiUrl = `/api/export-scholars`; // Your API endpoint for exports
+    const params = toYear ? { fromYear, toYear } : { fromYear: fromYear }; // Adjust params based on selection
+  
+    const config = {
+      params: params,
+      responseType: 'blob', // Important for downloading files
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    };
+  
+    axios.get(apiUrl, config)
+      .then((response) => {
+        if (response.status === 200) {
+          // Process the response data as usual (e.g., create blob, download file)
+          const file = new Blob([response.data], { type: 'application/vnd.ms-excel' });
+          // Build a URL from the file
+          const fileURL = URL.createObjectURL(file);
+          // Create a temp <a /> tag to download file
+          const fileLink = document.createElement('a');
+          fileLink.href = fileURL;
+          let fileName = `Scholar Information from S.Y ${fromYear}-${parseInt(fromYear) + 1}`;
+  
+          if (toYear && toYear !== fromYear) {
+            fileName += ` to S.Y ${toYear}-${parseInt(toYear) + 1}`;
+          }
+  
+          fileLink.setAttribute('download', `${fileName}.xlsx`); // Define the downloaded file name
+          // Append the anchor tag and trigger a click to download
+          document.body.appendChild(fileLink);
+          fileLink.click();
+          fileLink.parentNode.removeChild(fileLink);
+  
+          // Stop loading and show success message
+          setLoading(false);
+          setAlertOpen(true);
+          setAlertMessage("Export successful!");
+        }
+      })
+      .catch((error) => {
+        console.error('Export error:', error);
+        // Stop loading and show error message
+        setLoading(false);
+        setErrorOpen(true);
+        setErrorMessage("Export failed. Please try again.");
+      });
+  };
+  
+  
+
+  const yearOptions = Array.from({ length: (currentMonth >= 3 ? currentYear : currentYear - 1) - 1990 }, (_, i) => 1990 + i);
+
+  const handleExportClick = () => {
+    let message = '';
+    if (fromYear === "all") {
+      message = "Scholar Information for all School Years will be exported. Are you sure?";
+    } else {
+      message = `Scholar Information from S.Y ${fromYear}-${parseInt(fromYear) + 1} until S.Y ${toYear}-${parseInt(toYear) + 1} will be exported. Are you sure?`;
+    }
+    setExportMessage(message); // Set the prepared message
+    setExportConfirmModalOpen(true); // Open the confirmation modal
+  };
 
 
   // Update Scholar Details Data
@@ -249,7 +399,7 @@ export default function Scholar({state}) {
         setAlertOpen(true);
         setAlertMessage('Deleting user...');
 
-        await axios.delete(`/api/scholars/${scholarIdToDelete}`, {
+        await axios.delete(`/api/userScholars/${scholarIdToDelete}`, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -280,7 +430,9 @@ export default function Scholar({state}) {
           setErrorMessage("Session expired. Please login again.")
           navigate('/login')
         }
+        setLoading(false);
       }
+
     }
     handleCloseDeleteModal();
   };
@@ -307,9 +459,70 @@ export default function Scholar({state}) {
       navigate(path)
     }
     else{
-      console.log('Scholar Not Found')
+      setErrorOpen(true);
+      setErrorMessage('Scholar not found');
     }
+    console.log(scholarId)
    
+  };
+
+  const restoreScholar = async (scholarId) => {
+
+    setLoading(true);
+    setLoadingMessage("Restoring user");
+    setAlertOpen(true);
+    setAlertMessage('Restoring user...');
+    try {
+      const authToken = getAuthToken();
+      const restoreResponse = await axios.get(`/api/restoreUser/${scholarId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (restoreResponse.status === 200) {
+        setAlertOpen(true);
+        setAlertMessage('User restored');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to restore user');
+      }
+
+      const response = await axios.get('/api/userScholars', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        setScholarsData(response.data.data);
+        setAlertOpen(true);
+        setAlertMessage('Scholar list has been updated');
+      } else {
+        setErrorOpen(true);
+        setErrorMessage('Failed to fetch data');
+      }
+
+      setLoading(false);
+
+    } catch (error) {
+      if (error.response.status === 401) {
+        setErrorOpen(true);
+        setErrorMessage("Session expired. Please login again.")
+        navigate('/login')
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleOpenRestoreModal = (userId) => {
+    setScholarIdToRestore(userId);
+    setRestoreModal(true);
+  };
+
+  const handleCloseRestoreModal = () => {
+    setScholarIdToRestore(null);
+    setRestoreModal(false);
   };
 
 
@@ -352,138 +565,6 @@ export default function Scholar({state}) {
         return "";
     }
   };
-
-
-  // Export Data consts and states here
-  
-
-  const [showModal, setShowModal] = useState(false);
-  const [fromYear, setFromYear] = useState(null);
-  const [toYear, setToYear] = useState(null);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // Get current month
-  const [availableToYears, setAvailableToYears] = useState([]); // Track dynamic ToYear options
-  const [exportConfirmModalOpen, setExportConfirmModalOpen] = useState(false);
-  const [exportMessage, setExportMessage] = useState("");
-
-
-
-  // Get current year with Philippine timezone (replace with your library)
-  useEffect(() => {
-    const philippineDate = new Date().toLocaleString('ph-PH', { timeZone: 'Asia/Manila' });
-    setCurrentYear(new Date(philippineDate).getFullYear());
-    setCurrentMonth(new Date(philippineDate).getMonth()); // Update current month state
-  }, []);
-
-  const handleOpenModal = () => {
-    setFromYear(null);
-    setToYear(null);
-    setAvailableToYears([]); // Reset available ToYear options
-    setShowModal(true);
-  };
-
-  const handleFromYearChange = (event) => {
-    const selectedYear = event.target.value;
-    setFromYear(selectedYear);
-    setToYear(null); // Reset the ToYear on FromYear change
-  
-    if (selectedYear === 'all') {
-      setAvailableToYears(['all']);
-    } else {
-    let nextYearOptions = [];
-    for (let year = selectedYear + 1; year <= currentYear; year++) {
-      // If we're in the current year and it's before April, don't add the current school year
-      if (year === currentYear && currentMonth < 3) {
-        break;
-      }
-      nextYearOptions.push(year);
-    }
-    // If 'From' year is before the current year or it's past April, add the option for "This School Year only"
-    if (selectedYear < currentYear || (selectedYear === currentYear && currentMonth >= 3)) {
-      nextYearOptions.unshift(selectedYear); // Adds the selected "From" year as the first option
-    }
-    setAvailableToYears(nextYearOptions);
-  }
-  };
-
-  const handleToYearChange = (event) => {
-    setToYear(event.target.value);
-  };
-
-  const handleExport = () => {
-    // Trigger loading state
-    setLoading(true);
-    setLoadingMessage("Exporting Scholar Information, please wait...");
-  
-    // When "All School Years" is selected
-    if (fromYear === "all") {
-      console.log('Exporting data from All School Years');
-      exportData('all');
-    }
-    // When specific "From" and "To" years are selected
-    else if (fromYear && toYear) {
-      console.log(`Exporting data from SY ${fromYear}-${toYear}`);
-      exportData(fromYear, toYear);
-    } else {
-      // If required selections are not made, display an error message
-      console.error("Please select both 'From' and 'To' academic years.");
-      // Stop loading and show error message
-      setLoading(false);
-      setErrorOpen(true);
-      setErrorMessage("Please select both 'From' and 'To' academic years.");
-    }
-  };
-  
-  const exportData = (fromYear, toYear = null) => {
-    const apiUrl = '/api/export-scholars'; // Your API endpoint for exports
-    const params = toYear ? { fromYear, toYear } : { fromYear }; // Adjust params based on selection
-  
-    axios({
-      url: apiUrl, 
-      method: 'GET',
-      params: params,
-      responseType: 'blob', 
-    })
-    .then((response) => {
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const fileName = fromYear === "all" ? 'Scholars_All_Years.xlsx' : `Scholars_${fromYear}_${toYear}.xlsx`;
-      link.setAttribute('download', fileName); 
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      link.parentNode.removeChild(link); // Clean up
-  
-      // Stop loading and show success message
-      setLoading(false);
-      setAlertOpen(true);
-      setAlertMessage("Export successful!");
-    })
-    .catch((error) => {
-      console.error('Export error:', error);
-      // Stop loading and show error message
-      setLoading(false);
-      setErrorOpen(true);
-      setErrorMessage("Export failed. Please try again.");
-    });
-  };
-  
-
-  const yearOptions = Array.from({ length: (currentMonth >= 3 ? currentYear : currentYear - 1) - 1990 }, (_, i) => 1990 + i);
-
-  const handleExportClick = () => {
-    let message = '';
-    if (fromYear === "all") {
-      message = "Scholar Information for all School Years will be exported. Are you sure?";
-    } else {
-      message = `Scholar Information from S.Y ${fromYear}-${parseInt(fromYear) + 1} until S.Y ${toYear}-${parseInt(toYear) + 1} will be exported. Are you sure?`;
-    }
-    setExportMessage(message); // Set the prepared message
-    setExportConfirmModalOpen(true); // Open the confirmation modal
-  };
-
   
   return (
     <Layout>
@@ -626,36 +707,14 @@ export default function Scholar({state}) {
               />
             </Search>
 
+            <MUI.Grid>
+              <MUI.FormControl sx={{ minWidth: 120, mr: 2 }}>
+                <MUI.Button variant="outlined" onClick={handleOpenFilterModal} startIcon={<MUI.FilterListIcon />}>
+                  Add Filter
+                </MUI.Button>
+              </MUI.FormControl>
+            </MUI.Grid>
           
-            <MUI.FormControl>
-              <MUI.Select
-                value={filteredScholar}
-                onChange={(e) => setFilteredScholar(e.target.value)}
-                displayEmpty
-                  inputProps={{ 'aria-label': 'Filter' }}
-                  startAdornment={
-                    <MUI.InputAdornment position="start">
-                      <MUI.FilterListIcon
-                        viewBox="0 0 24 24"
-                        sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
-                      />
-                    </MUI.InputAdornment>
-                  }
-                  sx={{ borderRadius: '12px' }}
-              >
-                <MUI.MenuItem value="All">All</MUI.MenuItem>
-                <MUI.MenuItem value="New">New</MUI.MenuItem>
-                <MUI.MenuItem value="For Renewal">For Renewal</MUI.MenuItem>
-                <MUI.MenuItem value="For Renewal: Graduating">For Renewal: Graduating</MUI.MenuItem>
-                <MUI.MenuItem value="Renewed">Renewed</MUI.MenuItem>
-                <MUI.MenuItem value="Graduating">Graduating</MUI.MenuItem>
-                <MUI.MenuItem value="Graduated">Graduated</MUI.MenuItem>
-                <MUI.MenuItem value="Alumni">Alumni</MUI.MenuItem>
-                <MUI.MenuItem value="Withdrew">Withdrew</MUI.MenuItem>
-              </MUI.Select>
-            </MUI.FormControl>
-
-        
           </MUI.Container>
 
           {/* -------- Table Section  ----------*/}
@@ -681,6 +740,12 @@ export default function Scholar({state}) {
                       (scholar.email_address && scholar.email_address.toLowerCase().includes(searchQuery?.toLowerCase())) ||
                       ((`${scholar.first_name} ${scholar.middle_name} ${scholar.last_name}`).toLowerCase().includes(searchQuery?.toLowerCase()))
                     )
+                    .sort((a, b) => {
+                      if (a.scholar_status_id[0] === 8 && b.scholar_status_id[0] !== 8) return -1; // 'Withdrew' entries go to the bottom
+                      if (a.scholar_status_id[0] !== 8 && b.scholar_status_id[0] === 8) return 1; // 'Withdrew' entries go to the bottom
+                      return new Date(b.created_at) - new Date(a.created_at);
+                  })
+                    .reverse()
                     .map((scholar, index) => (
                       (scholar.role_id === 3) ? (
                     <MUI.TableRow key={index} className='scholar'>
@@ -721,21 +786,45 @@ export default function Scholar({state}) {
                       </MUI.TableCell>
                       
                       <MUI.TableCell sx={{border: 'none', color: '#2684ff' }}>
-                        <MUI.IconButton color="inherit" onClick={() => viewScholarProfile(scholar.id)}>
-                          <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}} />
-                        </MUI.IconButton>
+                        
+                        <MUI.IconButton
+                          color="inherit"
+                          onClick={() => viewScholarProfile(scholar.id)}
+                        >
+                          <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
 
-                        <MUI.IconButton color="inherit" onClick={() => updateScholar(scholar.id)}>
-                          <MUI.BorderColorIcon />
                         </MUI.IconButton>
 
                         <MUI.IconButton
                           color="inherit"
+                          onClick={() => updateScholar(scholar.id)}
+                        >
+                          <MUI.BorderColorIcon />
+
+                        </MUI.IconButton>
+
+                        {scholar.deleted_at !== null && role_id === 1 ? (
+                        <MUI.IconButton
+                          variant='contained'
+                          sx={{
+                            borderRadius: '10px',
+                            borderColor: 'primary.main',
+                            textTransform: 'capitalize',
+                          }}
+                          onClick={() => handleOpenRestoreModal(scholar.id)}
+                        >
+                          <MUI.RestoreIcon />
+                        </MUI.IconButton>
+                      ) : (
+                        <MUI.IconButton
+                          type='button'
+                          color="error"
+                          onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)} // Open delete confirmation modal
                           sx={{ textTransform: 'capitalize' }}
-                          onClick={(event) => handleOpenDeleteModal(scholar.id, scholar.first_name, scholar.last_name)}
                         >
                           <MUI.DeleteIcon />
                         </MUI.IconButton>
+                      )}
                       </MUI.TableCell>
                     </MUI.TableRow>
                       ) : null
@@ -1049,8 +1138,227 @@ export default function Scholar({state}) {
 
             </MUI.Dialog>
 
-          
+            {/* Restore Modal */}
+            <MUI.Dialog open={restoreModal} onClose={handleCloseRestoreModal}>
+            <MUI.DialogTitle id="dialogTitle" mt={2}>
+              Heads Up!
+            </MUI.DialogTitle>
+            <MUI.DialogContent>
+              <MUI.Typography variant='h5' ml={1} sx={{color: '#44546F'}}>
+                You're about to restore a user's account. Are you sure you want to proceed?
+              </MUI.Typography>
+            </MUI.DialogContent>
+
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseRestoreModal} color="primary">
+                Cancel
+              </MUI.Button>
+              <MUI.Button
+                onClick={() => {
+                  restoreScholar(scholarIdToRestore);
+                  handleCloseRestoreModal();
+                }}
+                color="primary"
+                variant="contained"
+                sx={{
+                  borderRadius: '5px',
+                  mb: 2,
+                  mt: 2,
+                  backgroundColor: '#43a047',
+                  '&:hover': {
+                    backgroundColor: '#43a047', // Change color on hover
+                  },
+                }}
+              >
+                Yes, Restore User
+              </MUI.Button>
+            </MUI.DialogActions>
+
+          </MUI.Dialog>
+
+          {/* Filter Modal */}
+          <MUI.Dialog open={filterModal} onClose={handleCloseFilterModal} fullWidth maxWidth="xs">
+            <MUI.DialogTitle id="dialogTitle">Filter Scholars</MUI.DialogTitle>
+            <MUI.DialogContent dividers>
+              <MUI.Grid container spacing={2}>
+                <MUI.Grid item xs={12} sm={12}>
+                <MUI.FormControl fullWidth sx={{ minWidth: 120 }}>
+                  <MUI.InputLabel id="statusFilterLabel">Status Filter</MUI.InputLabel>
+                  <MUI.Select
+                    value={filteredScholar}
+                    onChange={(e) => setFilteredScholar(e.target.value)}
+                    fullWidth
+                    label="Status Filter"
+                      inputProps={{ 'aria-label': 'Filter' }}
+                      startAdornment={
+                        <MUI.InputAdornment position="start">
+                          <MUI.FilterListIcon
+                            viewBox="0 0 24 24"
+                            sx={{ width: 20, height: 20, color: 'rgba(0, 0, 0, 0.54)' }}
+                          />
+                        </MUI.InputAdornment>
+                      }
+                      sx={{ borderRadius: '12px', width: '100%'}}
+                  >
+                    <MUI.MenuItem value="All">All</MUI.MenuItem>
+                    <MUI.MenuItem value="New">New</MUI.MenuItem>
+                    <MUI.MenuItem value="For Renewal">For Renewal</MUI.MenuItem>
+                    <MUI.MenuItem value="For Renewal: Graduating">For Renewal: Graduating</MUI.MenuItem>
+                    <MUI.MenuItem value="Renewed">Renewed</MUI.MenuItem>
+                    <MUI.MenuItem value="Graduating">Graduating</MUI.MenuItem>
+                    <MUI.MenuItem value="Graduated">Graduated</MUI.MenuItem>
+                    <MUI.MenuItem value="Alumni">Alumni</MUI.MenuItem>
+                    {role_id === 1 && (
+                        <MUI.MenuItem value="Withdrew">Withdrew</MUI.MenuItem>
+                    )}
+                  </MUI.Select>
+                </MUI.FormControl>
+                </MUI.Grid>
+              </MUI.Grid>
+            </MUI.DialogContent>
+            <MUI.DialogActions>
+              <MUI.Button onClick={handleCloseFilterModal}>Apply</MUI.Button>
+            </MUI.DialogActions>
+          </MUI.Dialog>
+            
         </MUI.Grid>
+
+
+
+        {/* ------------------ Dialog Box of the Export ---------------*/}
+<MUI.Dialog
+  open={showModal}
+  onClose={() => setShowModal(false)}
+  fullWidth
+  maxWidth="sm"
+>
+  <MUI.DialogTitle id="dialogTitle">
+    Export Scholar Information
+  </MUI.DialogTitle>
+  <MUI.Typography variant="body2" id="dialogLabel">
+    Please select the range of school years for which you would like to export.
+  </MUI.Typography>
+  <MUI.DialogContent>
+    <MUI.Grid container spacing={2} sx={{ mb: 4 }}>
+      <MUI.Grid item xs={12} sm={6}>
+        <MUI.TextField
+          select
+          label="From *"
+          value={fromYear}
+          onChange={handleFromYearChange}
+          fullWidth
+        >
+          <MUI.MenuItem value="all">
+            All School Years
+          </MUI.MenuItem>
+          {yearOptions.map((year) => (
+            <MUI.MenuItem key={year} value={year}>
+              S.Y {year}-{year + 1}
+            </MUI.MenuItem>
+          ))}
+        </MUI.TextField>
+      </MUI.Grid>
+      <MUI.Grid item xs={12} sm={6}>
+        <MUI.TextField
+          select
+          label="To *"
+          value={toYear}
+          onChange={handleToYearChange}
+          disabled={
+            !fromYear ||
+            availableToYears.length === 0 ||
+            fromYear === "all"
+          }
+          fullWidth
+        >
+          {fromYear &&
+            availableToYears.includes(fromYear) && (
+              <MUI.MenuItem
+                key="selectedYear"
+                value={fromYear}
+              >
+                From the selected School Year only
+              </MUI.MenuItem>
+            )}
+          {availableToYears
+            .filter(
+              (year) =>
+                !(
+                  year === currentYear ||
+                  year === currentYear + 1
+                ) &&
+                !(
+                  year === currentYear - 1 && currentMonth < 4
+                )
+            )
+            .map((year) => (
+              <MUI.MenuItem key={year} value={year}>
+                S.Y {year}-{year + 1}
+              </MUI.MenuItem>
+            ))}
+        </MUI.TextField>
+      </MUI.Grid>
+    </MUI.Grid>
+    <MUI.DialogActions>
+      <MUI.Button onClick={() => setShowModal(false)}>
+        Cancel
+      </MUI.Button>
+      <MUI.Button
+        onClick={handleExportClick}
+        variant="contained"
+        disabled={
+          !fromYear || (!toYear && fromYear !== "all")
+        } // Disable if no selection in "From" or if no selection in "To" unless "All School Years" is selected in "From"
+      >
+        Export
+      </MUI.Button>
+    </MUI.DialogActions>
+  </MUI.DialogContent>
+</MUI.Dialog>
+
+{/* ------------------- Confirmation Dialog Box Export ------------- */}
+<MUI.Dialog
+  open={exportConfirmModalOpen}
+  onClose={() => setExportConfirmModalOpen(false)}
+>
+  <MUI.DialogTitle id="dialogTitle" mt={2}>
+    Confirm Export
+  </MUI.DialogTitle>
+  <MUI.DialogContent>
+    <MUI.Typography variant="h5" ml={1} sx={{ color: "#44546F" }}>
+      {exportMessage}
+    </MUI.Typography>
+  </MUI.DialogContent>
+  <MUI.DialogActions>
+    <MUI.Button
+      onClick={() => setExportConfirmModalOpen(false)}
+      color="primary"
+    >
+      Cancel
+    </MUI.Button>
+    <MUI.Button
+      onClick={() => {
+        // Call the export function
+        handleExport();
+        // Close the modal
+        setExportConfirmModalOpen(false);
+        setShowModal(false);
+      }}
+      color="primary"
+      variant="contained"
+      type="submit"
+      sx={{
+        backgroundColor: "#0C66E4",
+        borderRadius: "5px",
+        mb: 2,
+        mt: 2,
+      }}
+    >
+      Yes, Export
+    </MUI.Button>
+  </MUI.DialogActions>
+</MUI.Dialog>
+
 
         <MUI.Snackbar
             open={alertOpen}
