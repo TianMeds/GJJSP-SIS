@@ -169,8 +169,6 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/generate-report',[GenerateReportController::class, 'generateReport'])->name( 'generate.report' );
     Route::get('/export-scholars', [ScholarExportController::class, 'exportScholars'])->name('export.scholars');
 
-
-
 });
 
 
@@ -180,6 +178,9 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
 
 //Public Route
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/forgot', [AuthController::class, 'forgot']);
+Route::post('/reset', [AuthController::class, 'reset']);
 
 Route::middleware('auth:api')->get('/scholar', function (Request $request){
     return $request->scholar();;

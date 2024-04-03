@@ -7,6 +7,7 @@ const LazyLogin = lazy(() => import('./pages/LoginPage/Login'));
 const LazyForgotPassword = lazy(() => import('./pages/GeneralPages/ForgotPassword'));
 const LazyNotFound = lazy(() => import('./pages/GeneralPages/NotFound/NotFound'));
 const LazyUnauthorized = lazy(() => import('./pages/GeneralPages/Unauthorized/Unauthorized'));
+const LazyResetPassword = lazy(() => import('./pages/GeneralPages/ResetPassword'));
 
 //All User Imports
 const LazyCreate = lazy(() => import('./pages/ClientPages/Create'));
@@ -81,6 +82,16 @@ function App() {
         </Suspense>
         }
       />
+
+      <Route
+        path="reset-password"
+        element={
+          <Suspense fallback="Scholarlink Loading...">
+            <LazyResetPassword/>
+          </Suspense>
+        }
+      />
+      
 
 
 

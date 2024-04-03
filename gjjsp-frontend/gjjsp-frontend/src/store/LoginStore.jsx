@@ -4,6 +4,9 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 const useLoginStore = create((set) => ({
 
+    email: '',
+    setEmail: (email) => set({ email }),
+
   //Loading animation hooks
     loading: false,
     setLoading: (newLoading) => set({ loading: newLoading }),

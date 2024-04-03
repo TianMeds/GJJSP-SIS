@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ScholarResource;
 use App\Http\Resources\ScholarCollection;
 use App\Mail\UserCredential;
+use App\Mail\PasswordResetNotification;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Scholar;
@@ -19,6 +20,9 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\PasswordResetRequest;
+use App\Models\PasswordReset;
+use App\Http\Resources\UserResource;
 class AuthController extends Controller
 {
 
@@ -198,4 +202,122 @@ class AuthController extends Controller
         ]);
     }
     */
+
+    public function forgot(Request $request)
+    {
+        $request->validate([
+            'email_address' => 'required|email|exists:users,email_address',
+        ]);
+    
+        $user = User::where('email_address', $request->input('email_address'))->first();
+    
+        if (!$user || !$user->email_address) {
+            return response()->error('No Record Found', 'Incorrect Email Address Provided', 404);
+        }
+    
+        $resetPasswordToken = str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+    
+        if (!$userPassReset = PasswordReset::where('email_address', $user->email_address)->first()) {
+            PasswordReset::create([
+                'email_address' => $user->email_address,
+                'token' => $resetPasswordToken
+            ]);
+        } else {
+            $userPassReset->update([
+                'email_address' => $user->email_address,
+                'token' => $resetPasswordToken
+            ]);
+        }
+    
+        Mail::mailer('smtp')->to($user->email_address)->send(new PasswordResetNotification($user, $resetPasswordToken));
+    
+        return response()->json(['message' => 'A code has been Sent to your email address']);
+    }
+
+    public function reset(Request $request)
+    {
+        $validatedData = $request->validate([
+            'email_address' => 'required|email|exists:users,email_address',
+            'token' => 'required',
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+    
+        $user = User::where('email_address', $validatedData['email_address'])->first();
+    
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No Record Found',
+                'error' => 'Incorrect Email Address Provided',
+            ], 404);
+
+        }
+    
+        $resetRequest = PasswordReset::where('email_address', $user->email_address)->first();
+    
+        if (!$resetRequest || $resetRequest->token != $validatedData['token']) {
+            return response()->error('An Error occurred. Please Try again', 'Invalid Token Provided', 400);
+        }
+    
+        $user->fill([
+            'password' =>  Hash::make($validatedData['password']),
+        ]);
+    
+        $user->save();
+    
+        $user->tokens()->delete();
+    
+        $resetRequest->delete();
+    
+        $token = $user->createToken('remember_token')->plainTextToken;
+    
+        $loginResponse = [
+            'user' => UserResource::make($user),
+            'remember_token' => $token,
+        ];
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Password Reset Successful',
+            'data' => $loginResponse,
+        ], 201);
+    }
+    
+    
+
+
+    // public function reset(Request $request)
+    // {
+    //     $request->validate([
+    //         'email_address' => ['required', 'exists:users,email_address'],
+    //     ]);
+
+    //     $attributes = $request->only(['email_address']);
+
+    //     $user = User::where('email_address', $attributes['email_address'])->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'User not found',
+    //             'method' => 'POST',
+    //         ], 404);
+    //     }
+
+    //     $token = bin2hex(random_bytes(32));
+
+    //     $resetRequest = PasswordReset::updateOrCreate(
+    //         ['email_address' => $user->email_address],
+    //         ['token' => $token]
+    //     );
+
+    //     $resetRequest->save();
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Password reset link sent to your email',
+    //         'method' => 'POST',
+    //     ], 200);
+    // }
+    
 }
