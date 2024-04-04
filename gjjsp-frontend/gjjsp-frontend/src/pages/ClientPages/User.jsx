@@ -1,4 +1,5 @@
 import React, {useEffect,lazy, Suspense, useState} from 'react'
+import React, {useEffect,lazy, Suspense, useState} from 'react'
 import axios from '../../api/axios';
 
 //Components
@@ -19,6 +20,7 @@ import {useNavigate} from 'react-router-dom';
 import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 import useAuth from '../../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -26,6 +28,8 @@ const EMAIL_REGEX =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,24}$/;
 // const CONTACT_REGEX = /^\+?63\d{10}$/
 const CONTACT_REGEX = /^\d{10}$/;
+
+
 
 //Reseting Form Values 
 const FormValues = {
@@ -62,13 +66,19 @@ export default function User({state}) {
   const role_id = auth?.user?.role_id || '';
   
 
+  const [emailError, setEmailError] = useState("");
+
+  const {auth} = useAuth();
+  const role_id = auth?.user?.role_id || '';
+  
+
   // Post Data to API 
   const onSubmit = async (data, event) => {
     event.preventDefault();
     const authToken = useAuthStore.getState().getAuthToken();
 
     const fullMobileNumber = `63${String(data.user_mobile_num).replace(/^63/, '')}`;
-  
+ 
     const config = {
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -82,6 +92,7 @@ export default function User({state}) {
       setAlertMessage('Updating user...');
       setLoading(true);
       setLoadingMessage("Updating user")
+      const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       handleCloseModalUsers();
@@ -130,7 +141,9 @@ export default function User({state}) {
 
     if(error.response?.status === 422){
       setEmailError("Email already taken");
+      setEmailError("Email already taken");
       setErrorOpen(true)
+      setErrorMessage("Email already been taken");
       setErrorMessage("Email already been taken");
       setLoading(false);
     }
@@ -153,6 +166,8 @@ export default function User({state}) {
       setErrorMessage("Something went wrong");
       setLoading(false);
     }
+
+    handleCloseModalUsers();
     setLoading(false);
     handleCloseModalUsers();
   } 
@@ -356,12 +371,13 @@ export default function User({state}) {
     'Scholar': 3,
   };
 
-  const handleMobileNumberChange = (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-    // This will update the value and if 'shouldValidate' is true, it will trigger validation
-    setValue('user_mobile_num', value, { shouldValidate: true });
-  };
+// For mobile number validation
 
+const handleMobileNumberChange = (e) => {
+  const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+  // This will update the value and if 'shouldValidate' is true, it will trigger validation
+  setValue('user_mobile_num', value, { shouldValidate: true });
+};
   
   return (
   <Layout>
@@ -477,6 +493,7 @@ export default function User({state}) {
                         <MUI.IconButton color="inherit" onClick={() => viewProfile(user.id)}>
                           <MUI.TableChartIcon sx={{transform: 'rotate(90deg)'}}/>
                         </MUI.IconButton>
+                        
                         
 
                         <MUI.IconButton
@@ -614,33 +631,32 @@ export default function User({state}) {
 
                 <MUI.Grid id="userMobileNumGrid">
                   <MUI.InputLabel htmlFor="user_mobile_num" id="userMobileNumLabel">Mobile Number</MUI.InputLabel>
-                    <MUI.TextField
-                      type="text"
-                      name="user_mobile_num"
-                      id="user_mobile_num"
-                      placeholder="9XXXXXXXXX"
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <MUI.InputAdornment position="start">+63</MUI.InputAdornment>,
-                      }}
-                      value={watch('user_mobile_num')?.replace(/^63/, '') || ''}// Use an empty string as the fallback value
-                      onInput={handleMobileNumberChange}
-                      error={!!errors.user_mobile_num}
-                      {...register("user_mobile_num", {
-                        required: {
-                          value: true,
-                          message: 'Mobile Number is required',
-                        },
-                        pattern: {
-                          value: CONTACT_REGEX,
-                          message: 'Please enter a valid mobile number',
-                        }
-                      })}
-                    />
-                    {errors.user_mobile_num && (
-                        <p id='errMsg'><MUI.InfoIcon className='infoErr'/>{errors.user_mobile_num.message}</p>
-                    )}
-
+                  <MUI.TextField
+        type="text"
+        name="user_mobile_num"
+        id="user_mobile_num"
+        placeholder="9XXXXXXXXX"
+        fullWidth
+        InputProps={{
+          startAdornment: <MUI.InputAdornment position="start">+63</MUI.InputAdornment>,
+        }}
+        value={watch('user_mobile_num')?.replace(/^63/, '') || ''}// Use an empty string as the fallback value
+        onInput={handleMobileNumberChange}
+        error={!!errors.user_mobile_num}
+        {...register("user_mobile_num", {
+          required: {
+            value: true,
+            message: 'Mobile Number is required',
+          },
+          pattern: {
+            value: CONTACT_REGEX,
+            message: 'Please enter a valid mobile number',
+          }
+        })}
+      />
+      {errors.user_mobile_num && (
+          <p id='errMsg'><MUI.InfoIcon className='infoErr'/>{errors.user_mobile_num.message}</p>
+      )}
                 </MUI.Grid>
 
                 <MUI.Grid id="emailAddressGrid">
@@ -661,9 +677,14 @@ export default function User({state}) {
                       }
                     })}
 
+
                   />
                   {errors.email_address && (
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.email_address?.message}</p>
+                  )}
+
+                  {emailError && (
+                    <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {emailError}</p>
                   )}
 
                   {emailError && (

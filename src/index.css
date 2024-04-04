@@ -1,0 +1,377 @@
+.infoErr{
+    color: red;
+    font-size: 13px !important;
+}
+#errMsg{
+    color: red;
+    font-size: 13px !important;
+}
+
+#tabsTitle{
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 2;
+}
+#addButton{
+    text-transform: capitalize;
+    width: '180px';
+    white-space: nowrap;
+    margin-top: 10px;
+}
+#filterControl{
+    width: 150px;
+    border: 2px solid #032539;
+    border-radius: 8px;
+}
+#userNameGrid, 
+#emailAddressGrid,
+#passwordGrid,
+#userMobileNumGrid,
+#roleGrid, 
+#projectNameGrid,
+#aliasGrid,
+#benefactorGrid,
+#projectStatusGrid,
+#projectPartnerGrid,
+#schoolNameGrid,
+#schoolAddressGrid,
+#schoolTypeGrid,
+#schoolPeriodGrid,
+#userStatusGrid,
+#scholarNameGrid,
+#scholarEmailGrid,
+#scholarCategoryGrid,
+#scholarStatusGrid
+#projectPartnerNameGrid,
+#partnerMobileNumGrid,
+#scholarshipCategoryGrid,
+#partnerSchoolGrid,
+#addSchoolGrid,
+#addressSchoolGrid,
+#deleteGrid,
+#profileNameGrid,
+#passwordGrid,
+#confirmPasswordGrid,
+#genderGrid,
+#religionGrid,
+#birthdateGrid,
+#birthplaceGrid,
+#civilStatusGrid,
+#numFamMemGrid,
+#schoolYrStartedGrid,
+#schoolYrGraduatedGrid,
+#schoolIdGrid,
+#programGrid,
+#homeVisitSchedGrid,
+#fbAccountGrid,
+#regionGrid,
+#provinceGrid,
+#cityGrid,
+#barangayGrid,
+#streetGrid,
+#zipCodeGrid,
+#fatherNameGrid,
+#motherNameGrid,
+#famMemberNameGrid,
+#famMemberRelationGrid,
+#occupationGrid,
+#incomeGrid,
+#famMemberContactGrid,
+#relationToScholarGrid,
+#trackNameGrid,
+#strandNameGrid,
+#HSGwaGrid,
+#HsSchoolNameGrid,
+#HsSchoolAddressGrid,
+#schoolYrGraduatedHsGrid,
+#photoGrid
+{
+   margin: 5px;
+}
+#userNameLabel, 
+#middleNameLabel,
+#emailAddressLabel, 
+#passwordLabel,
+#userMobileNumLabel,
+#roleLabel,
+#projectNameLabel,
+#aliasLabel,
+#benefactorLabel,
+#projectStatusLabel,
+#projectPartnerLabel,
+#schoolNameLabel,
+#schoolAddressLabel,
+#schoolTypeLabel,
+#schoolPeriodLabel,
+#userStatusLabel,
+#scholarNameLabel,
+#scholarEmailLabel,
+#scholarCategoryLabel,
+#scholarStatusLabel,
+#partnerNameLabel,
+#partnerMobileNumLabel,
+#scholarshipCategoryLabel,
+#partnerSchoolLabel,
+#addSchoolLabel,
+#addressSchoolLabel,
+#deleteLabel,
+#profileNameLabel,
+#passwordLabel,
+#confirmPasswordLabel,
+#genderLabel,
+#religionLabel,
+#birthdateLabel,
+#birthplaceLabel,
+#civilStatusLabel,
+#numFamMemLabel,
+#schoolYrStartedLabel,
+#schoolYrGraduatedLabel,
+#schoolIdLabel,
+#programLabel,
+#homeVisitSchedLabel,
+#fbAccountLabel,
+#regionLabel,
+#provinceLabel,
+#cityLabel,
+#barangayLabel,
+#streetLabel,
+#zipCodeLabel,
+#fatherNameLabel,
+#motherNameLabel,
+#famMemberNameLabel,
+#occupationLabel,
+#incomeLabel,
+#famMemberContactLabel,
+#relationToScholarLabel,
+#trackNameLabel,
+#strandNameLabel,
+#HSGwaLabel,
+#HsSchoolNameLabel,
+#HsSchoolAddressLabel,
+#schoolYrGraduatedHsLabel,
+#gwaLabel,
+#remarksLabel,
+#photoLabel{
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+#userNameLabel::after, 
+#emailAddressLabel::after, 
+#passwordLabel::after,
+#userMobileNumLabel::after,
+#roleLabel::after,
+#projectNameLabel::after,
+#aliasLabel::after,
+#benefactorLabel::after,
+#projectStatusLabel::after,
+#projectPartnerLabel::after,
+#schoolNameLabel::after,
+#schoolAddressLabel::after,
+#schoolTypeLabel::after,
+#schoolPeriodLabel::after,
+#userStatusLabel::after,
+#scholarNameLabel::after,
+#scholarEmailLabel::after,
+#scholarCategoryLabel::after,
+#scholarStatusLabel::after,
+#partnerNameLabel::after,
+#partnerMobileNumLabel::after,
+#scholarshipCategoryLabel::after,
+#partnerSchoolLabel::after,
+#addSchoolLabel::after,
+#addressSchoolLabel::after,
+#profileNameLabel::after,
+#passwordLabel::after,
+#confirmPasswordLabel::after,
+#genderLabel::after,
+#religionLabel::after,
+#birthdateLabel::after,
+#birthplaceLabel::after,
+#civilStatusLabel::after,
+#numFamMemLabel::after,
+#schoolYrStartedLabel::after,
+#schoolYrGraduatedLabel::after,
+#schoolIdLabel::after,
+#programLabel::after,
+#homeVisitSchedLabel::after,
+#fbAccountLabel::after,
+#regionLabel::after,
+#cityLabel::after,
+#barangayLabel::after,
+#streetLabel::after,
+#zipCodeLabel::after,
+#fatherNameLabel::after,
+#motherNameLabel::after,
+#famMemberNameLabel::after,
+#relationToScholarLabel::after,
+#occupationLabel::after,
+#incomeLabel::after,
+#famMemberContactLabel::after,
+#trackNameLabel::after,
+#strandNameLabel::after,
+#HSGwaLabel::after,
+#HsSchoolNameLabel::after,
+#HsSchoolAddressLabel::after,
+#schoolYrGraduatedHsLabel::after,
+#photoLabel::after {
+    content: " *";
+    color: red; 
+}   
+#dialogTitle{
+    font-weight: bold;
+    font-size: 25px;
+    margin-left: 5px;
+}
+#dialogLabel{
+    margin-left: 30px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: #44546F;
+    font-weight: 600;
+}
+#Button, #addUserBtn{
+    text-transform: capitalize;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.submissionStatus{
+    background: rgba(38, 132, 255, 0.4);
+    color: #1a1a1a;
+    padding: 3px;
+    border-radius: 4px;
+    font-size: small;
+}
+
+
+
+.SAVED{
+    background: rgba(243, 240, 255, 1);
+    color: #403294;
+    font-weight: bold;  
+}
+.SUBMITTED{
+    color: #216e4e;
+    background: rgba(223, 252, 240, 1);
+    font-weight: bold;  
+}
+.RESUBMISSION{
+    color: #216e4e;
+    background: rgba(223, 252, 240, 1);
+    font-weight: bold;  
+}
+
+/* User Role Span */ 
+
+.Scholarship_Administrator {
+background-color: purple;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Scholar_Manager {
+background-color: lightgreen;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Scholar {
+background-color: lightblue;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+/* User Status Span */
+
+.Active {
+background-color: lightgreen;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Inactive {
+background-color: orange;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.Revoked {
+background-color: red;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+/* Scholar Status Span */
+
+.New {
+background-color: purple;
+color: white; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
+.For_Renewal {
+background-color: orange;
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px;  
+}
+
+.For_Renewal_Graduating {
+background-color: rgb(255, 182, 47);
+color: black;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Renewed {
+background-color: lightgreen;
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Graduating {
+background-color: rgb(169, 139, 220);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Graduated {
+background-color: rgb(36, 157, 222);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Alumni {
+background-color: rgb(211, 163, 163);
+color: black; 
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+.Withdrew {
+background-color: red;
+color: white;
+padding: 4px 8px; 
+border-radius: 8px; 
+margin: 2px; 
+}
+
