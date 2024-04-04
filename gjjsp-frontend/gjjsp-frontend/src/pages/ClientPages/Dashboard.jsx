@@ -235,12 +235,12 @@ export default function Dashboard() {
           <MUI.Grid container spacing={3}>
 
             {/* Header */}
-            <MUI.Grid item xs={12}>
+            <MUI.Grid item xs={6} sm={12}> 
               <MUI.Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{xs: 'left', md: 'center'}} margin={2} justifyContent="space-between">
                 <MUI.Typography variant="h1" id="tabsTitle" sx={{color: 'black'}}>Dashboard</MUI.Typography>
                           
                   {/* Add User Button */}
-                  <MUI.Button variant="contained"
+                  <MUI.Button variant="contained" 
                   onClick={handleRefresh}
                     sx={{
                       backgroundColor: '#FFFFFF', 
@@ -249,7 +249,10 @@ export default function Dashboard() {
                         backgroundColor: 'transparent', // Set the background color to transparent on hover
                         boxShadow: '0px 2px 4px rgba(0, 0, 0, 1)', // Add the desired shadow on hover
                       },
-                    }}>
+                      mt: { xs: '10px', sm: '1rem', md: '0' },
+                    }}
+                    
+                    >
                     <MUI.Typography variant='h5'>Refresh </MUI.Typography>
                     <MUI.LoopIcon />
                   </MUI.Button> 
@@ -260,7 +263,7 @@ export default function Dashboard() {
            <MUI.Grid container direction="row" item xs={12} spacing={2}>
               
            {role_id === 1 && (
-              <MUI.Grid item xs={3} mt={2}>
+              <MUI.Grid item xs={12} sm={12} md={3} mt={2}>
                   <MUI.Paper elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
                       <MUI.Grid>
                           <MUI.PeopleAltOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
@@ -273,7 +276,7 @@ export default function Dashboard() {
               </MUI.Grid>
           )}
 
-              <MUI.Grid item xs={3} mt={2}>
+              <MUI.Grid item xs={12} sm={12} md={3} mt={2}>
                 <MUI.Paper  elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
                   <MUI.Grid>
                     <MUI.GroupsOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
@@ -285,7 +288,7 @@ export default function Dashboard() {
                 </MUI.Paper>
               </MUI.Grid>
 
-              <MUI.Grid item xs={3} mt={2}>
+              <MUI.Grid item xs={12} sm={12} md={3} mt={2}>
                 <MUI.Paper  elevation={3} sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
                   <MUI.Grid>
                     <MUI.SchoolOutlinedIcon sx={{ fontSize: 50, color: '#007aff' }} />
@@ -298,7 +301,7 @@ export default function Dashboard() {
               </MUI.Grid>
 
 
-              <MUI.Grid item xs={3} mt={2}>
+              <MUI.Grid item xs={12} sm={12} md={3} mt={2}>
                 <MUI.Paper  
                 elevation={3} 
                 sx={{ p: 3, height: '100px', display: 'flex', borderRadius: '12px' }}>
@@ -314,7 +317,7 @@ export default function Dashboard() {
            </MUI.Grid>
 
             {/* Introduction Box */}
-            <MUI.Grid item xs={9}>
+            <MUI.Grid item xs={12} sm={12} md={9}>
               <MUI.Paper
                elevation={3}
                 sx={{
@@ -328,7 +331,7 @@ export default function Dashboard() {
                 }}
               >
                 <div>
-                  <MUI.Typography variant='h2'sx={{fontWeight: 'bold'}} m={2}>Welcome, Admin to Scholarlink</MUI.Typography>
+                  <MUI.Typography variant='h2'sx={{fontWeight: 'bold'}} fontSize={{ xs: '1rem', sm: '1rem', md: '1.75rem' }} m={2}>Welcome, Admin to Scholarlink</MUI.Typography>
 
                   <MUI.Box sx={{ display: 'flex', flexDirection: 'column', m: 2 }}>
                     <MUI.Typography variant='h5' pb={2}>
@@ -350,7 +353,9 @@ export default function Dashboard() {
                     </MUI.Typography>
                   </MUI.Box>
                 </div>
-                <img src={LogoImg} alt="Your Image Alt Text" style={{ width: '200px', height: '200px' }} />
+                <MUI.Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+                  <img src={LogoImg} alt="Your Image Alt Text" style={{ width: '200px', height: '200px' }} />
+                </MUI.Box>
               </MUI.Paper>
 
 
@@ -455,7 +460,7 @@ export default function Dashboard() {
 
             </MUI.Grid>
             {/* Scholars Status Report */}
-              <MUI.Grid item xs={3}>
+              <MUI.Grid item xs={12} sm={12} md={3}>
               <MUI.Paper
                elevation={3}
                   sx={{

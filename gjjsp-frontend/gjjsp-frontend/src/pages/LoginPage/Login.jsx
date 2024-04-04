@@ -38,7 +38,6 @@ export default function Login() {
     return supportedDomains.includes(domain) || educationalDomainRegex.test(email);
   };
 
-
   const onSubmit = async (data, event) => {
     event.preventDefault(); // Prevent default form submission behavior
     setLoading(true);
@@ -61,8 +60,6 @@ export default function Login() {
       ); 
 
       const { remember_token, user, roles_name, expires_at } = response.data;
-
-      console.log(JSON.stringify(response?.data));
       
       const role_id = response?.data?.user?.role_id;
 
