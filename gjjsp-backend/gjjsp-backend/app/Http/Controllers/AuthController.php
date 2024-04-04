@@ -36,7 +36,6 @@ class AuthController extends Controller
             'email_address' => 'required|string|unique:users,email_address',
             'password' => 'required|string',
             'role_id' => 'required|integer',
-            'user_status' => 'required|string',
         ]);
 
         // Extract the password before hashing it - For sending Credential
@@ -50,7 +49,7 @@ class AuthController extends Controller
             'email_address' => $fields['email_address'],
             'password' => bcrypt($plainPassword),
             'role_id' => $fields['role_id'],
-            'user_status' => $fields['user_status'],
+            'user_status' => 'Active',
         ]);
 
 

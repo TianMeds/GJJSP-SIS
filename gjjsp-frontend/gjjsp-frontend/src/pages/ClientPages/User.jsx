@@ -104,7 +104,6 @@ export default function User({state}) {
         email_address: data.email_address,
         password: data.password,
         role_id: data.role_id,
-        user_status: data.user_status,
       }, config)
         setAlertOpen(true);
         setAlertMessage('User Added');
@@ -740,6 +739,9 @@ export default function User({state}) {
                   )} 
                 </MUI.Grid>
 
+
+              {editUser && ( 
+              
                 <MUI.Grid id="userStatusGrid" style={{ display: editUser ? 'block' : (watch('user_status') === '' ? 'block' : (watch('user_status') === 'Active' ? 'block' : 'none')) }}>
                   <MUI.InputLabel htmlFor="user_status" id='userStatusLabel'>Status</MUI.InputLabel>
                   <Controller
@@ -770,6 +772,8 @@ export default function User({state}) {
                     <p id='errMsg'> <MUI.InfoIcon className='infoErr'/> {errors.user_status?.message}</p>
                   )} 
                 </MUI.Grid>
+
+              )}
 
               </MUI.DialogContent>
 
