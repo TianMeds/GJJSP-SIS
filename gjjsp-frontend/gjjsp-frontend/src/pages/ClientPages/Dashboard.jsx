@@ -549,7 +549,7 @@ export default function Dashboard() {
         </MUI.Container>
 
         {/* Pop up Dialog  for Privacy Notice and Warning */}
-        <PrivacyNotice />
+        <PrivacyNotice  />
 
       </MUI.ThemeProvider>
     </Layout>

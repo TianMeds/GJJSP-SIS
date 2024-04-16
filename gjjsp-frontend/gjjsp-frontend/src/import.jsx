@@ -122,6 +122,7 @@
   import RestoreIcon from '@mui/icons-material/Restore';
   import FormHelperText from '@mui/material/FormHelperText';
   import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+  import Modal from '@mui/material/Modal';
   import { createTheme, ThemeProvider, useTheme, styled } from '@mui/material/styles';
 
 
@@ -254,5 +255,6 @@
     CalendarTodayIcon,
     RestoreIcon,
     FormHelperText,
-    ArrowBackIcon
+    ArrowBackIcon,
+    Modal
   };

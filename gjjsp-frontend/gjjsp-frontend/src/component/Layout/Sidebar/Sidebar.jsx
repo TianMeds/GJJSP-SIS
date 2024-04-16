@@ -10,9 +10,9 @@ export const SideLogo = () => {
     return (
         <MUI.Box
             component="img"
-            src='https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/Scholarlink%20Logos.png'
+            src='https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/GJJSP-SIS.png'
             alt="Scholarlink Portal"
-            sx={{height: '80px', width: '130px', marginRight: '30px'}}
+            sx={{height: '100px', width: '120px', marginRight: '30px'}}
         />
     )
 }

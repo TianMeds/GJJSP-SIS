@@ -1,5 +1,4 @@
 import React, {useEffect,lazy, Suspense, useState} from 'react'
-import React, {useEffect,lazy, Suspense, useState} from 'react'
 import axios from '../../api/axios';
 
 //Components
@@ -20,7 +19,7 @@ import {useNavigate} from 'react-router-dom';
 import classNames from 'classnames';
 const LazyErrMsg = lazy(() => import('../../component/ErrorMsg/ErrMsg'));
 import useAuth from '../../hooks/useAuth';
-import useAuth from '../../hooks/useAuth';
+
 
 //Regex Validations 
 const USER_REGEX = /^[A-Za-z.-]+(\s*[A-Za-z.-]+)*$/;
@@ -65,11 +64,6 @@ export default function User({state}) {
   const {auth} = useAuth();
   const role_id = auth?.user?.role_id || '';
   
-
-  const [emailError, setEmailError] = useState("");
-
-  const {auth} = useAuth();
-  const role_id = auth?.user?.role_id || '';
   
 
   // Post Data to API 
@@ -92,7 +86,6 @@ export default function User({state}) {
       setAlertMessage('Updating user...');
       setLoading(true);
       setLoadingMessage("Updating user")
-      const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       const response  = await axios.put(`/api/users/${selectedUser.id}`, {...data}, config)
       handleCloseUser(); // Call the hook after successful submission
       handleCloseModalUsers();

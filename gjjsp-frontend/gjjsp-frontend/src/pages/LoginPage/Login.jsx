@@ -131,7 +131,7 @@ export default function Login() {
             justifyContent: 'center',
             width: '100%', 
           }}>
-            <img src='https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/Scholarlink%20Logos.png' alt="Logo" style={{ width: '200px', height: '150px' }} />
+            <img src='https://raw.githubusercontent.com/TianMeds/image--stocks-for-coding/main/GJJSP-SIS.png' alt="Logo" style={{ width: '200px', height: '180px' }} />
             <MUI.Typography variant="h1">
               Login
             </MUI.Typography>
