@@ -66,4 +66,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 Please make sure to update tests as appropriate.
 
 ## License
-
+This project is licensed under the terms of the [BSD 3 Clause License](LICENSE).
